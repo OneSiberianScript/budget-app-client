@@ -1,7 +1,9 @@
 import { ref, watch } from 'vue'
-import type { ThemeId } from './types'
+
 import { DEFAULT_THEME } from './constants'
 import { getThemeOverrides } from './getThemeOverrides'
+
+import type { ThemeId } from './types'
 import type { ThemeConfig } from 'ant-design-vue/es/config-provider/context'
 
 const STORAGE_KEY = 'app_theme'
@@ -36,20 +38,20 @@ const current = ref<ThemeId>(readStored())
  * Overrides for ConfigProvider: use getThemeOverrides(currentTheme).
  */
 export function useTheme() {
-    watch(
-        current,
-        (id) => applyTheme(id),
-        { immediate: true }
-    )
+    watch(current, (id) => applyTheme(id), { immediate: true })
 
     function setTheme(id: ThemeId) {
         current.value = id
     }
 
     const themeOverrides = ref<ThemeConfig>(getThemeOverrides(current.value))
-    watch(current, (id) => {
-        themeOverrides.value = getThemeOverrides(id)
-    }, { immediate: true })
+    watch(
+        current,
+        (id) => {
+            themeOverrides.value = getThemeOverrides(id)
+        },
+        { immediate: true }
+    )
 
     return {
         currentTheme: current,

@@ -1,5 +1,6 @@
-import type { z } from 'zod'
 import { registerFormSchema } from './RegisterForm.schema'
+
+import type { z } from 'zod'
 
 export type RegisterFormValues = z.infer<typeof registerFormSchema>
 

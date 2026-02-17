@@ -1,8 +1,9 @@
-import type { ThemeConfig } from 'ant-design-vue/es/config-provider/context'
-import type { ThemeId } from './types'
-import { lightThemeOverrides } from './light'
 import { darkThemeOverrides } from './dark'
+import { lightThemeOverrides } from './light'
 import { monochromeThemeOverrides } from './monochrome'
+
+import type { ThemeId } from './types'
+import type { ThemeConfig } from 'ant-design-vue/es/config-provider/context'
 
 const overrides: Record<ThemeId, ThemeConfig> = {
     light: lightThemeOverrides,

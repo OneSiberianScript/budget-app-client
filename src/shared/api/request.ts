@@ -1,5 +1,6 @@
-import type { AxiosRequestConfig } from 'axios'
 import { httpClient } from './httpClient'
+
+import type { AxiosRequestConfig } from 'axios'
 
 export type RequestOptions = AxiosRequestConfig & {
     _suppressErrorNotification?: boolean

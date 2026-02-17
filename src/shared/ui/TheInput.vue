@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useField } from 'vee-validate'
 import { Form, Input } from 'ant-design-vue'
+import { useField } from 'vee-validate'
 
 type Props = {
     /** Field name for VeeValidate (must match schema key) */

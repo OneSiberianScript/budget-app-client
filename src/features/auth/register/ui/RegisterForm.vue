@@ -1,17 +1,21 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
-import { useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
-import { TheInput } from '@/shared/ui'
-import { registerFormSchema } from '../model/RegisterForm.schema'
-import { registerFormInitialValues } from '../model/RegisterForm.types'
-import type { RegisterFormValues } from '../model/RegisterForm.types'
-import { useSessionStore } from '@/entities/session/model/store'
+import { useForm } from 'vee-validate'
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+
 import { register } from '@/entities/session/api'
+import { useSessionStore } from '@/entities/session/model/store'
+
 import { toApiError } from '@/shared/api/errors'
 import { ROUTE_NAMES } from '@/shared/config/router'
+import { TheInput } from '@/shared/ui'
+
+import { registerFormSchema } from '../model/RegisterForm.schema'
+import { registerFormInitialValues } from '../model/RegisterForm.types'
+
+import type { RegisterFormValues } from '../model/RegisterForm.types'
 
 const router = useRouter()
 const sessionStore = useSessionStore()
@@ -46,12 +50,38 @@ const onSubmit = handleSubmit(async (values) => {
 </script>
 
 <template>
-    <form class="register-form" @submit.prevent="onSubmit">
-        <TheInput name="email" label="Email" type="email" autocomplete="email" />
-        <TheInput name="password" label="Пароль" type="password" autocomplete="new-password" />
-        <TheInput name="firstName" label="Имя" autocomplete="given-name" />
-        <TheInput name="lastName" label="Фамилия" autocomplete="family-name" />
-        <a-button type="primary" html-type="submit" :loading="isSubmitting" :disabled="!canSubmit">
+    <form
+        class="register-form"
+        @submit.prevent="onSubmit"
+    >
+        <TheInput
+            name="email"
+            label="Email"
+            type="email"
+            autocomplete="email"
+        />
+        <TheInput
+            name="password"
+            label="Пароль"
+            type="password"
+            autocomplete="new-password"
+        />
+        <TheInput
+            name="firstName"
+            label="Имя"
+            autocomplete="given-name"
+        />
+        <TheInput
+            name="lastName"
+            label="Фамилия"
+            autocomplete="family-name"
+        />
+        <a-button
+            type="primary"
+            html-type="submit"
+            :loading="isSubmitting"
+            :disabled="!canSubmit"
+        >
             Зарегистрироваться
         </a-button>
     </form>

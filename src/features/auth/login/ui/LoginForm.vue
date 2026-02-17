@@ -1,17 +1,21 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
-import { useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
-import { TheInput } from '@/shared/ui'
-import { loginFormSchema } from '../model/LoginForm.schema'
-import { loginFormInitialValues } from '../model/LoginForm.types'
-import type { LoginFormValues } from '../model/LoginForm.types'
-import { useSessionStore } from '@/entities/session/model/store'
+import { useForm } from 'vee-validate'
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+
 import { login } from '@/entities/session/api'
+import { useSessionStore } from '@/entities/session/model/store'
+
 import { toApiError } from '@/shared/api/errors'
 import { ROUTE_NAMES } from '@/shared/config/router'
+import { TheInput } from '@/shared/ui'
+
+import { loginFormSchema } from '../model/LoginForm.schema'
+import { loginFormInitialValues } from '../model/LoginForm.types'
+
+import type { LoginFormValues } from '../model/LoginForm.types'
 
 const router = useRouter()
 const sessionStore = useSessionStore()
@@ -41,10 +45,28 @@ const onSubmit = handleSubmit(async (values) => {
 </script>
 
 <template>
-    <form class="login-form" @submit.prevent="onSubmit">
-        <TheInput name="email" label="Email" type="email" autocomplete="email" />
-        <TheInput name="password" label="Пароль" type="password" autocomplete="current-password" />
-        <a-button type="primary" html-type="submit" :loading="isSubmitting" :disabled="!canSubmit">
+    <form
+        class="login-form"
+        @submit.prevent="onSubmit"
+    >
+        <TheInput
+            name="email"
+            label="Email"
+            type="email"
+            autocomplete="email"
+        />
+        <TheInput
+            name="password"
+            label="Пароль"
+            type="password"
+            autocomplete="current-password"
+        />
+        <a-button
+            type="primary"
+            html-type="submit"
+            :loading="isSubmitting"
+            :disabled="!canSubmit"
+        >
             Войти
         </a-button>
     </form>

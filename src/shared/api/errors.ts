@@ -27,7 +27,6 @@ export function toApiError(error: unknown): ApiError {
             return { code: data.error.code, message: data.error.message }
         }
     }
-    const message =
-        error instanceof Error ? error.message : typeof error === 'string' ? error : 'Неизвестная ошибка'
+    const message = error instanceof Error ? error.message : typeof error === 'string' ? error : 'Неизвестная ошибка'
     return { code: 'UNKNOWN', message }
 }

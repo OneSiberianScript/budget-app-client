@@ -1,7 +1,10 @@
 import { getActivePinia } from 'pinia'
-import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
-import { ROUTE_PATHS } from '@/shared/config/router'
+
 import { useSessionStore } from '@/entities/session'
+
+import { ROUTE_PATHS } from '@/shared/config/router'
+
+import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
 
 export interface RouteMeta {
     requiresAuth?: boolean
@@ -11,11 +14,7 @@ export interface RouteMeta {
     breadcrumbParent?: string
 }
 
-export function createGuards(
-    to: RouteLocationNormalized,
-    _from: RouteLocationNormalized,
-    next: NavigationGuardNext
-) {
+export function createGuards(to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) {
     const meta = to.meta as RouteMeta
     if (meta.title && typeof document !== 'undefined') {
         document.title = `${meta.title} | Budget App`

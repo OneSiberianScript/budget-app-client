@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { useSessionStore } from '@/entities/session/model/store'
+
 import { logout } from '@/entities/session/api'
+import { useSessionStore } from '@/entities/session/model/store'
+
 import { ROUTE_PATHS } from '@/shared/config/router'
 
 const router = useRouter()
@@ -17,7 +19,11 @@ async function handleLogout() {
     <div class="main-layout">
         <header class="main-layout__header">
             <span>Budget App</span>
-            <a-button v-if="sessionStore.isAuthenticated" @click="handleLogout">Выйти</a-button>
+            <a-button
+                v-if="sessionStore.isAuthenticated"
+                @click="handleLogout"
+                >Выйти</a-button
+            >
         </header>
         <main class="main-layout__content">
             <slot />

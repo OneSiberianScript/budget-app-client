@@ -7,7 +7,7 @@ todos:
     status: completed
   - id: 2-lint
     content: 2. Линтер и форматирование — ESLint (flat), Prettier, Husky, lint-staged
-    status: pending
+    status: completed
   - id: 3-routing
     content: 3. Роутинг — router config, ROUTE_NAMES/PATHS, guards (auth), meta (layout, title), 404
     status: pending

@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { LoginForm } from '@/features/auth/login'
 import { RouterLink } from 'vue-router'
+
+import { LoginForm } from '@/features/auth/login'
+
 import { ROUTE_PATHS } from '@/shared/config/router'
 </script>
 

@@ -1,10 +1,12 @@
 <script setup lang="ts">
+import { ConfigProvider } from 'ant-design-vue'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { ConfigProvider } from 'ant-design-vue'
-import { useTheme } from '@/shared/config/theme/useTheme'
+
 import { AuthLayout } from '@/widgets/layouts/auth'
 import { MainLayout } from '@/widgets/layouts/main'
+
+import { useTheme } from '@/shared/config/theme/useTheme'
 
 const route = useRoute()
 const { themeOverrides } = useTheme()

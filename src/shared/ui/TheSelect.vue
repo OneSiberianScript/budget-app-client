@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useField } from 'vee-validate'
 import { Form, Select } from 'ant-design-vue'
+import { useField } from 'vee-validate'
 
 type Option = { label: string; value: string | number }
 

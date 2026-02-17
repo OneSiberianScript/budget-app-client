@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { RegisterForm } from '@/features/auth/register'
 import { RouterLink } from 'vue-router'
+
+import { RegisterForm } from '@/features/auth/register'
+
 import { ROUTE_PATHS } from '@/shared/config/router'
 </script>
 

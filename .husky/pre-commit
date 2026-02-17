@@ -1,0 +1,3 @@
+npm run docs:api
+git add docs/api/ 2>/dev/null || true
+npx lint-staged

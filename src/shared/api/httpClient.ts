@@ -1,9 +1,11 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios'
 import { getActivePinia } from 'pinia'
-import { apiConfig } from './config'
-import { toApiError } from './errors'
+
 import { useSessionStore } from '@/entities/session/model/store'
 import type { SessionUser } from '@/entities/session/model/types'
+
+import { apiConfig } from './config'
+import { toApiError } from './errors'
 
 /** Extended config for our interceptors */
 export interface RequestConfig extends InternalAxiosRequestConfig {
@@ -93,8 +95,13 @@ httpClient.interceptors.response.use(
         if (!originalConfig._suppressErrorNotification) {
             const apiErr = toApiError(error)
             // Toast: use ant-design-vue message when available
-            if (typeof window !== 'undefined' && (window as unknown as { __ANTD_MESSAGE__?: { error: (m: string) => void } }).__ANTD_MESSAGE__) {
-                (window as unknown as { __ANTD_MESSAGE__: { error: (m: string) => void } }).__ANTD_MESSAGE__.error(apiErr.message)
+            if (
+                typeof window !== 'undefined' &&
+                (window as unknown as { __ANTD_MESSAGE__?: { error: (m: string) => void } }).__ANTD_MESSAGE__
+            ) {
+                ;(window as unknown as { __ANTD_MESSAGE__: { error: (m: string) => void } }).__ANTD_MESSAGE__.error(
+                    apiErr.message
+                )
             } else {
                 console.error(apiErr.message)
             }

@@ -1,4 +1,5 @@
 import { request } from '@/shared/api/request'
+
 import type { SessionUser } from '../model/types'
 
 /** Response shape from login/register/refresh */

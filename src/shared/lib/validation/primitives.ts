@@ -4,10 +4,7 @@ export const nonEmptyString = z.string().min(1, 'Обязательное пол
 
 export const email = z.string().min(1, 'Введите email').email('Некорректный email').trim().toLowerCase()
 
-export const password = z
-    .string()
-    .min(1, 'Введите пароль')
-    .min(8, 'Минимум 8 символов')
+export const password = z.string().min(1, 'Введите пароль').min(8, 'Минимум 8 символов')
 
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 export const uuid = z.string().regex(uuidRegex, 'Некорректный идентификатор')
@@ -18,7 +15,10 @@ export const phoneE164 = z
     .transform((v) => v.trim())
     .refine((v) => v === '' || /^\+[1-9]\d{1,14}$/.test(v), 'Телефон в формате +79991234567')
 
-export const optionalTrimmedString = z.string().transform((v) => v.trim()).optional()
+export const optionalTrimmedString = z
+    .string()
+    .transform((v) => v.trim())
+    .optional()
 
 export const nullableTrimmedString = z
     .string()
