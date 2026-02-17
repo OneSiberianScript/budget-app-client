@@ -1,7 +1,9 @@
 import type { ZodError } from 'zod'
 
 /**
- * Converts ZodError to a record of field names → error messages for VeeValidate setFieldError / Form errors.
+ * Преобразует ZodError в объект «имя поля → сообщение об ошибке» для setFieldError и отображения ошибок формы.
+ * @param zodError - Ошибка валидации Zod
+ * @returns Запись вида { fieldName: 'сообщение' }
  */
 export function toFieldErrors(zodError: ZodError): Record<string, string> {
     const out: Record<string, string> = {}

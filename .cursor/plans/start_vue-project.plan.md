@@ -13,10 +13,10 @@ todos:
     status: completed
   - id: 4-ui-kit
     content: 4. UI kit — The-компоненты (TheInput, TheSelect, TheTable, TheModal и др.), интеграция с VeeValidate, плагины message/modal
-    status: pending
+    status: completed
   - id: 5-entities-pages
     content: 5. Сущности и контекст — store бюджета/роли, виджет выбора бюджета, entities (budget, account, category, transaction, monthlyPlan и др.)
-    status: pending
+    status: completed
   - id: 6-pages-dashboard
     content: "6a. Страницы: Дашборд (бублик по категориям, итоги месяца, кнопки расход/доход)"
     status: pending

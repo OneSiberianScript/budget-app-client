@@ -3,21 +3,25 @@ import { ref, type Ref } from 'vue'
 type ApiFn<T> = () => Promise<T>
 
 export interface UseApiOptions {
-    /** Run fn immediately on mount */
+    /** Запустить fn сразу при монтировании */
     immediate?: boolean
 }
 
 export interface UseApiReturn<T> {
+    /** Результат последнего успешного вызова */
     data: Ref<T | null>
+    /** Ошибка последнего вызова */
     error: Ref<Error | null>
+    /** Идёт ли выполнение */
     isLoading: Ref<boolean>
+    /** Запустить запрос вручную */
     execute: () => Promise<void>
 }
 
 /**
- * Wraps an async API call in refs (data, error, isLoading) and optional immediate execution.
- * @param fn - Function returning a Promise (e.g. () => httpClient.get('/path'))
- * @param options.immediate - Run fn on first tick
+ * Оборачивает асинхронный API-вызов в refs (data, error, isLoading) с опциональным немедленным запуском.
+ * @param fn - Функция, возвращающая Promise (например, () => httpClient.get('/path'))
+ * @param options.immediate - Запустить fn при первом тике
  * @returns { data, error, isLoading, execute }
  */
 export function useApi<T>(fn: ApiFn<T>, options: UseApiOptions = {}): UseApiReturn<T> {

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { toTypedSchema } from '@vee-validate/zod'
-import { message } from 'ant-design-vue'
 import { useForm } from 'vee-validate'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
@@ -10,6 +9,7 @@ import { useSessionStore } from '@/entities/session/model/store'
 
 import { toApiError } from '@/shared/api/errors'
 import { ROUTE_NAMES } from '@/shared/config/router'
+import { message } from '@/shared/lib/message'
 import { TheInput } from '@/shared/ui'
 
 import { registerFormSchema } from '../model/RegisterForm.schema'

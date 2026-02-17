@@ -1,5 +1,5 @@
 /**
- * Backend error response shape: { error: { code: string, message: string } }
+ * Формат ответа об ошибке с бэкенда: { error: { code, message } }.
  */
 export interface ApiErrorBody {
     error: {
@@ -9,7 +9,9 @@ export interface ApiErrorBody {
 }
 
 /**
- * Normalized API error for handlers and toast.
+ * Нормализованная ошибка API для обработчиков и toast.
+ * @property code - Код ошибки (UNAUTHORIZED, NETWORK_ERROR и т.д.)
+ * @property message - Человекочитаемое сообщение
  */
 export interface ApiError {
     code: string
@@ -17,7 +19,9 @@ export interface ApiError {
 }
 
 /**
- * Parses axios error response into ApiError. Handles backend format and fallback message.
+ * Преобразует ошибку axios в ApiError. Учитывает формат бэкенда и запасное сообщение.
+ * @param error - Исключение или ответ axios
+ * @returns Нормализованная ошибка с полями code и message
  */
 export function toApiError(error: unknown): ApiError {
     if (error && typeof error === 'object' && 'response' in error) {

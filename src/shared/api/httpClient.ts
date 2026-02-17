@@ -4,10 +4,16 @@ import { getActivePinia } from 'pinia'
 import { useSessionStore } from '@/entities/session/model/store'
 import type { SessionUser } from '@/entities/session/model/types'
 
+import { getMessage } from '@/shared/lib/message'
+
 import { apiConfig } from './config'
 import { toApiError } from './errors'
 
-/** Extended config for our interceptors */
+/**
+ * Расширенная конфигурация запроса для перехватчиков.
+ * @property _suppressErrorNotification - Не показывать toast при ошибке
+ * @property _isRetry - Признак повторного запроса после refresh
+ */
 export interface RequestConfig extends InternalAxiosRequestConfig {
     _suppressErrorNotification?: boolean
     _isRetry?: boolean
@@ -15,7 +21,7 @@ export interface RequestConfig extends InternalAxiosRequestConfig {
 
 const withCredentials = true
 
-/** Axios instance used only for POST /auth/refresh to avoid 401 interceptor recursion */
+/** Отдельный axios-инстанс только для POST /auth/refresh, чтобы избежать рекурсии при 401 */
 const refreshClient = axios.create({
     baseURL: apiConfig.baseURL,
     timeout: apiConfig.timeout,
@@ -23,7 +29,8 @@ const refreshClient = axios.create({
 })
 
 /**
- * Main HTTP client: Bearer token, 401 → refresh → retry, toast on error (unless _suppressErrorNotification).
+ * Основной HTTP-клиент: подставляет Bearer-токен, при 401 обновляет токен и повторяет запрос,
+ * при ошибке показывает toast (если в конфиге не задано _suppressErrorNotification).
  */
 export const httpClient = axios.create({
     baseURL: apiConfig.baseURL,
@@ -94,14 +101,9 @@ httpClient.interceptors.response.use(
 
         if (!originalConfig._suppressErrorNotification) {
             const apiErr = toApiError(error)
-            // Toast: use ant-design-vue message when available
-            if (
-                typeof window !== 'undefined' &&
-                (window as unknown as { __ANTD_MESSAGE__?: { error: (m: string) => void } }).__ANTD_MESSAGE__
-            ) {
-                ;(window as unknown as { __ANTD_MESSAGE__: { error: (m: string) => void } }).__ANTD_MESSAGE__.error(
-                    apiErr.message
-                )
+            const msg = getMessage()
+            if (msg) {
+                msg.error(apiErr.message)
             } else {
                 console.error(apiErr.message)
             }

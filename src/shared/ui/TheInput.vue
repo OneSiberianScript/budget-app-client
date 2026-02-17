@@ -3,13 +3,17 @@ import { Form, Input } from 'ant-design-vue'
 import { useField } from 'vee-validate'
 
 type Props = {
-    /** Field name for VeeValidate (must match schema key) */
+    /** Имя поля для VeeValidate (должно совпадать с ключом в схеме формы) */
     name: string
-    /** Label; also used for aria-label (E2E getByLabel) */
+    /** Подпись над полем; используется для aria-label (E2E getByLabel) */
     label?: string
+    /** Placeholder в пустом поле */
     placeholder?: string
+    /** Тип инпута */
     type?: 'text' | 'password' | 'email' | 'number' | 'search' | 'tel' | 'url'
+    /** Атрибут autocomplete */
     autocomplete?: string
+    /** Неактивно */
     disabled?: boolean
 }
 
@@ -33,6 +37,7 @@ const { value, errorMessage } = useField<string>(() => props.name)
         <Input
             :id="name"
             v-model:value="value"
+            class="the-input"
             :placeholder="placeholder"
             :type="type"
             :autocomplete="autocomplete"

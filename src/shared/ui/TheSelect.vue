@@ -5,12 +5,15 @@ import { useField } from 'vee-validate'
 type Option = { label: string; value: string | number }
 
 type Props = {
-    /** Field name for VeeValidate (must match schema key) */
+    /** Имя поля для VeeValidate (должно совпадать с ключом в схеме формы) */
     name: string
-    /** Label; also used for aria-label (E2E getByLabel) */
+    /** Подпись над полем; используется для aria-label (E2E getByLabel) */
     label?: string
+    /** Placeholder при пустом выборе */
     placeholder?: string
+    /** Список опций { label, value } */
     options?: Option[]
+    /** Неактивно */
     disabled?: boolean
 }
 
@@ -33,6 +36,7 @@ const { value, errorMessage } = useField<string | number | undefined>(() => prop
         <Select
             :id="name"
             v-model:value="value"
+            class="the-select"
             :placeholder="placeholder"
             :options="options"
             :disabled="disabled"

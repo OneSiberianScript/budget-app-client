@@ -3,6 +3,8 @@ import { ConfigProvider } from 'ant-design-vue'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 
+import MessageProvider from '@/app/providers/MessageProvider.vue'
+
 import { AuthLayout } from '@/widgets/layouts/auth'
 import { MainLayout } from '@/widgets/layouts/main'
 
@@ -18,8 +20,10 @@ const layoutComponent = computed(() => (layout.value === 'auth' ? AuthLayout : M
 
 <template>
     <ConfigProvider :theme="themeOverrides">
-        <component :is="layoutComponent">
-            <router-view />
-        </component>
+        <MessageProvider>
+            <component :is="layoutComponent">
+                <router-view />
+            </component>
+        </MessageProvider>
     </ConfigProvider>
 </template>

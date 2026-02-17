@@ -18,6 +18,8 @@
 
 ## Формат JSDoc
 
+**Язык:** весь JSDoc (описания, @param, @returns, @typedef и т.д.) пишется **на русском**.
+
 ### Функции и composables
 
 ```ts

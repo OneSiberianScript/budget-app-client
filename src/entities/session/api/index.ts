@@ -2,14 +2,16 @@ import { request } from '@/shared/api/request'
 
 import type { SessionUser } from '../model/types'
 
-/** Response shape from login/register/refresh */
+/** Формат ответа login/register/refresh: токен и пользователь */
 export interface AuthResponse {
     accessToken: string
     user: SessionUser
 }
 
 /**
- * Login. On success returns accessToken and user.
+ * Вход. При успехе возвращает accessToken и пользователя.
+ * @param email - Email
+ * @param password - Пароль
  */
 export async function login(email: string, password: string): Promise<AuthResponse> {
     return request<AuthResponse>({
@@ -20,7 +22,8 @@ export async function login(email: string, password: string): Promise<AuthRespon
 }
 
 /**
- * Register. On success returns accessToken and user.
+ * Регистрация. При успехе возвращает accessToken и пользователя.
+ * @param payload - email, password, firstName, lastName
  */
 export async function register(payload: {
     email: string
@@ -36,7 +39,7 @@ export async function register(payload: {
 }
 
 /**
- * Refresh access token. Uses HttpOnly cookie (send with credentials). Returns new accessToken and user.
+ * Обновление access-токена. Использует HttpOnly cookie (withCredentials). Возвращает новый accessToken и пользователя.
  */
 export async function refresh(): Promise<AuthResponse> {
     return request<AuthResponse>({
@@ -47,7 +50,7 @@ export async function refresh(): Promise<AuthResponse> {
 }
 
 /**
- * Logout. Clears refresh token cookie on backend when sent with credentials.
+ * Выход. Сбрасывает refresh-токен в cookie на бэкенде (запрос с credentials).
  */
 export async function logout(): Promise<void> {
     await request({

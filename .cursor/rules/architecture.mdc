@@ -15,5 +15,5 @@ FSD architecture. Layers (top to bottom): app → pages → widgets → features
 - Form: `features/{feature}/{form-name}/` with `model/{FormName}.schema.ts` (Zod), `model/{FormName}.types.ts`, `ui/{FormName}.vue`. Zod + VeeValidate, primitives from `@/shared/lib/validation`. Full steps: `docs/create-form.md`.
 - Features: `model/` (composables, schemas), `ui/` (components), public API in `index.ts`. Example: `features/account/delete` — `useDeleteAccount`, `DeleteAccountButton.vue`.
 - Shared UI: `shared/ui/`, prefix `The` (e.g. `TheModal`, `TheButton`). Root class: kebab-case (e.g. `the-button`). Simple components: thin wrapper over ant-design-vue, pass through props/slots/emit. Complex: Option 1 — keep in `shared/ui/` with composition; Option 2 — plugin for global/teleport; Option 3 — feature/widget-level when domain-specific. New primitive: `The{Name}.vue`, export from `shared/ui/index.ts`. Do not duplicate library API.
-- JSDoc for public exports. Props: JSDoc above each property in `Props` type — Volar shows in hover. See `docs/guide-documentation.md`.
+- JSDoc for public exports (in Russian). Props: JSDoc above each property in `Props` type — Volar shows in hover. See `docs/guide-documentation.md`.
 - Layout: задаёт каркас (шапка, футер); скроллируемая часть — только зона контента. Детали: `docs/guide-ui-and-responsive.md`, UI.mdc.

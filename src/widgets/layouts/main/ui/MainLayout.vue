@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 
+import { BudgetSwitcher } from '@/widgets/budget-switcher'
+
 import { logout } from '@/entities/session/api'
 import { useSessionStore } from '@/entities/session/model/store'
 
@@ -19,6 +21,10 @@ async function handleLogout() {
     <div class="main-layout">
         <header class="main-layout__header">
             <span>Budget App</span>
+            <BudgetSwitcher
+                v-if="sessionStore.isAuthenticated"
+                class="main-layout__switcher"
+            />
             <a-button
                 v-if="sessionStore.isAuthenticated"
                 @click="handleLogout"

@@ -26,4 +26,4 @@ DO NOT GIVE ME HIGH LEVEL SHIT, IF I ASK FOR FIX OR EXPLANATION, I WANT ACTUAL C
 - Please respect my prettier preferences when you provide code.
 - Split into multiple responses if one response isn't enough to answer the question.
 - Create mocks immediately where they might be needed, don't wait for explicit requests.
-- When adding new public API (The* components, composables, exported functions): add JSDoc immediately (see docs/guide-documentation.md) and tests where applicable (see docs/guide-testing.md).
+- When adding new public API (The* components, composables, exported functions): add JSDoc immediately in Russian (see docs/guide-documentation.md) and tests where applicable (see docs/guide-testing.md).
