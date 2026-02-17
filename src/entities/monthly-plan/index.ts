@@ -4,6 +4,7 @@ export {
     fetchMonthlyPlan,
     fetchMonthlyPlanItems,
     createMonthlyPlan,
+    createMonthlyPlanItem,
     updateMonthlyPlanItem,
     deleteMonthlyPlanItem
 } from './api'

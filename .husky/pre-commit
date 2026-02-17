@@ -1,4 +1,2 @@
-npm run docs:api
-git add docs/api/
 npm run test:run
 npx lint-staged

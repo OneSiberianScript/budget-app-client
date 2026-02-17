@@ -19,25 +19,25 @@ todos:
     status: completed
   - id: 6-pages-dashboard
     content: "6a. Страницы: Дашборд (бублик по категориям, итоги месяца, кнопки расход/доход)"
-    status: pending
+    status: completed
   - id: 6-pages-crud
     content: "6b. Страницы: Категории, Счета, Бюджет, Планы по бюджету, Список транзакций (таблицы + CRUD)"
-    status: pending
+    status: completed
   - id: 6-pages-profile-auth
     content: "6c. Страницы: Профиль (настройки, семья, доступы), авторизация (логин, регистрация, смена пароля, сессии)"
-    status: pending
+    status: completed
   - id: 7-invitations
     content: 7. Приглашения в бюджет и подтверждение email — фича приглашения, список/отмена, страница входящего приглашения, confirm-email
-    status: pending
+    status: completed
   - id: 8-testing
     content: 8. Тестирование — Vitest, setup, mountWithProviders, colocated specs, E2E (Playwright), скрипты test/test:coverage/test:e2e
-    status: pending
+    status: completed
   - id: 9-docs
     content: 9. Документирование — JSDoc для публичного API, docs.md в модулях, руководства (guide-*), create-entity/create-form/create-route
-    status: pending
+    status: completed
   - id: 10-final
     content: 10. Финальная проверка — lint, format:check, build, test:run
-    status: pending
+    status: completed
 isProject: false
 ---
 
@@ -155,7 +155,7 @@ npx husky init
 ```
 
 - `package.json`: `lint-staged` для `*.{ts,vue}` → `eslint --fix`, `prettier --write`
-- `.husky/pre-commit`: сначала `npm run docs:api`, затем `git add docs/api/`, затем `npx lint-staged`
+- `.husky/pre-commit`: `npm run test:run`, затем `npx lint-staged`
 
 ### 2.5. Проверка
 
@@ -180,16 +180,7 @@ npm run format:check
 - `shared/lib/validation/docs.md`, `shared/api/docs.md`, `shared/config/theme/docs.md`
 - Формат: Markdown с примерами, без эмодзи, коротко, личный тон
 
-### 3.3. TypeDoc (опционально)
-
-```bash
-npm install -D typedoc typedoc-plugin-markdown typedoc-vitepress-theme vitepress
-```
-
-- [typedoc.json](typedoc.json): entryPoints `src/shared`, `src/entities`, exclude `*.vue`, `*.spec.ts`, out `docs/api`
-- Скрипт `docs:api`: `typedoc`
-
-### 3.4. Руководства
+### 3.3. Руководства
 
 - [docs/guide-documentation.md](docs/guide-documentation.md) — стиль, что документировать
 - [docs/guide-testing.md](docs/guide-testing.md) — тестирование

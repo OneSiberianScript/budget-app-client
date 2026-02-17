@@ -5,3 +5,11 @@ export interface SessionUser {
     firstName?: string
     lastName?: string
 }
+
+/** Сессия пользователя (элемент списка GET /auth/sessions) */
+export interface AuthSession {
+    id: string
+    deviceInfo?: string
+    createdAt: string
+    current?: boolean
+}

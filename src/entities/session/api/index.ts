@@ -1,6 +1,6 @@
 import { request } from '@/shared/api/request'
 
-import type { SessionUser } from '../model/types'
+import type { AuthSession, SessionUser } from '../model/types'
 
 /** Формат ответа login/register/refresh: токен и пользователь */
 export interface AuthResponse {
@@ -58,4 +58,47 @@ export async function logout(): Promise<void> {
         url: '/auth/logout',
         _suppressErrorNotification: true
     })
+}
+
+/**
+ * Подтверждение email по токену из письма.
+ */
+export async function confirmEmail(token: string): Promise<void> {
+    await request({
+        method: 'POST',
+        url: '/auth/confirm-email',
+        data: { token }
+    })
+}
+
+/**
+ * Смена пароля (защищённый эндпоинт).
+ */
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    await request({
+        method: 'POST',
+        url: '/auth/change-password',
+        data: { currentPassword, newPassword }
+    })
+}
+
+/**
+ * Список сессий пользователя.
+ */
+export async function getSessions(): Promise<AuthSession[]> {
+    return request<AuthSession[]>({ method: 'GET', url: '/auth/sessions' })
+}
+
+/**
+ * Завершить одну сессию по id.
+ */
+export async function revokeSession(sessionId: string): Promise<void> {
+    await request({ method: 'DELETE', url: `/auth/sessions/${sessionId}` })
+}
+
+/**
+ * Завершить все сессии кроме текущей.
+ */
+export async function revokeAllSessions(): Promise<void> {
+    await request({ method: 'DELETE', url: '/auth/sessions' })
 }

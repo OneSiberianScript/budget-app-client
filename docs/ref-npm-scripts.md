@@ -35,12 +35,11 @@
 | `npm run test:e2e` | Playwright — E2E тесты | CI, проверка критических сценариев |
 | `npm run test:e2e:ui` | Playwright UI mode | Отладка E2E, разработка новых тестов |
 
-## Ресурсы и документация
+## Ресурсы
 
 | Команда | Описание | Когда использовать |
 |---------|----------|-------------------|
 | `npm run fonts` | Скачивает Onest webfonts из GitHub в `public/fonts/onest/` | Первоначальная настройка, обновление шрифтов |
-| `npm run docs:api` | TypeDoc → генерирует API-документацию в `docs/api/` | После изменений в shared/entities, обновление справочника |
 
 ## Служебные
 
@@ -52,9 +51,8 @@
 
 Выполняется при `git commit` (до создания коммита). Если любой шаг завершится с ошибкой, коммит не будет создан.
 
-1. `npm run docs:api` — генерация API-документации
-2. `git add docs/api/` — добавление сгенерированных файлов в индекс
-3. `npx lint-staged` — ESLint + Prettier для staged `*.{ts,vue}` (см. `lint-staged` в package.json)
+1. `npm run test:run` — прогон unit/component тестов
+2. `npx lint-staged` — ESLint + Prettier для staged `*.{ts,vue}` (см. `lint-staged` в package.json)
 
 ## Типичные сценарии
 

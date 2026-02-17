@@ -10,7 +10,7 @@ type Props = {
     /** Placeholder в пустом поле */
     placeholder?: string
     /** Тип инпута */
-    type?: 'text' | 'password' | 'email' | 'number' | 'search' | 'tel' | 'url'
+    type?: 'text' | 'password' | 'email' | 'number' | 'search' | 'tel' | 'url' | 'date'
     /** Атрибут autocomplete */
     autocomplete?: string
     /** Неактивно */

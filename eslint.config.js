@@ -8,7 +8,19 @@ import globals from 'globals'
 const FSD_LAYER_ORDER = ['app', 'pages', 'widgets', 'features', 'entities', 'shared']
 
 export default [
-    { ignores: ['dist', 'node_modules', 'public', '**/*.config.*', 'coverage', 'scripts'] },
+    {
+        ignores: [
+            'dist',
+            'node_modules',
+            'public',
+            '**/*.config.*',
+            'coverage',
+            'scripts',
+            'test/coverage',
+            'test/playwright-report',
+            'test/test-results'
+        ]
+    },
     js.configs.recommended,
     ...tseslint.configs.recommended,
     ...pluginVue.configs['flat/recommended'],

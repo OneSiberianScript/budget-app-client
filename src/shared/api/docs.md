@@ -1,9 +1,37 @@
-# API layer
+# API (axios, request, перехватчики)
 
-**request(options)** — typed wrapper over httpClient.request. Use for all API calls. Options: method, url, data, params, etc. Set `_suppressErrorNotification: true` to skip global error toast (e.g. refresh, logout).
+Единая точка запросов к бэкенду: `request()`, перехватчики для Bearer, 401/refresh и toast при ошибках.
 
-**httpClient** — axios instance with interceptors: request adds Bearer token from session store; response on 401 calls refresh, then retries once or redirects to login.
+## Конфигурация
 
-**toApiError(error)** — parses backend shape `{ error: { code, message } }` into `{ code, message }`. Use in catch blocks for user-facing messages.
+`config.ts`: `apiConfig.baseURL` (из `VITE_API_BASE_URL`), `apiConfig.timeout`. Base URL должен включать префикс `/api`.
 
-**useApi(fn, { immediate? })** — composable: runs async fn, exposes data, error, isLoading, execute. Optional immediate run on mount.
+Все запросы идут с `withCredentials: true` (cookies для refresh).
+
+## request()
+
+Типизированная обёртка над `httpClient`. Используется в entities и features.
+
+```ts
+import { request } from '@/shared/api/request'
+
+const data = await request<MyType>({ method: 'GET', url: '/budgets' })
+```
+
+Опция `_suppressErrorNotification: true` — не показывать toast при ошибке (refresh, logout).
+
+## httpClient
+
+Прямое использование редко нужно. Перехватчики: подстановка Bearer из Pinia, при 401 — один вызов refresh, повтор запроса; при ошибке — toast (если не `_suppressErrorNotification`).
+
+## toApiError
+
+Преобразует исключение axios в `{ code, message }`. Учитывает формат бэкенда `{ error: { code, message } }`. Используется в формах и обработчиках.
+
+## useApi
+
+Composable для загрузки с состоянием `{ data, error, isLoading, execute }`. Удобен для страниц с одной асинхронной загрузкой.
+
+## Ошибки
+
+Формат ответа ошибки с бэкенда: `{ error: { code: string, message: string } }`. В формах логина/регистрации можно обрабатывать коды (например 409) для осмысленных сообщений.

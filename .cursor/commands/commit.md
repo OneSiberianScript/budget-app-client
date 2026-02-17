@@ -5,4 +5,4 @@
 0. При необходимости актуализировать **README.md**: описание проекта, как запустить, переменные окружения (.env), скрипты (npm run …), структура репозитория — чтобы файл был полезен будущим разработчикам и пользователям приложения. Затем выполнить шаги 1–3.
 1. `git add .`
 2. `git commit` с сообщением, описывающим все изменения
-3. Если pre-commit падает (docs:api, lint-staged, eslint, prettier) — фиксим (`npm run lint:fix`, `npm run format` или вручную), `git add .`, повторяем коммит
+3. Если pre-commit падает (test:run, lint-staged, eslint, prettier) — фиксим (`npm run lint:fix`, `npm run format` или вручную), `git add .`, повторяем коммит

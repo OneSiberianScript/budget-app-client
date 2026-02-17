@@ -34,6 +34,17 @@ export async function createMonthlyPlan(payload: { budgetId: string; month: stri
 }
 
 /**
+ * Create a monthly plan item (category limit).
+ */
+export async function createMonthlyPlanItem(payload: {
+    monthlyPlanId: string
+    categoryId: string
+    limitCents: number
+}): Promise<MonthlyPlanItem> {
+    return request<MonthlyPlanItem>({ method: 'POST', url: '/monthly-plans/items', data: payload })
+}
+
+/**
  * Update a monthly plan item (category limit).
  */
 export async function updateMonthlyPlanItem(id: string, payload: { limitCents: number }): Promise<MonthlyPlanItem> {

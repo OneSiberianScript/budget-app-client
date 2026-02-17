@@ -3,6 +3,7 @@ node_modules
 public
 *.lock
 coverage
+playwright-report
 public/fonts
 .cursor
 .github
