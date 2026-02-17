@@ -1,0 +1,34 @@
+---
+name: code-style-and-stack
+description: Code style, TypeScript, Vue Composition API, Ant Design Vue, and performance conventions
+globs: src/**
+alwaysApply: false
+---
+
+Соблюдать responsive, mobile-first, отсутствие полного скролла страницы (скролл только в контентной области), Web Vitals и структуру по UI.mdc и architecture.mdc.
+
+- Functional and declarative style; avoid classes.
+- Descriptive variable names with auxiliary verbs (e.g. isLoading, hasError).
+- One file — one area of responsibility (related exports, helpers, types).
+- Prefer named exports for functions.
+- Use TypeScript everywhere; prefer interfaces over types (extendability, declaration merging).
+- Avoid enums; use maps for better type safety and flexibility.
+- Functional components with TypeScript interfaces.
+- Use the `function` keyword for pure functions (hoisting, clarity).
+- Always use Vue Composition API with `<script setup>`.
+- Use Ant Design Vue for components and styling.
+- Leverage VueUse where applicable for reactivity and performance.
+- Wrap async components in Suspense with a fallback UI.
+- Use dynamic import for non-critical components.
+- Optimize images: WebP where possible, size attributes, lazy loading.
+- Optimized chunking and code splitting in Vite build.
+
+**Performance (runtime)**
+- Use `v-memo` for expensive list/form items when props change often but re-render is not always needed; use `shallowRef` / `shallowReactive` for large structures where deep reactivity is unnecessary.
+- Keep `computed` pure (no side effects). Use `defineAsyncComponent` for heavy components (modals, heavy widgets) with Suspense fallback.
+- In composables and components: in `onUnmounted` unsubscribe from events, clear timers, cancel in-flight requests (AbortController), call `destroy`/`dispose` on third-party instances.
+- For very long lists (tables, feeds) use virtualization (e.g. vue-virtual-scroller, vueuc). Use `<KeepAlive>` sparingly; when needed, set `:max` to limit cached instances.
+
+**Bundle**
+- Analyze bundle size (e.g. rollup-plugin-visualizer). Prefer ESM-compatible libs and import only what you need (tree-shaking). Prefer lightweight alternatives where possible (e.g. date-fns over moment).
+- For complex API state and caching consider Vue Query (`@tanstack/vue-query`).

@@ -1,0 +1,21 @@
+---
+name: UI
+description: HTML, CSS, accessibility, responsive design, and UI/UX for templates and components
+globs: src/**
+alwaysApply: false
+---
+
+You are an expert in HTML, CSS, accessibility, responsive design, and UI/UX principles.
+
+**Mobile-first (обязательно).** Сначала вёрстка и поведение для мобильного viewport, затем улучшения для больших экранов: media queries только с `min-width` от малого к большему. Проверять на реальных устройствах или в эмуляторе (Chrome DevTools device toolbar, разные ширины).
+
+- Semantic elements (header, main, footer, article, section). button for clicks, a for links (href required), img with alt, form with labels. No deprecated elements (font, center).
+- External stylesheets, class over ID. Flexbox/Grid for layout. rem/em for typography, CSS variables for theming, BEM for naming. Avoid !important; use specificity.
+- Media queries, mobile-first, viewport meta. Responsive images: srcset, sizes. Lazy load images. Minify when relevant, avoid heavy animations.
+- WCAG 2.1 AA (contrast, semantic HTML, alt text). ARIA when needed, keyboard nav, focus styles, landmarks. Test with assistive tech.
+- Clear visual hierarchy, cohesive color palette (ask for brand guidelines), readable typography, consistent style across the app.
+- Intuitive navigation, familiar components, clear CTAs. Loading indicators, clear error messages, recovery options.
+- Touch targets min 44×44px (особенно на мобильных), thumb zones. Design system, consistent terminology, style guide, organized assets.
+- Страница без полного скролла: по умолчанию страница помещается в высоту viewport (один экран — один «кадр»). Если контента больше — скролл только у внутренней области (например основной контент под шапкой), не у body/корня. Использовать фиксированные/липкие шапка и футер, flex-раскладку с flex-grow и min-height: 0 у контента, overflow-y: auto только у зоны контента.
+- Core Web Vitals (LCP, FID, CLS), code splitting. Logical content organization, clear labels.
+- Multiple browsers/devices, Lighthouse, W3C validators. Refer to WCAG, web.dev, MDN.

@@ -1,0 +1,19 @@
+/* CSS variables by data-theme. Used by app and components. */
+:root,
+[data-theme='light'] {
+    --color-bg: #ffffff;
+    --color-text: #000000e0;
+    --color-border: #d9d9d9;
+}
+
+[data-theme='dark'] {
+    --color-bg: #141414;
+    --color-text: #ffffffd9;
+    --color-border: #424242;
+}
+
+[data-theme='monochrome'] {
+    --color-bg: #fafafa;
+    --color-text: #262626;
+    --color-border: #bfbfbf;
+}

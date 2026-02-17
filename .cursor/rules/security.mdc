@@ -1,0 +1,25 @@
+---
+name: security
+description: Web security — XSS, CSRF, token storage, CSP, dependencies
+globs: src/**
+alwaysApply: false
+---
+
+**XSS**
+- Vue escapes template output; the main risk is `v-html`. Use `v-html` only for fully trusted content. If content comes from the backend/DB, sanitize on the backend; on the frontend use something like DOMPurify only when necessary.
+- Validate and sanitize dynamic attributes (`:href`, `:src`). Never use raw user input in `:href` (e.g. `javascript:` injection).
+
+**Tokens and sensitive data**
+- Do not store tokens or passwords in `localStorage` or `sessionStorage` (vulnerable to XSS). Prefer `httpOnly` cookies for refresh tokens. Store access token in memory (e.g. Pinia/store) or in secure, `httpOnly`, `sameSite` cookies.
+
+**CSRF**
+- Align with backend strategy (typically cookies with `SameSite=Strict`/`Lax`). Send credentials with requests (`credentials: 'include'` / Axios `withCredentials`) when required.
+
+**Dependencies**
+- Run `npm audit` and use Dependabot or Snyk to track and fix vulnerabilities in dependencies.
+
+**CSP**
+- Prefer Content-Security-Policy (via server or meta) to restrict script/style/image sources and block inline scripts and eval.
+
+**Validation**
+- Critical validation must be enforced on the backend. Frontend validation is for UX; never rely on it for security.

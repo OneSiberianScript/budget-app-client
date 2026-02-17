@@ -1,0 +1,19 @@
+---
+description: FSD architecture, naming, entities, routes, forms, and shared UI conventions for budget-app-client
+globs: src/**
+alwaysApply: false
+---
+
+FSD architecture. Layers (top to bottom): app → pages → widgets → features → entities → shared. Import only from lower layers. Public API of a layer is via `index.ts` (re-export from `model/`, `ui/`, `api/`).
+
+- Components: PascalCase. Pages: suffix `Page` (e.g. `AccountDetailPage.vue`). Root class in styles: kebab-case with `-page` suffix (e.g. `account-detail-page`).
+- Composables: prefix `use` (e.g. `useDeleteAccount`, `useApi`).
+- Stores: `useXStore` via Pinia `defineStore`. In store, declare actions as `function`, not arrow functions (hoisting, readable stack traces).
+- Types: PascalCase. Route constants `ROUTE_NAMES`, `ROUTE_PATHS` — UPPER_SNAKE_CASE; path values in kebab-case.
+- Entity structure: `entities/{entity-name}/` → `model/types.ts`, `model/store.ts`, `api/index.ts`, `index.ts`. Entity API lives in the entity slice, not in `shared/api`. In shared: only `request`, `httpClient`, `useApi`. Until backend exists: comment in API/store, no mocks. Use `throw new Error('Not implemented')` if needed. Full steps: `docs/create-entity.md`.
+- Route: constants in `router.ts`, type in `router.types.ts`, entry in `routes.ts`. Lazy import. Page: `pages/{kebab-case}/ui/{Name}Page.vue`, export from `index.ts`. Full steps: `docs/create-route.md`.
+- Form: `features/{feature}/{form-name}/` with `model/{FormName}.schema.ts` (Zod), `model/{FormName}.types.ts`, `ui/{FormName}.vue`. Zod + VeeValidate, primitives from `@/shared/lib/validation`. Full steps: `docs/create-form.md`.
+- Features: `model/` (composables, schemas), `ui/` (components), public API in `index.ts`. Example: `features/account/delete` — `useDeleteAccount`, `DeleteAccountButton.vue`.
+- Shared UI: `shared/ui/`, prefix `The` (e.g. `TheModal`, `TheButton`). Root class: kebab-case (e.g. `the-button`). Simple components: thin wrapper over ant-design-vue, pass through props/slots/emit. Complex: Option 1 — keep in `shared/ui/` with composition; Option 2 — plugin for global/teleport; Option 3 — feature/widget-level when domain-specific. New primitive: `The{Name}.vue`, export from `shared/ui/index.ts`. Do not duplicate library API.
+- JSDoc for public exports. Props: JSDoc above each property in `Props` type — Volar shows in hover. See `docs/guide-documentation.md`.
+- Layout: задаёт каркас (шапка, футер); скроллируемая часть — только зона контента. Детали: `docs/guide-ui-and-responsive.md`, UI.mdc.
