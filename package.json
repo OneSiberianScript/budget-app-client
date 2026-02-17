@@ -14,7 +14,8 @@
         "format": "prettier --write .",
         "format:check": "prettier --check .",
         "docs:api": "true",
-        "prepare": "husky"
+        "prepare": "husky",
+        "test:run": "true"
     },
     "lint-staged": {
         "*.{ts,vue}": [

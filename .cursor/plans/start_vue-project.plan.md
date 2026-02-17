@@ -10,7 +10,7 @@ todos:
     status: completed
   - id: 3-routing
     content: 3. Роутинг — router config, ROUTE_NAMES/PATHS, guards (auth), meta (layout, title), 404
-    status: pending
+    status: completed
   - id: 4-ui-kit
     content: 4. UI kit — The-компоненты (TheInput, TheSelect, TheTable, TheModal и др.), интеграция с VeeValidate, плагины message/modal
     status: pending

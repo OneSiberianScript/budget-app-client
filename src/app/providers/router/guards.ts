@@ -6,16 +6,14 @@ import { ROUTE_PATHS } from '@/shared/config/router'
 
 import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
 
-export interface RouteMeta {
-    requiresAuth?: boolean
-    layout?: string
-    title?: string
-    subtitle?: string
-    breadcrumbParent?: string
-}
-
+/**
+ * Global navigation guards: sets document.title from route meta and enforces auth for protected routes.
+ * @param to - Target route
+ * @param _from - Source route
+ * @param next - Callback to continue or redirect
+ */
 export function createGuards(to: RouteLocationNormalized, _from: RouteLocationNormalized, next: NavigationGuardNext) {
-    const meta = to.meta as RouteMeta
+    const meta = to.meta
     if (meta.title && typeof document !== 'undefined') {
         document.title = `${meta.title} | Budget App`
     }

@@ -18,7 +18,7 @@ app.use(Antd)
 
 const sessionStore = useSessionStore()
 sessionStore.hydrateFromStorage()
-
-router.isReady().then(() => {
+;(async () => {
+    await router.isReady()
     app.mount('#app')
-})
+})()

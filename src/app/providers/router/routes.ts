@@ -21,7 +21,7 @@ export default [
     },
     {
         path: '/:pathMatch(.*)*',
-        name: 'not-found',
+        name: ROUTE_NAMES.NOT_FOUND,
         component: () => import('@/pages/not-found/ui/NotFoundPage.vue'),
         meta: { requiresAuth: false, layout: 'main', title: 'Страница не найдена' }
     }
