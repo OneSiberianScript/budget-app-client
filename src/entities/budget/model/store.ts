@@ -5,13 +5,15 @@ import type { BudgetRole } from '@/shared/lib/budget-role'
 
 import * as budgetApi from '../api'
 
+import { MOCK_BUDGETS } from './mocks'
+
 import type { Budget } from './types'
 
 const STORAGE_KEY = 'budget_currentBudgetId'
 
 export const useBudgetStore = defineStore('budget', () => {
-    const budgets = ref<Budget[]>([])
-    const currentBudgetId = ref<string | null>(null)
+    const budgets = ref<Budget[]>([...MOCK_BUDGETS])
+    const currentBudgetId = ref<string | null>(MOCK_BUDGETS[0]?.id ?? null)
     const currentBudgetRole = ref<BudgetRole | null>(null)
 
     const currentBudget = computed(() => {
@@ -69,12 +71,18 @@ export const useBudgetStore = defineStore('budget', () => {
     }
 
     async function fetchBudgets() {
-        const list = await budgetApi.fetchBudgets()
-        setBudgets(list)
-        if (!currentBudgetId.value && list.length > 0) {
-            setCurrentBudget(list[0].id, null)
+        try {
+            const list = await budgetApi.fetchBudgets()
+            const safeList = Array.isArray(list) ? list : []
+            setBudgets(safeList)
+            if (!currentBudgetId.value && safeList.length > 0) {
+                setCurrentBudget(safeList[0].id, null)
+            }
+            return safeList
+        } catch {
+            setBudgets([])
+            return []
         }
-        return list
     }
 
     return {

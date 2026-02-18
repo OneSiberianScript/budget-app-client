@@ -11,7 +11,7 @@ import { createBudget, updateBudget, deleteBudget } from '@/entities/budget/api'
 import { ROUTE_NAMES } from '@/shared/config/router'
 import { confirm } from '@/shared/lib/confirm'
 import { message } from '@/shared/lib/message'
-import { TheButton, TheDrawer, TheSpin, TheTable } from '@/shared/ui'
+import { TheButton, TheDrawer, ThePageHeader, TheSpin, TheTable } from '@/shared/ui'
 
 const budgetStore = useBudgetStore()
 
@@ -82,15 +82,16 @@ onMounted(load)
 
 <template>
     <div class="budgets-page">
-        <div class="budgets-page__toolbar">
-            <h1 class="budgets-page__title">Бюджеты</h1>
-            <TheButton
-                type="primary"
-                @click="openCreate"
-            >
-                Создать бюджет
-            </TheButton>
-        </div>
+        <ThePageHeader title="Бюджеты">
+            <template #extra>
+                <TheButton
+                    type="primary"
+                    @click="openCreate"
+                >
+                    Создать бюджет
+                </TheButton>
+            </template>
+        </ThePageHeader>
 
         <TheSpin :spinning="loading">
             <TheTable
@@ -108,21 +109,21 @@ onMounted(load)
                             >
                                 Настройки
                             </router-link>
-                            <a-button
+                            <TheButton
                                 type="link"
                                 size="small"
                                 @click="openEdit(record as Budget)"
                             >
                                 Изменить
-                            </a-button>
-                            <a-button
+                            </TheButton>
+                            <TheButton
                                 type="link"
                                 size="small"
                                 danger
                                 @click="handleDelete(record as Budget)"
                             >
                                 Удалить
-                            </a-button>
+                            </TheButton>
                         </span>
                     </template>
                 </template>
@@ -136,7 +137,15 @@ onMounted(load)
         >
             <BudgetForm
                 :key="editingBudget?.id ?? 'new'"
-                :initial-values="editingBudget ? { name: editingBudget.name } : undefined"
+                :initial-values="
+                    editingBudget
+                        ? {
+                              name: editingBudget.name,
+                              currency: editingBudget.currency,
+                              initialBalance: editingBudget.initialBalance
+                          }
+                        : undefined
+                "
                 @submit="handleFormSubmit"
             />
         </TheDrawer>
@@ -150,19 +159,6 @@ onMounted(load)
     flex-direction: column;
     gap: 16px;
     min-height: 0;
-}
-
-.budgets-page__toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.budgets-page__title {
-    margin: 0;
-    font-size: 1.25rem;
 }
 
 .budgets-page__actions {

@@ -3,7 +3,7 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { computed } from 'vue'
 
-import { TheInput } from '@/shared/ui'
+import { TheButton, TheInput } from '@/shared/ui'
 
 import { budgetFormSchema } from '../model/BudgetForm.schema'
 import { budgetFormInitialValues } from '../model/BudgetForm.types'
@@ -38,14 +38,24 @@ defineExpose({ submit: handleSubmit, resetForm })
             label="Название"
             placeholder="Бюджет"
         />
-        <a-button
+        <TheInput
+            name="currency"
+            label="Валюта"
+            placeholder="RUB"
+        />
+        <TheInput
+            name="initialBalance"
+            label="Начальный баланс (опционально)"
+            placeholder="0"
+        />
+        <TheButton
             type="primary"
             html-type="submit"
             :loading="isSubmitting"
             :disabled="!canSubmit"
         >
             Сохранить
-        </a-button>
+        </TheButton>
     </form>
 </template>
 

@@ -3,8 +3,7 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { computed } from 'vue'
 
-import { BUDGET_ROLE_OPTIONS } from '@/shared/lib/budget-role'
-import { TheInput, TheSelect } from '@/shared/ui'
+import { TheButton, TheInput, TheSelect } from '@/shared/ui'
 
 import { inviteFormSchema } from '../model/InviteForm.schema'
 import { inviteFormInitialValues } from '../model/InviteForm.types'
@@ -20,7 +19,10 @@ const { handleSubmit, meta, isSubmitting, resetForm } = useForm<InviteFormValues
 
 const canSubmit = computed(() => meta.value.valid && !isSubmitting.value)
 
-const roleOptions = BUDGET_ROLE_OPTIONS
+const roleOptions = [
+    { label: 'Наблюдатель', value: 'viewer' },
+    { label: 'Редактор', value: 'editor' }
+]
 
 const emit = defineEmits<{ submit: [values: InviteFormValues] }>()
 
@@ -48,14 +50,14 @@ defineExpose({ submit: handleSubmit, resetForm })
             placeholder="Выберите роль"
             :options="roleOptions"
         />
-        <a-button
+        <TheButton
             type="primary"
             html-type="submit"
             :loading="isSubmitting"
             :disabled="!canSubmit"
         >
             Пригласить
-        </a-button>
+        </TheButton>
     </form>
 </template>
 

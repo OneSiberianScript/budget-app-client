@@ -11,7 +11,7 @@ import { createCategory, updateCategory, deleteCategory } from '@/entities/categ
 
 import { confirm } from '@/shared/lib/confirm'
 import { message } from '@/shared/lib/message'
-import { TheButton, TheDrawer, TheEmpty, TheSpin, TheTable } from '@/shared/ui'
+import { TheButton, TheDrawer, TheEmpty, ThePageHeader, TheSpin, TheTable } from '@/shared/ui'
 
 const budgetStore = useBudgetStore()
 const categoryStore = useCategoryStore()
@@ -76,7 +76,13 @@ async function handleDelete(record: Category) {
 }
 
 function typeLabel(type: string) {
-    return type === 'income' ? 'Доход' : 'Расход'
+    const labels: Record<string, string> = {
+        income: 'Доход',
+        expense: 'Расход',
+        transfer: 'Перевод',
+        saving: 'Накопление'
+    }
+    return labels[type] ?? type
 }
 
 async function load() {
@@ -99,16 +105,17 @@ watch(() => budgetStore.currentBudgetId, load)
 
 <template>
     <div class="categories-page">
-        <div class="categories-page__toolbar">
-            <h1 class="categories-page__title">Категории</h1>
-            <TheButton
-                v-if="hasBudget"
-                type="primary"
-                @click="openCreate"
-            >
-                Создать категорию
-            </TheButton>
-        </div>
+        <ThePageHeader title="Категории">
+            <template #extra>
+                <TheButton
+                    v-if="hasBudget"
+                    type="primary"
+                    @click="openCreate"
+                >
+                    Создать категорию
+                </TheButton>
+            </template>
+        </ThePageHeader>
 
         <TheSpin :spinning="loading">
             <template v-if="!hasBudget">
@@ -127,21 +134,21 @@ watch(() => budgetStore.currentBudgetId, load)
                         </template>
                         <template v-else-if="column?.key === 'action'">
                             <span class="categories-page__actions">
-                                <a-button
+                                <TheButton
                                     type="link"
                                     size="small"
                                     @click="openEdit(record as Category)"
                                 >
                                     Изменить
-                                </a-button>
-                                <a-button
+                                </TheButton>
+                                <TheButton
                                     type="link"
                                     size="small"
                                     danger
                                     @click="handleDelete(record as Category)"
                                 >
                                     Удалить
-                                </a-button>
+                                </TheButton>
                             </span>
                         </template>
                     </template>
@@ -157,7 +164,9 @@ watch(() => budgetStore.currentBudgetId, load)
             <CategoryForm
                 :key="editingCategory?.id ?? 'new'"
                 :initial-values="
-                    editingCategory ? { name: editingCategory.name, type: editingCategory.type } : undefined
+                    editingCategory
+                        ? { name: editingCategory.name, type: editingCategory.type, parentId: editingCategory.parentId }
+                        : undefined
                 "
                 @submit="handleFormSubmit"
             />
@@ -172,19 +181,6 @@ watch(() => budgetStore.currentBudgetId, load)
     flex-direction: column;
     gap: 16px;
     min-height: 0;
-}
-
-.categories-page__toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.categories-page__title {
-    margin: 0;
-    font-size: 1.25rem;
 }
 
 .categories-page__actions {

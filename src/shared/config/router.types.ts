@@ -50,5 +50,7 @@ declare module 'vue-router' {
         title?: string
         subtitle?: string
         breadcrumbParent?: string
+        /** Имя родительского маршрута для кнопки «Назад» в ThePageHeader */
+        parent?: string
     }
 }

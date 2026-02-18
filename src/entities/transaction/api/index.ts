@@ -1,4 +1,5 @@
 import { request } from '@/shared/api/request'
+import type { TransactionCreate, TransactionUpdate } from '@/shared/types'
 
 import type { Transaction } from '../model/types'
 
@@ -27,24 +28,14 @@ export async function fetchTransactionById(id: string): Promise<Transaction> {
 /**
  * Create a transaction.
  */
-export async function createTransaction(payload: {
-    budgetId: string
-    accountId: string
-    categoryId: string
-    amount: number
-    date: string
-    note?: string
-}): Promise<Transaction> {
+export async function createTransaction(payload: TransactionCreate): Promise<Transaction> {
     return request<Transaction>({ method: 'POST', url: '/transactions', data: payload })
 }
 
 /**
  * Update a transaction.
  */
-export async function updateTransaction(
-    id: string,
-    payload: Partial<Pick<Transaction, 'accountId' | 'categoryId' | 'amount' | 'date' | 'note'>>
-): Promise<Transaction> {
+export async function updateTransaction(id: string, payload: TransactionUpdate): Promise<Transaction> {
     return request<Transaction>({ method: 'PATCH', url: `/transactions/${id}`, data: payload })
 }
 
@@ -52,5 +43,5 @@ export async function updateTransaction(
  * Delete a transaction.
  */
 export async function deleteTransaction(id: string): Promise<void> {
-    await request({ method: 'DELETE', url: `/transactions/${id}` })
+    return request({ method: 'DELETE', url: `/transactions/${id}` })
 }

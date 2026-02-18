@@ -7,7 +7,9 @@ import routes from '@/app/providers/router/routes'
 
 import type { Component } from 'vue'
 
-export interface MountWithProvidersOptions {
+type MountOptions = NonNullable<Parameters<typeof mount>[1]>
+
+export interface MountWithProvidersOptions extends Omit<MountOptions, 'global'> {
     /** Начальный путь роутера */
     route?: string
     /** Заглушить глобальные действия (по умолчанию true) */
@@ -23,7 +25,7 @@ export interface MountWithProvidersOptions {
  * @returns Обёртка @vue/test-utils
  */
 export function mountWithProviders(component: Component, options: MountWithProvidersOptions = {}): VueWrapper {
-    const { route = '/', stubActions = true } = options
+    const { route = '/', stubActions = true, ...mountOptions } = options
 
     const pinia = createPinia()
     const router = createRouter({
@@ -34,6 +36,7 @@ export function mountWithProviders(component: Component, options: MountWithProvi
     router.push(route)
 
     return mount(component, {
+        ...mountOptions,
         global: {
             plugins: [pinia, router, Antd],
             stubs: stubActions ? { teleport: true } : undefined

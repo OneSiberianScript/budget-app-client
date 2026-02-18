@@ -7,17 +7,19 @@ import type { TransactionFormValues } from '@/features/transaction/transaction-f
 import { useAccountStore } from '@/entities/account'
 import { useBudgetStore } from '@/entities/budget'
 import { useCategoryStore } from '@/entities/category'
+import { useSessionStore } from '@/entities/session'
 import { useTransactionStore } from '@/entities/transaction'
 import type { Transaction } from '@/entities/transaction'
 import { createTransaction, updateTransaction, deleteTransaction } from '@/entities/transaction/api'
 
 import { confirm } from '@/shared/lib/confirm'
 import { message } from '@/shared/lib/message'
-import { TheButton, TheDrawer, TheEmpty, TheSpin, TheTable } from '@/shared/ui'
+import { TheButton, TheDrawer, TheEmpty, ThePageHeader, TheSpin, TheTable } from '@/shared/ui'
 
 const budgetStore = useBudgetStore()
 const accountStore = useAccountStore()
 const categoryStore = useCategoryStore()
+const sessionStore = useSessionStore()
 const transactionStore = useTransactionStore()
 
 const drawerOpen = ref(false)
@@ -26,14 +28,28 @@ const loading = ref(true)
 
 const hasBudget = computed(() => !!budgetStore.currentBudgetId)
 
-const accountOptions = computed(() => accountStore.accounts.map((a) => ({ label: a.name, value: a.id })))
-const categoryOptions = computed(() => categoryStore.categories.map((c) => ({ label: c.name, value: c.id })))
+const accountOptions = computed(() =>
+    (Array.isArray(accountStore.accounts) ? accountStore.accounts : []).map((a) => ({ label: a.name, value: a.id }))
+)
+const categoryOptions = computed(() =>
+    (Array.isArray(categoryStore.categories) ? categoryStore.categories : []).map((c) => ({
+        label: c.name,
+        value: c.id
+    }))
+)
 
 function accountName(id: string) {
-    return accountStore.accounts.find((a) => a.id === id)?.name ?? id
+    const list = Array.isArray(accountStore.accounts) ? accountStore.accounts : []
+    return list.find((a) => a.id === id)?.name ?? id
 }
 function categoryName(id: string) {
-    return categoryStore.categories.find((c) => c.id === id)?.name ?? id
+    const list = Array.isArray(categoryStore.categories) ? categoryStore.categories : []
+    return list.find((c) => c.id === id)?.name ?? id
+}
+
+function transactionTypeLabel(type: string) {
+    const labels: Record<string, string> = { expense: 'Расход', income: 'Доход', transfer: 'Перевод' }
+    return labels[type] ?? type
 }
 
 function formatDate(dateStr: string) {
@@ -43,11 +59,11 @@ function formatDate(dateStr: string) {
 }
 
 const columns = [
-    { title: 'Дата', dataIndex: 'date', key: 'date', width: 110 },
+    { title: 'Тип', dataIndex: 'type', key: 'type', width: 90 },
+    { title: 'Дата', dataIndex: 'occurredAt', key: 'occurredAt', width: 110 },
     { title: 'Сумма', dataIndex: 'amount', key: 'amount', width: 120 },
     { title: 'Счёт', dataIndex: 'accountId', key: 'accountId' },
     { title: 'Категория', dataIndex: 'categoryId', key: 'categoryId' },
-    { title: 'Заметка', dataIndex: 'note', key: 'note', ellipsis: true },
     { title: '', key: 'action', width: 160, align: 'right' as const }
 ]
 
@@ -57,7 +73,7 @@ function openCreate() {
 }
 
 function defaultTransactionInitials(): Partial<TransactionFormValues> {
-    return { date: new Date().toISOString().slice(0, 10) }
+    return { occurredAt: new Date().toISOString().slice(0, 10) }
 }
 
 function openEdit(record: Transaction) {
@@ -67,33 +83,38 @@ function openEdit(record: Transaction) {
 
 async function handleFormSubmit(values: TransactionFormValues) {
     const budgetId = budgetStore.currentBudgetId
-    if (!budgetId) return
+    const userId = sessionStore.user?.id
+    if (!budgetId || !userId) return
+    const amountStr = String(values.amount)
     try {
         if (editingTransaction.value) {
             await updateTransaction(editingTransaction.value.id, {
+                type: values.type,
                 accountId: values.accountId,
                 categoryId: values.categoryId,
-                amount: values.amount,
-                date: values.date,
-                note: values.note
+                amount: amountStr,
+                occurredAt: values.occurredAt,
+                updatedById: userId
             })
             transactionStore.setTransaction({
                 ...editingTransaction.value,
+                type: values.type,
                 accountId: values.accountId,
                 categoryId: values.categoryId,
-                amount: values.amount,
-                date: values.date,
-                note: values.note
+                amount: amountStr,
+                occurredAt: values.occurredAt,
+                updatedById: userId
             } as Transaction)
             message.success('Транзакция обновлена')
         } else {
             const created = await createTransaction({
+                type: values.type,
                 budgetId,
                 accountId: values.accountId,
                 categoryId: values.categoryId,
-                amount: values.amount,
-                date: values.date,
-                note: values.note
+                amount: amountStr,
+                occurredAt: values.occurredAt,
+                createdById: userId
             })
             transactionStore.setTransaction(created as Transaction)
             message.success('Транзакция создана')
@@ -107,7 +128,7 @@ async function handleFormSubmit(values: TransactionFormValues) {
 async function handleDelete(record: Transaction) {
     const ok = await confirm({
         title: 'Удалить транзакцию?',
-        content: `Транзакция от ${formatDate(record.date)} на сумму ${record.amount} будет удалена.`,
+        content: `Транзакция от ${formatDate(record.occurredAt)} на сумму ${record.amount} будет удалена.`,
         type: 'warning',
         positiveText: 'Удалить'
     })
@@ -134,6 +155,8 @@ async function load() {
             categoryStore.fetchCategories(budgetId),
             transactionStore.fetchTransactions(budgetId)
         ])
+    } catch {
+        loading.value = false
     } finally {
         loading.value = false
     }
@@ -145,16 +168,17 @@ watch(() => budgetStore.currentBudgetId, load)
 
 <template>
     <div class="transactions-page">
-        <div class="transactions-page__toolbar">
-            <h1 class="transactions-page__title">Транзакции</h1>
-            <TheButton
-                v-if="hasBudget"
-                type="primary"
-                @click="openCreate"
-            >
-                Создать транзакцию
-            </TheButton>
-        </div>
+        <ThePageHeader title="Транзакции">
+            <template #extra>
+                <TheButton
+                    v-if="hasBudget"
+                    type="primary"
+                    @click="openCreate"
+                >
+                    Создать транзакцию
+                </TheButton>
+            </template>
+        </ThePageHeader>
 
         <TheSpin :spinning="loading">
             <template v-if="!hasBudget">
@@ -168,11 +192,14 @@ watch(() => budgetStore.currentBudgetId, load)
                     row-key="id"
                 >
                     <template #bodyCell="{ column, record }">
-                        <template v-if="column?.key === 'date'">
-                            {{ formatDate(record.date) }}
+                        <template v-if="column?.key === 'type'">
+                            {{ transactionTypeLabel((record as Transaction).type) }}
+                        </template>
+                        <template v-else-if="column?.key === 'occurredAt'">
+                            {{ formatDate((record as Transaction).occurredAt) }}
                         </template>
                         <template v-else-if="column?.key === 'amount'">
-                            {{ record.amount }}
+                            {{ (record as Transaction).amount }}
                         </template>
                         <template v-else-if="column?.key === 'accountId'">
                             {{ accountName(record.accountId) }}
@@ -182,21 +209,21 @@ watch(() => budgetStore.currentBudgetId, load)
                         </template>
                         <template v-else-if="column?.key === 'action'">
                             <span class="transactions-page__actions">
-                                <a-button
+                                <TheButton
                                     type="link"
                                     size="small"
                                     @click="openEdit(record as Transaction)"
                                 >
                                     Изменить
-                                </a-button>
-                                <a-button
+                                </TheButton>
+                                <TheButton
                                     type="link"
                                     size="small"
                                     danger
                                     @click="handleDelete(record as Transaction)"
                                 >
                                     Удалить
-                                </a-button>
+                                </TheButton>
                             </span>
                         </template>
                     </template>
@@ -216,11 +243,11 @@ watch(() => budgetStore.currentBudgetId, load)
                 :initial-values="
                     editingTransaction
                         ? {
+                              type: editingTransaction.type,
                               accountId: editingTransaction.accountId,
                               categoryId: editingTransaction.categoryId,
-                              amount: editingTransaction.amount,
-                              date: editingTransaction.date,
-                              note: editingTransaction.note
+                              amount: parseFloat(editingTransaction.amount) || 0,
+                              occurredAt: editingTransaction.occurredAt.slice(0, 10)
                           }
                         : defaultTransactionInitials()
                 "
@@ -237,19 +264,6 @@ watch(() => budgetStore.currentBudgetId, load)
     flex-direction: column;
     gap: 16px;
     min-height: 0;
-}
-
-.transactions-page__toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.transactions-page__title {
-    margin: 0;
-    font-size: 1.25rem;
 }
 
 .transactions-page__actions {

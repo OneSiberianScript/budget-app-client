@@ -10,7 +10,7 @@ import { useSessionStore } from '@/entities/session/model/store'
 import { toApiError } from '@/shared/api/errors'
 import { ROUTE_NAMES } from '@/shared/config/router'
 import { message } from '@/shared/lib/message'
-import { TheInput } from '@/shared/ui'
+import { TheButton, TheInput } from '@/shared/ui'
 
 import { loginFormSchema } from '../model/LoginForm.schema'
 import { loginFormInitialValues } from '../model/LoginForm.types'
@@ -30,7 +30,11 @@ const canSubmit = computed(() => meta.value.valid && !isSubmitting.value)
 const onSubmit = handleSubmit(async (values) => {
     try {
         const res = await login(values.email, values.password)
-        sessionStore.setSession(res.accessToken, res.user)
+        if (res.user) {
+            sessionStore.setSession(res.accessToken, res.user, res.sessionId)
+        } else {
+            sessionStore.setAccessToken(res.accessToken, res.sessionId)
+        }
         message.success('Вход выполнен')
         router.push({ name: ROUTE_NAMES.HOME })
     } catch (err) {
@@ -61,14 +65,14 @@ const onSubmit = handleSubmit(async (values) => {
             type="password"
             autocomplete="current-password"
         />
-        <a-button
+        <TheButton
             type="primary"
             html-type="submit"
             :loading="isSubmitting"
             :disabled="!canSubmit"
         >
             Войти
-        </a-button>
+        </TheButton>
     </form>
 </template>
 

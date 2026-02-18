@@ -16,20 +16,20 @@ vi.stubGlobal(
 
 vi.stubGlobal(
     'ResizeObserver',
-    vi.fn().mockImplementation(() => ({
-        observe: vi.fn(),
-        unobserve: vi.fn(),
-        disconnect: vi.fn()
-    }))
+    class ResizeObserver {
+        observe = vi.fn()
+        unobserve = vi.fn()
+        disconnect = vi.fn()
+    }
 )
 
 vi.stubGlobal(
     'IntersectionObserver',
-    vi.fn().mockImplementation(() => ({
-        observe: vi.fn(),
-        unobserve: vi.fn(),
-        disconnect: vi.fn()
-    }))
+    class IntersectionObserver {
+        observe = vi.fn()
+        unobserve = vi.fn()
+        disconnect = vi.fn()
+    }
 )
 
 vi.mock('@/shared/lib/message', () => ({

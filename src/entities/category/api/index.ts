@@ -1,4 +1,5 @@
 import { request } from '@/shared/api/request'
+import type { CategoryCreate, CategoryUpdate } from '@/shared/types'
 
 import type { Category } from '../model/types'
 
@@ -20,18 +21,14 @@ export async function fetchCategoryById(id: string): Promise<Category> {
 /**
  * Create a category.
  */
-export async function createCategory(payload: {
-    budgetId: string
-    name: string
-    type: Category['type']
-}): Promise<Category> {
+export async function createCategory(payload: CategoryCreate): Promise<Category> {
     return request<Category>({ method: 'POST', url: '/categories', data: payload })
 }
 
 /**
  * Update a category.
  */
-export async function updateCategory(id: string, payload: Partial<Pick<Category, 'name' | 'type'>>): Promise<Category> {
+export async function updateCategory(id: string, payload: CategoryUpdate): Promise<Category> {
     return request<Category>({ method: 'PATCH', url: `/categories/${id}`, data: payload })
 }
 
@@ -39,5 +36,5 @@ export async function updateCategory(id: string, payload: Partial<Pick<Category,
  * Delete a category.
  */
 export async function deleteCategory(id: string): Promise<void> {
-    await request({ method: 'DELETE', url: `/categories/${id}` })
+    return request({ method: 'DELETE', url: `/categories/${id}` })
 }

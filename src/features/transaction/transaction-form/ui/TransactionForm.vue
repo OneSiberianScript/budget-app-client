@@ -3,7 +3,7 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { computed } from 'vue'
 
-import { TheInput, TheInputNumber, TheSelect } from '@/shared/ui'
+import { TheButton, TheInput, TheInputNumber, TheSelect } from '@/shared/ui'
 
 import { transactionFormSchema } from '../model/TransactionForm.schema'
 import { transactionFormInitialValues } from '../model/TransactionForm.types'
@@ -26,6 +26,12 @@ const { handleSubmit, meta, isSubmitting, resetForm } = useForm<TransactionFormV
 
 const canSubmit = computed(() => meta.value.valid && !isSubmitting.value)
 
+const typeOptions = [
+    { label: 'Расход', value: 'expense' },
+    { label: 'Доход', value: 'income' },
+    { label: 'Перевод', value: 'transfer' }
+]
+
 const emit = defineEmits<{ submit: [values: TransactionFormValues] }>()
 
 function onSubmit(values: TransactionFormValues) {
@@ -40,6 +46,12 @@ defineExpose({ submit: handleSubmit, resetForm })
         class="transaction-form"
         @submit.prevent="handleSubmit(onSubmit)"
     >
+        <TheSelect
+            name="type"
+            label="Тип"
+            placeholder="Выберите тип"
+            :options="typeOptions"
+        />
         <TheSelect
             name="accountId"
             label="Счёт"
@@ -58,23 +70,18 @@ defineExpose({ submit: handleSubmit, resetForm })
             :precision="2"
         />
         <TheInput
-            name="date"
+            name="occurredAt"
             label="Дата"
             type="date"
         />
-        <TheInput
-            name="note"
-            label="Заметка"
-            placeholder="Необязательно"
-        />
-        <a-button
+        <TheButton
             type="primary"
             html-type="submit"
             :loading="isSubmitting"
             :disabled="!canSubmit"
         >
             Сохранить
-        </a-button>
+        </TheButton>
     </form>
 </template>
 

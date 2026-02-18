@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Table } from 'ant-design-vue'
+import { computed } from 'vue'
 
 /**
  * Обёртка над a-table. Корневой класс: the-table.
@@ -38,8 +39,8 @@ interface PaginationConfig {
 interface Props {
     /** Описание колонок */
     columns?: Column[]
-    /** Массив записей */
-    dataSource?: Record<string, unknown>[]
+    /** Массив записей (при неверном типе, напр. строка при ошибке API, нормализуется в []). */
+    dataSource?: Record<string, unknown>[] | unknown
     /** Состояние загрузки */
     loading?: boolean
     /** Ключ строки (поле или функция) */
@@ -58,13 +59,16 @@ const props = withDefaults(defineProps<Props>(), {
     pagination: false,
     size: 'middle'
 })
+
+/** Всегда массив, чтобы a-table не падал на .forEach/.some при неверной форме данных (напр. объект из API). */
+const normalizedDataSource = computed(() => (Array.isArray(props.dataSource) ? props.dataSource : []))
 </script>
 
 <template>
     <Table
         class="the-table"
         :columns="props.columns"
-        :data-source="props.dataSource"
+        :data-source="normalizedDataSource"
         :loading="props.loading"
         :row-key="props.rowKey"
         :pagination="props.pagination"

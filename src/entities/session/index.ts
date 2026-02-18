@@ -1,5 +1,5 @@
 export { useSessionStore } from './model/store'
-export type { AuthSession, SessionUser } from './model/types'
+export type { AuthUser, SessionInfo } from './model/types'
 export {
     login,
     register,
@@ -11,4 +11,4 @@ export {
     revokeSession,
     revokeAllSessions
 } from './api'
-export type { AuthResponse } from './api'
+export type { LoginResponse } from './api'

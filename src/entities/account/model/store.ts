@@ -9,7 +9,9 @@ export const useAccountStore = defineStore('account', () => {
     const accounts = ref<Account[]>([])
 
     function setAccounts(list: Account[]) {
-        accounts.value = list
+        accounts.value = Array.isArray(list)
+            ? list.filter((item): item is Account => item != null && typeof item === 'object' && 'id' in item)
+            : []
     }
 
     function setAccount(account: Account) {
@@ -26,7 +28,10 @@ export const useAccountStore = defineStore('account', () => {
     }
 
     async function fetchAccounts(budgetId: string) {
-        const list = await accountApi.fetchAccounts(budgetId)
+        const raw = await accountApi.fetchAccounts(budgetId)
+        const list = Array.isArray(raw)
+            ? raw.filter((item): item is Account => item != null && typeof item === 'object' && 'id' in item)
+            : []
         setAccounts(list)
         return list
     }

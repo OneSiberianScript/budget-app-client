@@ -3,7 +3,7 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { computed } from 'vue'
 
-import { TheInput } from '@/shared/ui'
+import { TheButton, TheInput, TheSelect } from '@/shared/ui'
 
 import { accountFormSchema } from '../model/AccountForm.schema'
 import { accountFormInitialValues } from '../model/AccountForm.types'
@@ -18,6 +18,13 @@ const { handleSubmit, meta, isSubmitting, resetForm } = useForm<AccountFormValue
 })
 
 const canSubmit = computed(() => meta.value.valid && !isSubmitting.value)
+
+const accountTypeOptions = [
+    { label: 'Наличные', value: 'cash' },
+    { label: 'Банк', value: 'bank' },
+    { label: 'Кредит', value: 'credit' },
+    { label: 'Накопительный', value: 'saving' }
+]
 
 const emit = defineEmits<{ submit: [values: AccountFormValues] }>()
 
@@ -38,19 +45,20 @@ defineExpose({ submit: handleSubmit, resetForm })
             label="Название"
             placeholder="Счёт"
         />
-        <TheInput
-            name="currency"
-            label="Валюта"
-            placeholder="RUB"
+        <TheSelect
+            name="type"
+            label="Тип счёта"
+            placeholder="Выберите тип"
+            :options="accountTypeOptions"
         />
-        <a-button
+        <TheButton
             type="primary"
             html-type="submit"
             :loading="isSubmitting"
             :disabled="!canSubmit"
         >
             Сохранить
-        </a-button>
+        </TheButton>
     </form>
 </template>
 

@@ -1,4 +1,5 @@
 import { request } from '@/shared/api/request'
+import type { BudgetCreate, BudgetUpdate } from '@/shared/types'
 
 import type { Budget } from '../model/types'
 
@@ -20,14 +21,14 @@ export async function fetchBudgetById(id: string): Promise<Budget> {
 /**
  * Create a new budget.
  */
-export async function createBudget(payload: { name: string }): Promise<Budget> {
+export async function createBudget(payload: BudgetCreate): Promise<Budget> {
     return request<Budget>({ method: 'POST', url: '/budgets', data: payload })
 }
 
 /**
  * Update a budget.
  */
-export async function updateBudget(id: string, payload: Partial<Pick<Budget, 'name'>>): Promise<Budget> {
+export async function updateBudget(id: string, payload: BudgetUpdate): Promise<Budget> {
     return request<Budget>({ method: 'PATCH', url: `/budgets/${id}`, data: payload })
 }
 
@@ -35,5 +36,5 @@ export async function updateBudget(id: string, payload: Partial<Pick<Budget, 'na
  * Delete a budget.
  */
 export async function deleteBudget(id: string): Promise<void> {
-    await request({ method: 'DELETE', url: `/budgets/${id}` })
+    return request({ method: 'DELETE', url: `/budgets/${id}` })
 }

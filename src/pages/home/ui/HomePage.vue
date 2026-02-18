@@ -10,7 +10,7 @@ import { useTransactionStore } from '@/entities/transaction'
 
 import { ROUTE_NAMES } from '@/shared/config/router'
 import { formatMoneyFromCents } from '@/shared/lib/format-money'
-import { TheButton, TheEmpty, TheSpin } from '@/shared/ui'
+import { TheAlert, TheButton, TheEmpty, ThePageHeader, TheSpin } from '@/shared/ui'
 
 const router = useRouter()
 const budgetStore = useBudgetStore()
@@ -43,31 +43,42 @@ const monthRange = computed(() => getMonthRange(currentMonth.value))
 
 const hasBudget = computed(() => !!budgetStore.currentBudgetId)
 
-/** Сумма потраченного за месяц (только расходы, в копейках) */
+/** Сумма потраченного за месяц (только расходы, в копейках). amount в API — строка (рубли). */
 const spentCents = computed(() => {
     const budgetId = budgetStore.currentBudgetId
     if (!budgetId) return 0
-    const expenseCategoryIds = new Set(categoryStore.categories.filter((c) => c.type === 'expense').map((c) => c.id))
-    return transactionStore.transactions
+    const rawCat = categoryStore.categories?.value ?? categoryStore.categories
+    const categories = Array.isArray(rawCat) ? rawCat : []
+    const expenseCategoryIds = new Set(categories.filter((c) => c.type === 'expense').map((c) => c.id))
+    const rawTx = transactionStore.transactions?.value ?? transactionStore.transactions
+    const transactions = Array.isArray(rawTx) ? rawTx : []
+    return transactions
         .filter((t) => t.budgetId === budgetId && expenseCategoryIds.has(t.categoryId))
-        .reduce((sum, t) => sum + (t.amount ?? 0), 0)
+        .reduce((sum, t) => sum + Math.round((parseFloat(t.amount) || 0) * 100), 0)
 })
 
-/** Сумма запланированного на месяц (лимиты по категориям, в копейках) */
+/** Сумма запланированного на месяц (лимиты по категориям, в копейках). plannedAmount в API — строка (рубли). */
 const plannedCents = computed(() => {
-    return monthlyPlanStore.planItems.reduce((sum, i) => sum + (i.limitCents ?? 0), 0)
+    const rawItems = monthlyPlanStore.planItems?.value ?? monthlyPlanStore.planItems
+    const items = Array.isArray(rawItems) ? rawItems : []
+    return items.reduce((sum, i) => sum + Math.round((parseFloat(i.plannedAmount) || 0) * 100), 0)
 })
 
 /** Данные для бублика: траты по категориям (только расходы) */
 const pieOption = computed(() => {
     const budgetId = budgetStore.currentBudgetId
     if (!budgetId) return null
-    const expenseCategories = categoryStore.categories.filter((c) => c.type === 'expense')
+    const rawCatList = categoryStore.categories?.value ?? categoryStore.categories
+    const categoriesList = Array.isArray(rawCatList) ? rawCatList : []
+    const expenseCategories = categoriesList.filter((c) => c.type === 'expense')
     const byId = Object.fromEntries(expenseCategories.map((c) => [c.id, c.name]))
     const sums: Record<string, number> = {}
-    for (const t of transactionStore.transactions) {
+    const rawTxList = transactionStore.transactions?.value ?? transactionStore.transactions
+    const txList = Array.isArray(rawTxList) ? rawTxList : []
+    for (const t of txList) {
         if (t.budgetId !== budgetId || !byId[t.categoryId]) continue
-        sums[t.categoryId] = (sums[t.categoryId] ?? 0) + (t.amount ?? 0)
+        const amountCents = Math.round((parseFloat(t.amount) || 0) * 100)
+        sums[t.categoryId] = (sums[t.categoryId] ?? 0) + amountCents
     }
     const data = Object.entries(sums)
         .map(([categoryId, value]) => ({ name: byId[categoryId] ?? categoryId, value }))
@@ -109,10 +120,11 @@ async function loadDashboard() {
     loading.value = true
     try {
         const { from, to } = monthRange.value
+        const [year, month] = currentMonth.value.split('-').map(Number)
         await Promise.all([
             categoryStore.fetchCategories(budgetId),
             transactionStore.fetchTransactions(budgetId, { from, to }),
-            monthlyPlanStore.fetchMonthlyPlan(budgetId, currentMonth.value)
+            monthlyPlanStore.fetchMonthlyPlan(budgetId, year, month)
         ])
     } catch (e) {
         error.value = e instanceof Error ? e.message : 'Ошибка загрузки'
@@ -135,12 +147,13 @@ function goToAddTransaction(type: 'expense' | 'income') {
 
 <template>
     <div class="home-page">
+        <ThePageHeader title="Главная" />
         <TheSpin :spinning="loading">
             <template v-if="!hasBudget">
                 <TheEmpty description="Выберите бюджет" />
             </template>
             <template v-else-if="error">
-                <a-alert
+                <TheAlert
                     type="error"
                     :message="error"
                 />

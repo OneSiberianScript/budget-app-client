@@ -1,15 +1,20 @@
 import { request } from '@/shared/api/request'
-
-import type { MonthlyPlan, MonthlyPlanItem } from '../model/types'
+import type {
+    MonthlyPlan,
+    MonthlyPlanCreate,
+    MonthlyPlanItem,
+    MonthlyPlanItemCreate,
+    MonthlyPlanItemUpdate
+} from '@/shared/types'
 
 /**
- * Fetch monthly plan for a budget and month.
+ * Fetch monthly plan for a budget and year/month.
  */
-export async function fetchMonthlyPlan(budgetId: string, month: string): Promise<MonthlyPlan | null> {
+export async function fetchMonthlyPlan(budgetId: string, year: number, month: number): Promise<MonthlyPlan | null> {
     const data = await request<MonthlyPlan | null>({
         method: 'GET',
         url: '/monthly-plans',
-        params: { budgetId, month }
+        params: { budgetId, year, month }
     })
     return data
 }
@@ -27,27 +32,23 @@ export async function fetchMonthlyPlanItems(monthlyPlanId: string): Promise<Mont
 }
 
 /**
- * Create or get monthly plan for budget + month.
+ * Create or get monthly plan for budget + year + month.
  */
-export async function createMonthlyPlan(payload: { budgetId: string; month: string }): Promise<MonthlyPlan> {
+export async function createMonthlyPlan(payload: MonthlyPlanCreate): Promise<MonthlyPlan> {
     return request<MonthlyPlan>({ method: 'POST', url: '/monthly-plans', data: payload })
 }
 
 /**
  * Create a monthly plan item (category limit).
  */
-export async function createMonthlyPlanItem(payload: {
-    monthlyPlanId: string
-    categoryId: string
-    limitCents: number
-}): Promise<MonthlyPlanItem> {
+export async function createMonthlyPlanItem(payload: MonthlyPlanItemCreate): Promise<MonthlyPlanItem> {
     return request<MonthlyPlanItem>({ method: 'POST', url: '/monthly-plans/items', data: payload })
 }
 
 /**
- * Update a monthly plan item (category limit).
+ * Update a monthly plan item.
  */
-export async function updateMonthlyPlanItem(id: string, payload: { limitCents: number }): Promise<MonthlyPlanItem> {
+export async function updateMonthlyPlanItem(id: string, payload: MonthlyPlanItemUpdate): Promise<MonthlyPlanItem> {
     return request<MonthlyPlanItem>({ method: 'PATCH', url: `/monthly-plans/items/${id}`, data: payload })
 }
 
@@ -55,5 +56,5 @@ export async function updateMonthlyPlanItem(id: string, payload: { limitCents: n
  * Delete a monthly plan item.
  */
 export async function deleteMonthlyPlanItem(id: string): Promise<void> {
-    await request({ method: 'DELETE', url: `/monthly-plans/items/${id}` })
+    return request({ method: 'DELETE', url: `/monthly-plans/items/${id}` })
 }

@@ -30,8 +30,8 @@ export const useMonthlyPlanStore = defineStore('monthlyPlan', () => {
         planItems.value = planItems.value.filter((i) => i.id !== id)
     }
 
-    async function fetchMonthlyPlan(budgetId: string, month: string) {
-        const plan = await monthlyPlanApi.fetchMonthlyPlan(budgetId, month)
+    async function fetchMonthlyPlan(budgetId: string, year: number, month: number) {
+        const plan = await monthlyPlanApi.fetchMonthlyPlan(budgetId, year, month)
         setCurrentPlan(plan)
         if (plan) {
             const items = await monthlyPlanApi.fetchMonthlyPlanItems(plan.id)

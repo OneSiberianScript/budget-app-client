@@ -47,7 +47,7 @@ export default [
         path: ROUTE_PATHS.BUDGET_SETTINGS,
         name: ROUTE_NAMES.BUDGET_SETTINGS,
         component: () => import('@/pages/budget-settings/ui/BudgetSettingsPage.vue'),
-        meta: { requiresAuth: true, layout: 'main', title: 'Настройки бюджета' }
+        meta: { requiresAuth: true, layout: 'main', title: 'Настройки бюджета', parent: ROUTE_NAMES.BUDGETS }
     },
     {
         path: ROUTE_PATHS.INVITATION,
@@ -77,13 +77,13 @@ export default [
         path: ROUTE_PATHS.CHANGE_PASSWORD,
         name: ROUTE_NAMES.CHANGE_PASSWORD,
         component: () => import('@/pages/profile/ui/ChangePasswordPage.vue'),
-        meta: { requiresAuth: true, layout: 'main', title: 'Смена пароля' }
+        meta: { requiresAuth: true, layout: 'main', title: 'Смена пароля', parent: ROUTE_NAMES.PROFILE }
     },
     {
         path: ROUTE_PATHS.SESSIONS,
         name: ROUTE_NAMES.SESSIONS,
         component: () => import('@/pages/profile/ui/SessionsPage.vue'),
-        meta: { requiresAuth: true, layout: 'main', title: 'Сессии' }
+        meta: { requiresAuth: true, layout: 'main', title: 'Сессии', parent: ROUTE_NAMES.PROFILE }
     },
     {
         path: ROUTE_PATHS.NOT_FOUND,

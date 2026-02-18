@@ -1,10 +1,1 @@
-export type CategoryType = 'income' | 'expense'
-
-export interface Category {
-    id: string
-    budgetId: string
-    name: string
-    type: CategoryType
-    createdAt: string
-    updatedAt: string
-}
+export type { Category, CategoryType } from '@/shared/types'

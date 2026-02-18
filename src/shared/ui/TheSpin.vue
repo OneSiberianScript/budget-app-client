@@ -23,6 +23,9 @@ withDefaults(defineProps<Props>(), {
 <template>
     <Spin
         class="the-spin"
+        :spinning="spinning"
+        :size="size"
+        :tip="tip"
         v-bind="$attrs"
     >
         <template

@@ -9,7 +9,9 @@ export const useCategoryStore = defineStore('category', () => {
     const categories = ref<Category[]>([])
 
     function setCategories(list: Category[]) {
-        categories.value = list
+        categories.value = Array.isArray(list)
+            ? list.filter((item): item is Category => item != null && typeof item === 'object' && 'id' in item)
+            : []
     }
 
     function setCategory(category: Category) {
@@ -26,7 +28,10 @@ export const useCategoryStore = defineStore('category', () => {
     }
 
     async function fetchCategories(budgetId: string) {
-        const list = await categoryApi.fetchCategories(budgetId)
+        const raw = await categoryApi.fetchCategories(budgetId)
+        const list = Array.isArray(raw)
+            ? raw.filter((item): item is Category => item != null && typeof item === 'object' && 'id' in item)
+            : []
         setCategories(list)
         return list
     }

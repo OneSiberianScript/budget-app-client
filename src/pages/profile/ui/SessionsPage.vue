@@ -1,18 +1,26 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
-import { getSessions, revokeSession, revokeAllSessions } from '@/entities/session'
-import type { AuthSession } from '@/entities/session'
+import { getSessions, revokeSession, revokeAllSessions, useSessionStore } from '@/entities/session'
+import type { SessionInfo } from '@/entities/session'
 
 import { confirm } from '@/shared/lib/confirm'
 import { message } from '@/shared/lib/message'
-import { TheButton, TheSpin, TheTable } from '@/shared/ui'
+import { TheButton, ThePageHeader, TheSpin, TheTable, TheTag } from '@/shared/ui'
 
-const sessions = ref<AuthSession[]>([])
+const sessionStore = useSessionStore()
+const sessions = ref<SessionInfo[]>([])
 const loading = ref(true)
 
+/** Сессии с флагом текущей (вычисляется на фронте по sessionId). */
+const sessionsWithCurrent = computed(() => {
+    const currentId = sessionStore.sessionId?.value ?? sessionStore.sessionId ?? null
+    const list = Array.isArray(sessions.value) ? sessions.value : []
+    return list.map((s) => ({ ...s, current: !!currentId && s.id === currentId }))
+})
+
 const columns = [
-    { title: 'Устройство / информация', dataIndex: 'deviceInfo', key: 'deviceInfo' },
+    { title: 'Устройство / информация', dataIndex: 'userAgent', key: 'userAgent' },
     { title: 'Дата входа', dataIndex: 'createdAt', key: 'createdAt', width: 180 },
     { title: '', key: 'action', width: 120, align: 'right' as const }
 ]
@@ -24,13 +32,18 @@ function formatDate(iso: string) {
 async function load() {
     loading.value = true
     try {
-        sessions.value = await getSessions()
+        const data = await getSessions()
+        sessions.value = Array.isArray(data) ? data : []
+    } catch {
+        sessions.value = []
     } finally {
         loading.value = false
     }
 }
 
-async function handleRevoke(record: AuthSession): Promise<void> {
+type SessionRow = SessionInfo & { current?: boolean }
+
+async function handleRevoke(record: SessionRow): Promise<void> {
     if (record.current) {
         message.warning('Текущую сессию нельзя завершить отсюда. Выйдите из аккаунта.')
         return
@@ -73,36 +86,37 @@ onMounted(load)
 
 <template>
     <div class="sessions-page">
-        <div class="sessions-page__toolbar">
-            <h1 class="sessions-page__title">Сессии</h1>
-            <TheButton
-                type="primary"
-                danger
-                :disabled="sessions.length <= 1"
-                @click="handleRevokeAll"
-            >
-                Завершить все кроме текущей
-            </TheButton>
-        </div>
+        <ThePageHeader title="Сессии">
+            <template #extra>
+                <TheButton
+                    type="primary"
+                    danger
+                    :disabled="sessions.length <= 1"
+                    @click="handleRevokeAll"
+                >
+                    Завершить все кроме текущей
+                </TheButton>
+            </template>
+        </ThePageHeader>
 
         <TheSpin :spinning="loading">
             <TheTable
                 :columns="columns"
-                :data-source="sessions"
+                :data-source="sessionsWithCurrent"
                 :loading="loading"
                 row-key="id"
             >
                 <template #bodyCell="{ column, record }">
-                    <template v-if="column?.key === 'deviceInfo'">
+                    <template v-if="column?.key === 'userAgent'">
                         <span>
-                            {{ record.deviceInfo ?? 'Не указано' }}
-                            <a-tag
+                            {{ record.userAgent ?? 'Не указано' }}
+                            <TheTag
                                 v-if="record.current"
                                 color="blue"
                                 class="sessions-page__current-tag"
                             >
                                 Текущая
-                            </a-tag>
+                            </TheTag>
                         </span>
                     </template>
                     <template v-else-if="column?.key === 'createdAt'">
@@ -114,7 +128,7 @@ onMounted(load)
                             type="link"
                             size="small"
                             danger
-                            @click="handleRevoke(record as AuthSession)"
+                            @click="handleRevoke(record as SessionRow)"
                         >
                             Завершить
                         </TheButton>
@@ -138,19 +152,6 @@ onMounted(load)
     flex-direction: column;
     gap: 16px;
     min-height: 0;
-}
-
-.sessions-page__toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.sessions-page__title {
-    margin: 0;
-    font-size: 1.25rem;
 }
 
 .sessions-page__current-tag {

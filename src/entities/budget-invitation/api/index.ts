@@ -1,4 +1,5 @@
 import { request } from '@/shared/api/request'
+import type { BudgetInvitationCreate } from '@/shared/types'
 
 import type { BudgetInvitation } from '../model/types'
 
@@ -17,11 +18,7 @@ export async function fetchBudgetInvitations(budgetId: string): Promise<BudgetIn
 /**
  * Create an invitation (owner only).
  */
-export async function createBudgetInvitation(payload: {
-    budgetId: string
-    email: string
-    role: BudgetInvitation['role']
-}): Promise<BudgetInvitation> {
+export async function createBudgetInvitation(payload: BudgetInvitationCreate): Promise<BudgetInvitation> {
     return request<BudgetInvitation>({ method: 'POST', url: '/budget-invitations', data: payload })
 }
 

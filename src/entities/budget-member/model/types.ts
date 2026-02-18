@@ -1,13 +1,11 @@
-import type { BudgetRole } from '@/shared/lib/budget-role'
+import type { BudgetMember as ApiBudgetMember } from '@/shared/types'
 
-export interface BudgetMember {
-    id: string
-    budgetId: string
-    userId: string
-    role: BudgetRole
+export type { BudgetMemberRole } from '@/shared/types'
+export type BudgetMember = ApiBudgetMember
+
+/** Участник с подставленными данными пользователя (для отображения в UI). */
+export type BudgetMemberWithUser = BudgetMember & {
     email?: string
     firstName?: string
     lastName?: string
-    createdAt: string
-    updatedAt: string
 }

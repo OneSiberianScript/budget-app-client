@@ -3,7 +3,7 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { computed } from 'vue'
 
-import { TheInput, TheSelect } from '@/shared/ui'
+import { TheButton, TheInput, TheSelect } from '@/shared/ui'
 
 import { categoryFormSchema } from '../model/CategoryForm.schema'
 import { categoryFormInitialValues } from '../model/CategoryForm.types'
@@ -27,7 +27,9 @@ const canSubmit = computed(() => meta.value.valid && !isSubmitting.value)
 
 const typeOptions = [
     { label: 'Расход', value: 'expense' },
-    { label: 'Доход', value: 'income' }
+    { label: 'Доход', value: 'income' },
+    { label: 'Перевод', value: 'transfer' },
+    { label: 'Накопление', value: 'saving' }
 ]
 
 const emit = defineEmits<{ submit: [values: CategoryFormValues] }>()
@@ -55,14 +57,14 @@ defineExpose({ submit: handleSubmit, resetForm })
             placeholder="Выберите тип"
             :options="typeOptions"
         />
-        <a-button
+        <TheButton
             type="primary"
             html-type="submit"
             :loading="isSubmitting"
             :disabled="!canSubmit"
         >
             Сохранить
-        </a-button>
+        </TheButton>
     </form>
 </template>
 

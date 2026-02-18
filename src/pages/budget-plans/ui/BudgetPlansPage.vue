@@ -17,9 +17,8 @@ import {
 } from '@/entities/monthly-plan/api'
 
 import { confirm } from '@/shared/lib/confirm'
-import { formatMoneyFromCents } from '@/shared/lib/format-money'
 import { message } from '@/shared/lib/message'
-import { TheButton, TheDrawer, TheEmpty, TheSpin, TheTable } from '@/shared/ui'
+import { TheButton, TheDrawer, TheEmpty, ThePageHeader, TheSpin, TheTable } from '@/shared/ui'
 
 const budgetStore = useBudgetStore()
 const categoryStore = useCategoryStore()
@@ -30,27 +29,41 @@ const editingItem = ref<MonthlyPlanItem | null>(null)
 const loading = ref(true)
 const submitLoading = ref(false)
 
-/** Текущий месяц в формате YYYY-MM */
-const currentMonth = computed(() => {
-    const d = new Date()
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-})
+const currentYear = computed(() => new Date().getFullYear())
+const currentMonthNum = computed(() => new Date().getMonth() + 1)
+/** Текущий месяц в формате YYYY-MM (для отображения) */
+const currentMonthLabel = computed(() => `${currentYear.value}-${String(currentMonthNum.value).padStart(2, '0')}`)
 
 const hasBudget = computed(() => !!budgetStore.currentBudgetId)
 
 /** Категории типа «расход» для выбора лимита */
-const expenseCategoryOptions = computed(() =>
-    categoryStore.categories.filter((c) => c.type === 'expense').map((c) => ({ label: c.name, value: c.id }))
-)
+const expenseCategoryOptions = computed(() => {
+    const raw = categoryStore.categories?.value ?? categoryStore.categories
+    const list = Array.isArray(raw) ? raw : []
+    return list.filter((c) => c.type === 'expense').map((c) => ({ label: c.name, value: c.id }))
+})
 
 const columns = [
     { title: 'Категория', dataIndex: 'categoryId', key: 'categoryId' },
-    { title: 'Лимит', dataIndex: 'limitCents', key: 'limitCents', width: 140 },
+    { title: 'Лимит', dataIndex: 'plannedAmount', key: 'plannedAmount', width: 140 },
     { title: '', key: 'action', width: 160, align: 'right' as const }
 ]
 
 function categoryName(categoryId: string) {
-    return categoryStore.categories.find((c) => c.id === categoryId)?.name ?? categoryId
+    const raw = categoryStore.categories?.value ?? categoryStore.categories
+    const list = Array.isArray(raw) ? raw : []
+    return list.find((c) => c.id === categoryId)?.name ?? categoryId
+}
+
+/** plannedAmount в API — строка (рубли); форматируем для отображения */
+function formatPlannedAmount(plannedAmount: string) {
+    const rub = parseFloat(plannedAmount) || 0
+    return new Intl.NumberFormat('ru-RU', {
+        style: 'currency',
+        currency: 'RUB',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(rub)
 }
 
 function openCreate() {
@@ -66,9 +79,11 @@ function openEdit(record: MonthlyPlanItem) {
 async function ensurePlan() {
     const budgetId = budgetStore.currentBudgetId
     if (!budgetId) return null
+    const year = currentYear.value
+    const month = currentMonthNum.value
     let plan = monthlyPlanStore.currentPlan
-    if (!plan || plan.month !== currentMonth.value) {
-        plan = await createMonthlyPlan({ budgetId, month: currentMonth.value })
+    if (!plan || plan.year !== year || plan.month !== month) {
+        plan = await createMonthlyPlan({ budgetId, year, month })
         monthlyPlanStore.setCurrentPlan(plan)
         const items = await fetchMonthlyPlanItems(plan.id)
         monthlyPlanStore.setPlanItems(items)
@@ -83,16 +98,16 @@ async function handleFormSubmit(values: PlanItemFormValues) {
     if (!plan) return
     submitLoading.value = true
     try {
-        const limitCents = Math.round(values.limitRub * 100)
+        const plannedAmount = String(values.limitRub)
         if (editingItem.value) {
-            await updateMonthlyPlanItem(editingItem.value.id, { limitCents })
-            monthlyPlanStore.setPlanItem({ ...editingItem.value, limitCents } as MonthlyPlanItem)
+            await updateMonthlyPlanItem(editingItem.value.id, { plannedAmount })
+            monthlyPlanStore.setPlanItem({ ...editingItem.value, plannedAmount } as MonthlyPlanItem)
             message.success('Лимит обновлён')
         } else {
             const created = await createMonthlyPlanItem({
                 monthlyPlanId: plan.id,
                 categoryId: values.categoryId,
-                limitCents
+                plannedAmount
             })
             monthlyPlanStore.setPlanItem(created as MonthlyPlanItem)
             message.success('Лимит добавлен')
@@ -130,7 +145,7 @@ async function load() {
     loading.value = true
     try {
         await categoryStore.fetchCategories(budgetId)
-        await monthlyPlanStore.fetchMonthlyPlan(budgetId, currentMonth.value)
+        await monthlyPlanStore.fetchMonthlyPlan(budgetId, currentYear.value, currentMonthNum.value)
     } finally {
         loading.value = false
     }
@@ -142,23 +157,24 @@ watch(() => budgetStore.currentBudgetId, load)
 
 <template>
     <div class="budget-plans-page">
-        <div class="budget-plans-page__toolbar">
-            <h1 class="budget-plans-page__title">Планы по бюджету</h1>
-            <TheButton
-                v-if="hasBudget"
-                type="primary"
-                @click="openCreate"
-            >
-                Добавить лимит
-            </TheButton>
-        </div>
+        <ThePageHeader title="Планы по бюджету">
+            <template #extra>
+                <TheButton
+                    v-if="hasBudget"
+                    type="primary"
+                    @click="openCreate"
+                >
+                    Добавить лимит
+                </TheButton>
+            </template>
+        </ThePageHeader>
 
         <TheSpin :spinning="loading">
             <template v-if="!hasBudget">
                 <TheEmpty description="Выберите бюджет" />
             </template>
             <template v-else>
-                <p class="budget-plans-page__month">Месяц: {{ currentMonth }}</p>
+                <p class="budget-plans-page__month">Месяц: {{ currentMonthLabel }}</p>
                 <TheTable
                     :columns="columns"
                     :data-source="monthlyPlanStore.planItems"
@@ -169,26 +185,26 @@ watch(() => budgetStore.currentBudgetId, load)
                         <template v-if="column?.key === 'categoryId'">
                             {{ categoryName(record.categoryId) }}
                         </template>
-                        <template v-else-if="column?.key === 'limitCents'">
-                            {{ formatMoneyFromCents(record.limitCents) }}
+                        <template v-else-if="column?.key === 'plannedAmount'">
+                            {{ formatPlannedAmount(record.plannedAmount) }}
                         </template>
                         <template v-else-if="column?.key === 'action'">
                             <span class="budget-plans-page__actions">
-                                <a-button
+                                <TheButton
                                     type="link"
                                     size="small"
                                     @click="openEdit(record as MonthlyPlanItem)"
                                 >
                                     Изменить
-                                </a-button>
-                                <a-button
+                                </TheButton>
+                                <TheButton
                                     type="link"
                                     size="small"
                                     danger
                                     @click="handleDelete(record as MonthlyPlanItem)"
                                 >
                                     Удалить
-                                </a-button>
+                                </TheButton>
                             </span>
                         </template>
                     </template>
@@ -208,7 +224,7 @@ watch(() => budgetStore.currentBudgetId, load)
                     editingItem
                         ? {
                               categoryId: editingItem.categoryId,
-                              limitRub: editingItem.limitCents / 100
+                              limitRub: parseFloat(editingItem.plannedAmount) || 0
                           }
                         : undefined
                 "
@@ -225,19 +241,6 @@ watch(() => budgetStore.currentBudgetId, load)
     flex-direction: column;
     gap: 16px;
     min-height: 0;
-}
-
-.budget-plans-page__toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.budget-plans-page__title {
-    margin: 0;
-    font-size: 1.25rem;
 }
 
 .budget-plans-page__month {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 
 import { InviteForm } from '@/features/budget-invitation/invite-form'
 import type { InviteFormValues } from '@/features/budget-invitation/invite-form'
@@ -9,12 +9,10 @@ import { useBudgetStore } from '@/entities/budget'
 import type { BudgetInvitation } from '@/entities/budget-invitation'
 import { useBudgetInvitationStore } from '@/entities/budget-invitation'
 
-import { ROUTE_NAMES } from '@/shared/config/router'
 import { message } from '@/shared/lib/message'
-import { TheButton, TheModal, TheSpin, TheTable } from '@/shared/ui'
+import { TheButton, TheModal, ThePageHeader, TheSpin, TheTable } from '@/shared/ui'
 
 const route = useRoute()
-const router = useRouter()
 const budgetStore = useBudgetStore()
 const invitationStore = useBudgetInvitationStore()
 
@@ -43,10 +41,6 @@ const statusLabels: Record<string, string> = {
     pending: 'Ожидает',
     accepted: 'Принято',
     expired: 'Истекло'
-}
-
-function goBack() {
-    router.push({ name: ROUTE_NAMES.BUDGETS })
 }
 
 async function load() {
@@ -90,15 +84,7 @@ async function handleRevoke(inv: BudgetInvitation) {
 
 <template>
     <div class="budget-settings-page">
-        <div class="budget-settings-page__header">
-            <a-button
-                class="budget-settings-page__back"
-                @click="goBack"
-            >
-                Назад
-            </a-button>
-            <h1 class="budget-settings-page__title">Настройки: {{ budget?.name ?? '…' }}</h1>
-        </div>
+        <ThePageHeader :title="`Настройки: ${budget?.name ?? '…'}`" />
 
         <TheSpin :spinning="loading">
             <section
@@ -130,7 +116,7 @@ async function handleRevoke(inv: BudgetInvitation) {
                             {{ statusLabels[record.status] ?? record.status }}
                         </template>
                         <template v-else-if="column?.key === 'action'">
-                            <a-button
+                            <TheButton
                                 v-if="record.status === 'pending' && isOwner"
                                 type="link"
                                 size="small"
@@ -138,7 +124,7 @@ async function handleRevoke(inv: BudgetInvitation) {
                                 @click="handleRevoke(record as BudgetInvitation)"
                             >
                                 Отменить
-                            </a-button>
+                            </TheButton>
                         </template>
                     </template>
                 </TheTable>
@@ -172,21 +158,6 @@ async function handleRevoke(inv: BudgetInvitation) {
     flex-direction: column;
     gap: 16px;
     min-height: 0;
-}
-
-.budget-settings-page__header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.budget-settings-page__back {
-    flex-shrink: 0;
-}
-
-.budget-settings-page__title {
-    margin: 0;
-    font-size: 1.25rem;
 }
 
 .budget-settings-page__section {

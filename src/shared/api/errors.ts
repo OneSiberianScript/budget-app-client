@@ -23,7 +23,13 @@ export interface ApiError {
  * @param error - Исключение или ответ axios
  * @returns Нормализованная ошибка с полями code и message
  */
+const SERVER_UNAVAILABLE_MESSAGE = 'Сервер недоступен. Попробуйте обновить страницу позже.'
+
 export function toApiError(error: unknown): ApiError {
+    const ax = error as { code?: string; response?: unknown } | null
+    if (ax && typeof ax === 'object' && (ax.code === 'ECONNABORTED' || ax.code === 'ERR_NETWORK')) {
+        return { code: 'NETWORK_ERROR', message: SERVER_UNAVAILABLE_MESSAGE }
+    }
     if (error && typeof error === 'object' && 'response' in error) {
         const res = (error as { response?: { data?: ApiErrorBody } }).response
         const data = res?.data

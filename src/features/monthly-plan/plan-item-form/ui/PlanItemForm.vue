@@ -3,7 +3,7 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { computed } from 'vue'
 
-import { TheInputNumber, TheSelect } from '@/shared/ui'
+import { TheButton, TheInputNumber, TheSelect } from '@/shared/ui'
 
 import { planItemFormSchema } from '../model/PlanItemForm.schema'
 import { planItemFormInitialValues } from '../model/PlanItemForm.types'
@@ -50,14 +50,14 @@ defineExpose({ submit: handleSubmit, resetForm })
             :min="0"
             :precision="2"
         />
-        <a-button
+        <TheButton
             type="primary"
             html-type="submit"
             :loading="isSubmitting"
             :disabled="!canSubmit"
         >
             Сохранить
-        </a-button>
+        </TheButton>
     </form>
 </template>
 

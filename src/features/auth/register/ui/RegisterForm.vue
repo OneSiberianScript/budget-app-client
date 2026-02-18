@@ -10,7 +10,7 @@ import { useSessionStore } from '@/entities/session/model/store'
 import { toApiError } from '@/shared/api/errors'
 import { ROUTE_NAMES } from '@/shared/config/router'
 import { message } from '@/shared/lib/message'
-import { TheInput } from '@/shared/ui'
+import { TheButton, TheInput } from '@/shared/ui'
 
 import { registerFormSchema } from '../model/RegisterForm.schema'
 import { registerFormInitialValues } from '../model/RegisterForm.types'
@@ -35,7 +35,7 @@ const onSubmit = handleSubmit(async (values) => {
             firstName: values.firstName,
             lastName: values.lastName
         })
-        sessionStore.setSession(res.accessToken, res.user)
+        sessionStore.setSession(res.accessToken, res.user, res.sessionId)
         message.success('Регистрация успешна')
         router.push({ name: ROUTE_NAMES.HOME })
     } catch (err) {
@@ -76,14 +76,14 @@ const onSubmit = handleSubmit(async (values) => {
             label="Фамилия"
             autocomplete="family-name"
         />
-        <a-button
+        <TheButton
             type="primary"
             html-type="submit"
             :loading="isSubmitting"
             :disabled="!canSubmit"
         >
             Зарегистрироваться
-        </a-button>
+        </TheButton>
     </form>
 </template>
 

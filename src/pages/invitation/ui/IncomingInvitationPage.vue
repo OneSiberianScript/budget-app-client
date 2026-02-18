@@ -8,7 +8,7 @@ import { useSessionStore } from '@/entities/session'
 
 import { ROUTE_NAMES, ROUTE_PATHS } from '@/shared/config/router'
 import { message } from '@/shared/lib/message'
-import { TheButton } from '@/shared/ui'
+import { TheButton, ThePageHeader } from '@/shared/ui'
 
 const route = useRoute()
 const router = useRouter()
@@ -52,7 +52,7 @@ onMounted(() => {})
 
 <template>
     <div class="incoming-invitation-page">
-        <h1 class="incoming-invitation-page__title">Приглашение в бюджет</h1>
+        <ThePageHeader title="Приглашение в бюджет" />
 
         <template v-if="!token">
             <p class="incoming-invitation-page__error">Ссылка приглашения не указана.</p>
@@ -107,10 +107,6 @@ onMounted(() => {})
     padding: 24px;
     max-width: 400px;
     margin: 0 auto;
-}
-
-.incoming-invitation-page__title {
-    margin-bottom: 24px;
 }
 
 .incoming-invitation-page__text,

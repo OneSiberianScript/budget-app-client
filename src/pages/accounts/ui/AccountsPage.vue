@@ -11,7 +11,7 @@ import { useBudgetStore } from '@/entities/budget'
 
 import { confirm } from '@/shared/lib/confirm'
 import { message } from '@/shared/lib/message'
-import { TheButton, TheDrawer, TheEmpty, TheSpin, TheTable } from '@/shared/ui'
+import { TheButton, TheDrawer, TheEmpty, ThePageHeader, TheSpin, TheTable } from '@/shared/ui'
 
 const budgetStore = useBudgetStore()
 const accountStore = useAccountStore()
@@ -21,9 +21,16 @@ const editingAccount = ref<Account | null>(null)
 const loading = ref(true)
 
 const hasBudget = computed(() => !!budgetStore.currentBudgetId)
+const accountTypeLabels: Record<string, string> = {
+    cash: 'Наличные',
+    bank: 'Банк',
+    credit: 'Кредит',
+    saving: 'Накопительный'
+}
+
 const columns = [
     { title: 'Название', dataIndex: 'name', key: 'name' },
-    { title: 'Валюта', dataIndex: 'currency', key: 'currency', width: 100 },
+    { title: 'Тип', dataIndex: 'type', key: 'type', width: 120 },
     { title: '', key: 'action', width: 160, align: 'right' as const }
 ]
 
@@ -93,16 +100,17 @@ watch(() => budgetStore.currentBudgetId, load)
 
 <template>
     <div class="accounts-page">
-        <div class="accounts-page__toolbar">
-            <h1 class="accounts-page__title">Счета</h1>
-            <TheButton
-                v-if="hasBudget"
-                type="primary"
-                @click="openCreate"
-            >
-                Создать счёт
-            </TheButton>
-        </div>
+        <ThePageHeader title="Счета">
+            <template #extra>
+                <TheButton
+                    v-if="hasBudget"
+                    type="primary"
+                    @click="openCreate"
+                >
+                    Создать счёт
+                </TheButton>
+            </template>
+        </ThePageHeader>
 
         <TheSpin :spinning="loading">
             <template v-if="!hasBudget">
@@ -116,23 +124,26 @@ watch(() => budgetStore.currentBudgetId, load)
                     row-key="id"
                 >
                     <template #bodyCell="{ column, record }">
-                        <template v-if="column?.key === 'action'">
+                        <template v-if="column?.key === 'type'">
+                            {{ accountTypeLabels[(record as Account).type] ?? (record as Account).type }}
+                        </template>
+                        <template v-else-if="column?.key === 'action'">
                             <span class="accounts-page__actions">
-                                <a-button
+                                <TheButton
                                     type="link"
                                     size="small"
                                     @click="openEdit(record as Account)"
                                 >
                                     Изменить
-                                </a-button>
-                                <a-button
+                                </TheButton>
+                                <TheButton
                                     type="link"
                                     size="small"
                                     danger
                                     @click="handleDelete(record as Account)"
                                 >
                                     Удалить
-                                </a-button>
+                                </TheButton>
                             </span>
                         </template>
                     </template>
@@ -147,9 +158,7 @@ watch(() => budgetStore.currentBudgetId, load)
         >
             <AccountForm
                 :key="editingAccount?.id ?? 'new'"
-                :initial-values="
-                    editingAccount ? { name: editingAccount.name, currency: editingAccount.currency } : undefined
-                "
+                :initial-values="editingAccount ? { name: editingAccount.name, type: editingAccount.type } : undefined"
                 @submit="handleFormSubmit"
             />
         </TheDrawer>
@@ -163,19 +172,6 @@ watch(() => budgetStore.currentBudgetId, load)
     flex-direction: column;
     gap: 16px;
     min-height: 0;
-}
-
-.accounts-page__toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.accounts-page__title {
-    margin: 0;
-    font-size: 1.25rem;
 }
 
 .accounts-page__actions {

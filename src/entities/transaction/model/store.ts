@@ -3,13 +3,18 @@ import { ref } from 'vue'
 
 import * as transactionApi from '../api'
 
+import { mockTransactions } from './mocks'
+
 import type { Transaction } from './types'
 
 export const useTransactionStore = defineStore('transaction', () => {
-    const transactions = ref<Transaction[]>([])
+    const transactions = ref<Transaction[]>([...mockTransactions])
 
     function setTransactions(list: Transaction[]) {
-        transactions.value = list
+        if (list.length)
+            transactions.value = Array.isArray(list)
+                ? list.filter((item): item is Transaction => item != null && typeof item === 'object' && 'id' in item)
+                : []
     }
 
     function setTransaction(transaction: Transaction) {
@@ -29,7 +34,10 @@ export const useTransactionStore = defineStore('transaction', () => {
         budgetId: string,
         params?: Parameters<typeof transactionApi.fetchTransactions>[1]
     ) {
-        const list = await transactionApi.fetchTransactions(budgetId, params)
+        const raw = await transactionApi.fetchTransactions(budgetId, params)
+        const list = Array.isArray(raw)
+            ? raw.filter((item): item is Transaction => item != null && typeof item === 'object' && 'id' in item)
+            : []
         setTransactions(list)
         return list
     }

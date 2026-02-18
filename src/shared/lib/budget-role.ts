@@ -1,5 +1,7 @@
-/** Роль пользователя в бюджете. Используется сущностями budget и budget-member. */
-export type BudgetRole = 'viewer' | 'editor' | 'owner'
+import type { BudgetMemberRole } from '@/shared/types'
+
+/** Роль пользователя в бюджете. Совпадает с BudgetMemberRole из API. */
+export type BudgetRole = BudgetMemberRole
 
 /** Опции ролей для селекта (label/value). */
 export const BUDGET_ROLE_OPTIONS: { label: string; value: BudgetRole }[] = [

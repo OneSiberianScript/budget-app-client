@@ -6,6 +6,7 @@ import { confirmEmail } from '@/entities/session/api'
 
 import { ROUTE_NAMES, ROUTE_PATHS } from '@/shared/config/router'
 import { message } from '@/shared/lib/message'
+import { TheButton, ThePageHeader } from '@/shared/ui'
 
 const route = useRoute()
 const router = useRouter()
@@ -44,7 +45,7 @@ function goToLogin() {
 
 <template>
     <div class="confirm-email-page">
-        <h1 class="confirm-email-page__title">Подтверждение email</h1>
+        <ThePageHeader title="Подтверждение email" />
         <div
             v-if="loading"
             class="confirm-email-page__loading"
@@ -62,12 +63,12 @@ function goToLogin() {
                 <p class="confirm-email-page__error">
                     {{ errorMessage }}
                 </p>
-                <a-button
+                <TheButton
                     type="primary"
                     @click="goToLogin"
                 >
                     Перейти к входу
-                </a-button>
+                </TheButton>
             </template>
         </template>
     </div>
@@ -78,10 +79,6 @@ function goToLogin() {
     padding: 24px;
     max-width: 400px;
     margin: 0 auto;
-}
-
-.confirm-email-page__title {
-    margin-bottom: 24px;
 }
 
 .confirm-email-page__loading,

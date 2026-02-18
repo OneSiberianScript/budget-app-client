@@ -2,7 +2,7 @@ import axios, { type InternalAxiosRequestConfig } from 'axios'
 import { getActivePinia } from 'pinia'
 
 import { useSessionStore } from '@/entities/session/model/store'
-import type { SessionUser } from '@/entities/session/model/types'
+import type { AuthUser } from '@/entities/session/model/types'
 
 import { getMessage } from '@/shared/lib/message'
 
@@ -74,10 +74,16 @@ httpClient.interceptors.response.use(
             if (!refreshPromise) {
                 refreshPromise = (async () => {
                     try {
-                        const { data } = await refreshClient.post<{ accessToken: string; user: SessionUser }>(
-                            '/auth/refresh'
-                        )
-                        sessionStore.setSession(data.accessToken, data.user)
+                        const { data } = await refreshClient.post<{
+                            accessToken: string
+                            sessionId: string
+                            user?: AuthUser
+                        }>('/auth/refresh')
+                        if (data.user) {
+                            sessionStore.setSession(data.accessToken, data.user, data.sessionId)
+                        } else {
+                            sessionStore.setAccessToken(data.accessToken, data.sessionId)
+                        }
                         return true
                     } catch {
                         sessionStore.clearSession()

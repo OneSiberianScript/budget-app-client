@@ -3,29 +3,34 @@ import { ref, computed } from 'vue'
 
 import * as sessionApi from '../api'
 
-import type { SessionUser } from './types'
+import type { AuthUser } from './types'
 
 export const useSessionStore = defineStore('session', () => {
     const accessToken = ref<string | null>(null)
-    const user = ref<SessionUser | null>(null)
+    const sessionId = ref<string | null>(null)
+    const user = ref<AuthUser | null>(null)
 
     const isAuthenticated = computed(() => !!accessToken.value)
 
-    function setSession(token: string, userData: SessionUser) {
+    function setSession(token: string, userData: AuthUser, currentSessionId?: string) {
         accessToken.value = token
         user.value = userData
+        if (currentSessionId !== undefined) sessionId.value = currentSessionId
         try {
             sessionStorage.setItem('session_accessToken', token)
             sessionStorage.setItem('session_user', JSON.stringify(userData))
+            if (currentSessionId) sessionStorage.setItem('session_sessionId', currentSessionId)
         } catch {
             // ignore
         }
     }
 
-    function setAccessToken(token: string) {
+    function setAccessToken(token: string, currentSessionId?: string) {
         accessToken.value = token
+        if (currentSessionId !== undefined) sessionId.value = currentSessionId
         try {
             sessionStorage.setItem('session_accessToken', token)
+            if (currentSessionId) sessionStorage.setItem('session_sessionId', currentSessionId)
         } catch {
             // ignore
         }
@@ -33,9 +38,11 @@ export const useSessionStore = defineStore('session', () => {
 
     function clearSession() {
         accessToken.value = null
+        sessionId.value = null
         user.value = null
         try {
             sessionStorage.removeItem('session_accessToken')
+            sessionStorage.removeItem('session_sessionId')
             sessionStorage.removeItem('session_user')
         } catch {
             // ignore
@@ -46,9 +53,11 @@ export const useSessionStore = defineStore('session', () => {
         try {
             const token = sessionStorage.getItem('session_accessToken')
             const userJson = sessionStorage.getItem('session_user')
+            const sid = sessionStorage.getItem('session_sessionId')
             if (token && userJson) {
                 accessToken.value = token
-                user.value = JSON.parse(userJson) as SessionUser
+                user.value = JSON.parse(userJson) as AuthUser
+                if (sid) sessionId.value = sid
             }
         } catch {
             clearSession()
@@ -58,7 +67,7 @@ export const useSessionStore = defineStore('session', () => {
     async function refreshSession(): Promise<boolean> {
         try {
             const res = await sessionApi.refresh()
-            setSession(res.accessToken, res.user)
+            setAccessToken(res.accessToken, res.sessionId)
             return true
         } catch {
             clearSession()
@@ -68,6 +77,7 @@ export const useSessionStore = defineStore('session', () => {
 
     return {
         accessToken,
+        sessionId,
         user,
         isAuthenticated,
         setSession,

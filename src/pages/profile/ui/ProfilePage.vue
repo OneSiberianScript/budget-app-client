@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router'
 import { useSessionStore } from '@/entities/session'
 
 import { ROUTE_NAMES } from '@/shared/config/router'
-import { TheButton } from '@/shared/ui'
+import { TheButton, ThePageHeader } from '@/shared/ui'
 
 const router = useRouter()
 const sessionStore = useSessionStore()
@@ -22,7 +22,7 @@ function goToSessions() {
 
 <template>
     <div class="profile-page">
-        <h1 class="profile-page__title">Профиль</h1>
+        <ThePageHeader title="Профиль" />
 
         <section class="profile-page__section">
             <h2 class="profile-page__section-title">Данные пользователя</h2>
@@ -69,11 +69,6 @@ function goToSessions() {
     flex-direction: column;
     gap: 24px;
     min-height: 0;
-}
-
-.profile-page__title {
-    margin: 0;
-    font-size: 1.25rem;
 }
 
 .profile-page__section {

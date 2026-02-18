@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 
+import { AppNav } from '@/widgets/app-nav'
 import { BudgetSwitcher } from '@/widgets/budget-switcher'
 
 import { logout } from '@/entities/session/api'
 import { useSessionStore } from '@/entities/session/model/store'
 
 import { ROUTE_PATHS } from '@/shared/config/router'
+import { TheButton } from '@/shared/ui'
 
 const router = useRouter()
 const sessionStore = useSessionStore()
@@ -19,17 +21,19 @@ async function handleLogout() {
 
 <template>
     <div class="main-layout">
+        <AppNav />
         <header class="main-layout__header">
             <span>Budget App</span>
             <BudgetSwitcher
                 v-if="sessionStore.isAuthenticated"
                 class="main-layout__switcher"
             />
-            <a-button
+            <TheButton
                 v-if="sessionStore.isAuthenticated"
                 @click="handleLogout"
-                >Выйти</a-button
             >
+                Выйти
+            </TheButton>
         </header>
         <main class="main-layout__content">
             <slot />
@@ -54,5 +58,12 @@ async function handleLogout() {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    padding-bottom: calc(56px + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 768px) {
+    .main-layout__content {
+        padding-bottom: 0;
+    }
 }
 </style>

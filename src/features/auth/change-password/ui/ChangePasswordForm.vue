@@ -6,7 +6,7 @@ import { computed } from 'vue'
 import { changePassword } from '@/entities/session/api'
 
 import { message } from '@/shared/lib/message'
-import { TheInput } from '@/shared/ui'
+import { TheButton, TheInput } from '@/shared/ui'
 
 import { changePasswordFormSchema } from '../model/ChangePasswordForm.schema'
 import { changePasswordFormInitialValues } from '../model/ChangePasswordForm.types'
@@ -59,14 +59,14 @@ defineExpose({ submit: handleSubmit, resetForm })
             type="password"
             autocomplete="new-password"
         />
-        <a-button
+        <TheButton
             type="primary"
             html-type="submit"
             :loading="isSubmitting"
             :disabled="!canSubmit"
         >
             Сменить пароль
-        </a-button>
+        </TheButton>
     </form>
 </template>
 

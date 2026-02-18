@@ -1,4 +1,5 @@
 import { request } from '@/shared/api/request'
+import type { AccountCreate, AccountUpdate } from '@/shared/types'
 
 import type { Account } from '../model/types'
 
@@ -20,17 +21,14 @@ export async function fetchAccountById(id: string): Promise<Account> {
 /**
  * Create an account.
  */
-export async function createAccount(payload: { budgetId: string; name: string; currency: string }): Promise<Account> {
+export async function createAccount(payload: AccountCreate): Promise<Account> {
     return request<Account>({ method: 'POST', url: '/accounts', data: payload })
 }
 
 /**
  * Update an account.
  */
-export async function updateAccount(
-    id: string,
-    payload: Partial<Pick<Account, 'name' | 'currency'>>
-): Promise<Account> {
+export async function updateAccount(id: string, payload: AccountUpdate): Promise<Account> {
     return request<Account>({ method: 'PATCH', url: `/accounts/${id}`, data: payload })
 }
 
@@ -38,5 +36,5 @@ export async function updateAccount(
  * Delete an account.
  */
 export async function deleteAccount(id: string): Promise<void> {
-    await request({ method: 'DELETE', url: `/accounts/${id}` })
+    return request({ method: 'DELETE', url: `/accounts/${id}` })
 }
