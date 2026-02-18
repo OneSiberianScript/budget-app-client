@@ -47,11 +47,9 @@ const hasBudget = computed(() => !!budgetStore.currentBudgetId)
 const spentCents = computed(() => {
     const budgetId = budgetStore.currentBudgetId
     if (!budgetId) return 0
-    const rawCat = categoryStore.categories?.value ?? categoryStore.categories
-    const categories = Array.isArray(rawCat) ? rawCat : []
+    const categories = categoryStore.categories ?? []
     const expenseCategoryIds = new Set(categories.filter((c) => c.type === 'expense').map((c) => c.id))
-    const rawTx = transactionStore.transactions?.value ?? transactionStore.transactions
-    const transactions = Array.isArray(rawTx) ? rawTx : []
+    const transactions = transactionStore.transactions ?? []
     return transactions
         .filter((t) => t.budgetId === budgetId && expenseCategoryIds.has(t.categoryId))
         .reduce((sum, t) => sum + Math.round((parseFloat(t.amount) || 0) * 100), 0)
@@ -59,8 +57,7 @@ const spentCents = computed(() => {
 
 /** Сумма запланированного на месяц (лимиты по категориям, в копейках). plannedAmount в API — строка (рубли). */
 const plannedCents = computed(() => {
-    const rawItems = monthlyPlanStore.planItems?.value ?? monthlyPlanStore.planItems
-    const items = Array.isArray(rawItems) ? rawItems : []
+    const items = monthlyPlanStore.planItems ?? []
     return items.reduce((sum, i) => sum + Math.round((parseFloat(i.plannedAmount) || 0) * 100), 0)
 })
 
@@ -68,13 +65,11 @@ const plannedCents = computed(() => {
 const pieOption = computed(() => {
     const budgetId = budgetStore.currentBudgetId
     if (!budgetId) return null
-    const rawCatList = categoryStore.categories?.value ?? categoryStore.categories
-    const categoriesList = Array.isArray(rawCatList) ? rawCatList : []
+    const categoriesList = categoryStore.categories ?? []
     const expenseCategories = categoriesList.filter((c) => c.type === 'expense')
     const byId = Object.fromEntries(expenseCategories.map((c) => [c.id, c.name]))
     const sums: Record<string, number> = {}
-    const rawTxList = transactionStore.transactions?.value ?? transactionStore.transactions
-    const txList = Array.isArray(rawTxList) ? rawTxList : []
+    const txList = transactionStore.transactions ?? []
     for (const t of txList) {
         if (t.budgetId !== budgetId || !byId[t.categoryId]) continue
         const amountCents = Math.round((parseFloat(t.amount) || 0) * 100)

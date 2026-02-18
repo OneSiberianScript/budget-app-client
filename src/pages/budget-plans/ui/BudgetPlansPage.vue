@@ -38,8 +38,7 @@ const hasBudget = computed(() => !!budgetStore.currentBudgetId)
 
 /** Категории типа «расход» для выбора лимита */
 const expenseCategoryOptions = computed(() => {
-    const raw = categoryStore.categories?.value ?? categoryStore.categories
-    const list = Array.isArray(raw) ? raw : []
+    const list = categoryStore.categories ?? []
     return list.filter((c) => c.type === 'expense').map((c) => ({ label: c.name, value: c.id }))
 })
 
@@ -50,8 +49,7 @@ const columns = [
 ]
 
 function categoryName(categoryId: string) {
-    const raw = categoryStore.categories?.value ?? categoryStore.categories
-    const list = Array.isArray(raw) ? raw : []
+    const list = categoryStore.categories ?? []
     return list.find((c) => c.id === categoryId)?.name ?? categoryId
 }
 

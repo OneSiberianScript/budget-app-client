@@ -14,7 +14,7 @@ const loading = ref(true)
 
 /** Сессии с флагом текущей (вычисляется на фронте по sessionId). */
 const sessionsWithCurrent = computed(() => {
-    const currentId = sessionStore.sessionId?.value ?? sessionStore.sessionId ?? null
+    const currentId = sessionStore.sessionId ?? null
     const list = Array.isArray(sessions.value) ? sessions.value : []
     return list.map((s) => ({ ...s, current: !!currentId && s.id === currentId }))
 })
