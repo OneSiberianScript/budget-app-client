@@ -22,6 +22,12 @@ npm run dev
 
 В разработке бэкенд должен разрешать CORS для origin фронта (например http://localhost:5173) и отправлять cookies (`CORS_CREDENTIALS=true`).
 
+## Запуск в Docker
+
+Сборка выполняется через multi-stage Dockerfile (Node — сборка, nginx — раздача статики). Переменные `VITE_*` подставляются **на этапе сборки**: передавайте их как build-аргументы.
+
+При запуске через docker-compose из родительского репозитория задайте в `.env` рядом с `docker-compose.yml` переменные `VITE_API_BASE_URL` и `VITE_API_TIMEOUT_MS`; в compose у сервиса frontend должны быть указаны `build.args` с этими переменными. Файл `.env` в корне этого репозитория не коммитится (см. `.gitignore`).
+
 ## Скрипты
 
 | Команда                 | Описание                            |
