@@ -5,6 +5,9 @@ import * as sessionApi from '../api'
 
 import type { AuthUser } from './types'
 
+/** Ответ refresh (accessToken, sessionId, опционально user) */
+type RefreshResponse = { accessToken: string; sessionId: string; user?: AuthUser }
+
 export const useSessionStore = defineStore('session', () => {
     const accessToken = ref<string | null>(null)
     const sessionId = ref<string | null>(null)
@@ -16,58 +19,45 @@ export const useSessionStore = defineStore('session', () => {
         accessToken.value = token
         user.value = userData
         if (currentSessionId !== undefined) sessionId.value = currentSessionId
-        try {
-            sessionStorage.setItem('session_accessToken', token)
-            sessionStorage.setItem('session_user', JSON.stringify(userData))
-            if (currentSessionId) sessionStorage.setItem('session_sessionId', currentSessionId)
-        } catch {
-            // ignore
-        }
     }
 
     function setAccessToken(token: string, currentSessionId?: string) {
         accessToken.value = token
         if (currentSessionId !== undefined) sessionId.value = currentSessionId
-        try {
-            sessionStorage.setItem('session_accessToken', token)
-            if (currentSessionId) sessionStorage.setItem('session_sessionId', currentSessionId)
-        } catch {
-            // ignore
-        }
     }
 
     function clearSession() {
         accessToken.value = null
         sessionId.value = null
         user.value = null
-        try {
-            sessionStorage.removeItem('session_accessToken')
-            sessionStorage.removeItem('session_sessionId')
-            sessionStorage.removeItem('session_user')
-        } catch {
-            // ignore
-        }
     }
 
-    function hydrateFromStorage() {
+    /**
+     * Восстанавливает сессию при старте приложения (вызов refresh по cookie).
+     * Не вызывает clearSession и редирект при ошибке — только возвращает false.
+     */
+    async function restoreSession(): Promise<boolean> {
         try {
-            const token = sessionStorage.getItem('session_accessToken')
-            const userJson = sessionStorage.getItem('session_user')
-            const sid = sessionStorage.getItem('session_sessionId')
-            if (token && userJson) {
-                accessToken.value = token
-                user.value = JSON.parse(userJson) as AuthUser
-                if (sid) sessionId.value = sid
+            const res: RefreshResponse = await sessionApi.refresh()
+            if (res.user) {
+                setSession(res.accessToken, res.user, res.sessionId)
+            } else {
+                setAccessToken(res.accessToken, res.sessionId)
             }
+            return true
         } catch {
-            clearSession()
+            return false
         }
     }
 
     async function refreshSession(): Promise<boolean> {
         try {
-            const res = await sessionApi.refresh()
-            setAccessToken(res.accessToken, res.sessionId)
+            const res: RefreshResponse = await sessionApi.refresh()
+            if (res.user) {
+                setSession(res.accessToken, res.user, res.sessionId)
+            } else {
+                setAccessToken(res.accessToken, res.sessionId)
+            }
             return true
         } catch {
             clearSession()
@@ -83,7 +73,7 @@ export const useSessionStore = defineStore('session', () => {
         setSession,
         setAccessToken,
         clearSession,
-        hydrateFromStorage,
+        restoreSession,
         refreshSession
     }
 })

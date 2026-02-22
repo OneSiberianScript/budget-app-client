@@ -48,7 +48,7 @@ async function handleLogout() {
     flex-direction: column;
 }
 .main-layout__header {
-    padding: 16px 24px;
+    padding: 16px max(24px, env(safe-area-inset-right)) 16px max(24px, env(safe-area-inset-left));
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -58,6 +58,8 @@ async function handleLogout() {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
     padding-bottom: calc(56px + env(safe-area-inset-bottom));
 }
 

@@ -39,12 +39,15 @@ export async function register(payload: {
     })
 }
 
+/** Ответ refresh: бэкенд может дополнительно вернуть user */
+export type RefreshResponse = AuthRefreshResponse & { user?: AuthUser }
+
 /**
  * Обновление access-токена. Использует HttpOnly cookie (withCredentials).
- * Возвращает новый accessToken и sessionId (user не возвращается — хранимый в store не трогаем).
+ * Возвращает accessToken, sessionId и опционально user.
  */
-export async function refresh(): Promise<AuthRefreshResponse> {
-    return request<AuthRefreshResponse>({
+export async function refresh(): Promise<RefreshResponse> {
+    return request<RefreshResponse>({
         method: 'POST',
         url: '/auth/refresh',
         _suppressErrorNotification: true

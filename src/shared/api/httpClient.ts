@@ -86,10 +86,6 @@ httpClient.interceptors.response.use(
                         }
                         return true
                     } catch {
-                        sessionStore.clearSession()
-                        if (typeof window !== 'undefined') {
-                            window.location.href = '/auth/login'
-                        }
                         return false
                     } finally {
                         refreshPromise = null
@@ -101,6 +97,15 @@ httpClient.interceptors.response.use(
             if (refreshed) {
                 originalConfig._isRetry = true
                 return httpClient(originalConfig)
+            }
+            const msg = getMessage()
+            if (msg) {
+                msg.error('Сессия истекла. Войдите снова.')
+            }
+            ;(error as Error & { _sessionExpired?: boolean })._sessionExpired = true
+            sessionStore.clearSession()
+            if (typeof window !== 'undefined') {
+                window.location.href = '/auth/login'
             }
             return Promise.reject(error)
         }

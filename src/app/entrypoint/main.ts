@@ -23,11 +23,10 @@ app.use(router)
 app.use(Antd)
 
 const sessionStore = useSessionStore()
-sessionStore.hydrateFromStorage()
-
 const budgetStore = useBudgetStore()
 budgetStore.hydrateFromStorage()
 ;(async () => {
+    await sessionStore.restoreSession()
     await router.isReady()
     app.mount('#app')
 })()

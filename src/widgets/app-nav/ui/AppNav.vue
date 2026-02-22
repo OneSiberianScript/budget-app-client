@@ -46,6 +46,7 @@ function isItemActive(item: NavItem): boolean {
     align-items: center;
     justify-content: space-around;
     min-height: 56px;
+    padding-inline: max(8px, env(safe-area-inset-left)) max(8px, env(safe-area-inset-right));
     padding-bottom: env(safe-area-inset-bottom);
     background: var(--color-bg-container, #fff);
     border-top: 1px solid var(--color-border, #d9d9d9);
