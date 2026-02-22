@@ -4,6 +4,16 @@ import { visualizer } from 'rollup-plugin-visualizer'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
+    server: {
+        port: 5173,
+        proxy: {
+            // Все запросы на /api идут на бэкенд; в браузере origin остаётся localhost:5173
+            '/api': {
+                target: 'https://kkors.ru',
+                changeOrigin: true
+            }
+        }
+    },
     plugins: [
         vue(),
         process.env.NODE_ENV === 'analyze'

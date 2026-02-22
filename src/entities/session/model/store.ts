@@ -13,6 +13,9 @@ export const useSessionStore = defineStore('session', () => {
     const sessionId = ref<string | null>(null)
     const user = ref<AuthUser | null>(null)
 
+    /** Промис текущего restoreSession() — гард ждёт его перед редиректом на логин (устраняет гонку при первой навигации). */
+    const restorePromise = ref<Promise<boolean> | null>(null)
+
     const isAuthenticated = computed(() => !!accessToken.value)
 
     function setSession(token: string, userData: AuthUser, currentSessionId?: string) {
@@ -35,19 +38,26 @@ export const useSessionStore = defineStore('session', () => {
     /**
      * Восстанавливает сессию при старте приложения (вызов refresh по cookie).
      * Не вызывает clearSession и редирект при ошибке — только возвращает false.
+     * Промис сохраняется в restorePromise, чтобы гард мог дождаться завершения до редиректа на логин.
      */
     async function restoreSession(): Promise<boolean> {
-        try {
-            const res: RefreshResponse = await sessionApi.refresh()
-            if (res.user) {
-                setSession(res.accessToken, res.user, res.sessionId)
-            } else {
-                setAccessToken(res.accessToken, res.sessionId)
+        const promise = (async (): Promise<boolean> => {
+            try {
+                const res: RefreshResponse = await sessionApi.refresh()
+                if (res.user) {
+                    setSession(res.accessToken, res.user, res.sessionId)
+                } else {
+                    setAccessToken(res.accessToken, res.sessionId)
+                }
+                return true
+            } catch {
+                return false
+            } finally {
+                restorePromise.value = null
             }
-            return true
-        } catch {
-            return false
-        }
+        })()
+        restorePromise.value = promise
+        return promise
     }
 
     async function refreshSession(): Promise<boolean> {
@@ -70,6 +80,7 @@ export const useSessionStore = defineStore('session', () => {
         sessionId,
         user,
         isAuthenticated,
+        restorePromise,
         setSession,
         setAccessToken,
         clearSession,

@@ -20,7 +20,7 @@ npm run dev
 | `VITE_API_BASE_URL`   | Базовый URL API (бэкенд). Пример: `http://localhost:3000/api` |
 | `VITE_API_TIMEOUT_MS` | Таймаут запросов в мс (по умолчанию 5000)                     |
 
-В разработке бэкенд должен разрешать CORS для origin фронта (например http://localhost:5173) и отправлять cookies (`CORS_CREDENTIALS=true`).
+В разработке бэкенд должен разрешать CORS для origin фронта (например http://localhost:5173) и отправлять cookies (`CORS_CREDENTIALS=true`). Либо задайте `VITE_API_BASE_URL=/api` — запросы пойдут на same-origin и будут проксироваться на бэкенд (см. `vite.config.ts`), без CORS и с корректной отправкой cookies.
 
 ## Запуск в Docker
 
