@@ -9,7 +9,8 @@ export default defineConfig({
         proxy: {
             // Все запросы на /api идут на бэкенд; в браузере origin остаётся localhost:5173
             '/api': {
-                target: 'https://kkors.ru',
+                // target: 'https://kkors.ru',
+                target: 'http://localhost:3000',
                 changeOrigin: true
             }
         }

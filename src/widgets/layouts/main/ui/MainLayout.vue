@@ -43,6 +43,7 @@ async function handleLogout() {
 
 <style scoped>
 .main-layout {
+    height: 100dvh;
     min-height: 100dvh;
     display: flex;
     flex-direction: column;

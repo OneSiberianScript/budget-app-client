@@ -10,6 +10,7 @@
 
 <style scoped>
 .auth-layout {
+    height: 100dvh;
     min-height: 100dvh;
     display: flex;
     flex-direction: column;

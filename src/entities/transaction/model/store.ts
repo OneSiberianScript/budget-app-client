@@ -3,18 +3,15 @@ import { ref } from 'vue'
 
 import * as transactionApi from '../api'
 
-import { mockTransactions } from './mocks'
-
 import type { Transaction } from './types'
 
 export const useTransactionStore = defineStore('transaction', () => {
-    const transactions = ref<Transaction[]>([...mockTransactions])
+    const transactions = ref<Transaction[]>([])
 
     function setTransactions(list: Transaction[]) {
-        if (list.length)
-            transactions.value = Array.isArray(list)
-                ? list.filter((item): item is Transaction => item != null && typeof item === 'object' && 'id' in item)
-                : []
+        transactions.value = Array.isArray(list)
+            ? list.filter((item): item is Transaction => item != null && typeof item === 'object' && 'id' in item)
+            : []
     }
 
     function setTransaction(transaction: Transaction) {
