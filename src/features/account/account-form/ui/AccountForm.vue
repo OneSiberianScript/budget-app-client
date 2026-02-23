@@ -12,12 +12,12 @@ import type { AccountFormValues } from '../model/AccountForm.types'
 
 const props = withDefaults(defineProps<{ initialValues?: Partial<AccountFormValues> }>(), { initialValues: undefined })
 
-const { handleSubmit, meta, isSubmitting, resetForm } = useForm<AccountFormValues>({
+const { handleSubmit, isSubmitting, resetForm } = useForm<AccountFormValues>({
     validationSchema: toTypedSchema(accountFormSchema),
     initialValues: { ...accountFormInitialValues, ...props.initialValues }
 })
 
-const canSubmit = computed(() => meta.value.valid && !isSubmitting.value)
+const canSubmit = computed(() => !isSubmitting.value)
 
 const accountTypeOptions = [
     { label: 'Счёт', value: 'account' },

@@ -12,12 +12,12 @@ import type { BudgetFormValues } from '../model/BudgetForm.types'
 
 const props = withDefaults(defineProps<{ initialValues?: Partial<BudgetFormValues> }>(), { initialValues: undefined })
 
-const { handleSubmit, meta, isSubmitting, resetForm } = useForm<BudgetFormValues>({
+const { handleSubmit, isSubmitting, resetForm } = useForm<BudgetFormValues>({
     validationSchema: toTypedSchema(budgetFormSchema),
     initialValues: { ...budgetFormInitialValues, ...props.initialValues }
 })
 
-const canSubmit = computed(() => meta.value.valid && !isSubmitting.value)
+const canSubmit = computed(() => !isSubmitting.value)
 
 const emit = defineEmits<{ submit: [values: BudgetFormValues] }>()
 

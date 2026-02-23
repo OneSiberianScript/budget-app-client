@@ -20,12 +20,12 @@ import type { RegisterFormValues } from '../model/RegisterForm.types'
 const router = useRouter()
 const sessionStore = useSessionStore()
 
-const { handleSubmit, meta, isSubmitting } = useForm<RegisterFormValues>({
+const { handleSubmit, isSubmitting } = useForm<RegisterFormValues>({
     validationSchema: toTypedSchema(registerFormSchema),
     initialValues: registerFormInitialValues
 })
 
-const canSubmit = computed(() => meta.value.valid && !isSubmitting.value)
+const canSubmit = computed(() => !isSubmitting.value)
 
 const onSubmit = handleSubmit(async (values) => {
     try {

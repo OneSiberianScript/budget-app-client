@@ -19,12 +19,12 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), { initialValues: undefined })
 
-const { handleSubmit, meta, isSubmitting, resetForm } = useForm<TransactionFormValues>({
+const { handleSubmit, isSubmitting, resetForm } = useForm<TransactionFormValues>({
     validationSchema: toTypedSchema(transactionFormSchema),
     initialValues: { ...transactionFormInitialValues, ...props.initialValues }
 })
 
-const canSubmit = computed(() => meta.value.valid && !isSubmitting.value)
+const canSubmit = computed(() => !isSubmitting.value)
 
 const typeOptions = [
     { label: 'Расход', value: 'expense' },

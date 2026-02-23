@@ -12,12 +12,12 @@ import type { InviteFormValues } from '../model/InviteForm.types'
 
 const props = withDefaults(defineProps<{ initialValues?: Partial<InviteFormValues> }>(), { initialValues: undefined })
 
-const { handleSubmit, meta, isSubmitting, resetForm } = useForm<InviteFormValues>({
+const { handleSubmit, isSubmitting, resetForm } = useForm<InviteFormValues>({
     validationSchema: toTypedSchema(inviteFormSchema),
     initialValues: { ...inviteFormInitialValues, ...props.initialValues }
 })
 
-const canSubmit = computed(() => meta.value.valid && !isSubmitting.value)
+const canSubmit = computed(() => !isSubmitting.value)
 
 const roleOptions = [
     { label: 'Наблюдатель', value: 'viewer' },

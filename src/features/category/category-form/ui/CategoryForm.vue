@@ -18,12 +18,12 @@ const props = withDefaults(
     { initialValues: undefined }
 )
 
-const { handleSubmit, meta, isSubmitting, resetForm } = useForm<CategoryFormValues>({
+const { handleSubmit, isSubmitting, resetForm } = useForm<CategoryFormValues>({
     validationSchema: toTypedSchema(categoryFormSchema),
     initialValues: { ...categoryFormInitialValues, ...props.initialValues }
 })
 
-const canSubmit = computed(() => meta.value.valid && !isSubmitting.value)
+const canSubmit = computed(() => !isSubmitting.value)
 
 const typeOptions = [
     { label: 'Расход', value: 'expense' },

@@ -13,12 +13,12 @@ import { changePasswordFormInitialValues } from '../model/ChangePasswordForm.typ
 
 import type { ChangePasswordFormValues } from '../model/ChangePasswordForm.types'
 
-const { handleSubmit, meta, isSubmitting, resetForm } = useForm<ChangePasswordFormValues>({
+const { handleSubmit, isSubmitting, resetForm } = useForm<ChangePasswordFormValues>({
     validationSchema: toTypedSchema(changePasswordFormSchema),
     initialValues: changePasswordFormInitialValues
 })
 
-const canSubmit = computed(() => meta.value.valid && !isSubmitting.value)
+const canSubmit = computed(() => !isSubmitting.value)
 
 const emit = defineEmits<{ success: [] }>()
 

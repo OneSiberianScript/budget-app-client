@@ -20,12 +20,12 @@ import type { LoginFormValues } from '../model/LoginForm.types'
 const router = useRouter()
 const sessionStore = useSessionStore()
 
-const { handleSubmit, meta, isSubmitting } = useForm<LoginFormValues>({
+const { handleSubmit, isSubmitting } = useForm<LoginFormValues>({
     validationSchema: toTypedSchema(loginFormSchema),
     initialValues: loginFormInitialValues
 })
 
-const canSubmit = computed(() => meta.value.valid && !isSubmitting.value)
+const canSubmit = computed(() => !isSubmitting.value)
 
 const onSubmit = handleSubmit(async (values) => {
     try {

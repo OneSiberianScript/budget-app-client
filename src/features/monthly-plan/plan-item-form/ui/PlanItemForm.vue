@@ -17,12 +17,12 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), { initialValues: undefined })
 
-const { handleSubmit, meta, isSubmitting, resetForm } = useForm<PlanItemFormValues>({
+const { handleSubmit, isSubmitting, resetForm } = useForm<PlanItemFormValues>({
     validationSchema: toTypedSchema(planItemFormSchema),
     initialValues: { ...planItemFormInitialValues, ...props.initialValues }
 })
 
-const canSubmit = computed(() => meta.value.valid && !isSubmitting.value)
+const canSubmit = computed(() => !isSubmitting.value)
 
 const emit = defineEmits<{ submit: [values: PlanItemFormValues] }>()
 
