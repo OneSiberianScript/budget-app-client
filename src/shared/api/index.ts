@@ -1,5 +1,5 @@
 export { apiConfig } from './config'
-export { toApiError } from './errors'
+export { toApiError, ResendConfirmEmailRateLimitError } from './errors'
 export type { ApiError, ApiErrorBody } from './errors'
 export { httpClient } from './httpClient'
 export type { RequestConfig } from './httpClient'

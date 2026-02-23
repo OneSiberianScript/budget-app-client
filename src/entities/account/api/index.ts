@@ -4,11 +4,11 @@ import type { AccountCreate, AccountUpdate } from '@/shared/types'
 import type { Account } from '../model/types'
 
 /**
- * Fetch accounts for a budget.
+ * Fetch all accounts (openapi: GET /accounts has no query params). Filter by budgetId on the client.
  */
 export async function fetchAccounts(budgetId: string): Promise<Account[]> {
-    const data = await request<Account[]>({ method: 'GET', url: '/accounts', params: { budgetId } })
-    return data
+    const data = await request<Account[]>({ method: 'GET', url: '/accounts' })
+    return data.filter((a) => a.budgetId === budgetId)
 }
 
 /**

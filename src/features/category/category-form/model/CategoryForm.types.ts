@@ -7,5 +7,7 @@ export type CategoryFormValues = z.infer<typeof categoryFormSchema>
 export const categoryFormInitialValues: CategoryFormValues = {
     name: '',
     type: 'expense',
-    parentId: null
+    parentId: null,
+    color: null,
+    icon: null
 }

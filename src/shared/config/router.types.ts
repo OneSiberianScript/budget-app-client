@@ -27,6 +27,13 @@ export interface RouteNamedMap {
         Record<never, never>,
         never
     >
+    'confirm-email-required': RouteRecordInfo<
+        'confirm-email-required',
+        '/confirm-email-required',
+        Record<never, never>,
+        Record<never, never>,
+        never
+    >
     home: RouteRecordInfo<'home', '/', Record<never, never>, Record<never, never>, never>
     invitation: RouteRecordInfo<'invitation', '/invitation', Record<never, never>, Record<never, never>, never>
     login: RouteRecordInfo<'login', '/auth/login', Record<never, never>, Record<never, never>, never>

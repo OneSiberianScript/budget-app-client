@@ -47,7 +47,7 @@ npm run dev
 - `src/app` — инициализация приложения, провайдеры, роутер
 - `src/pages` — страницы (роуты)
 - `src/widgets` — композиции блоков (layout, budget-switcher)
-- `src/features` — сценарии (auth: login, register)
+- `src/features` — сценарии (auth: login, register, confirm-email по ссылке из письма, confirm-email-required при неподтверждённом email)
 - `src/entities` — сущности (session, account, budget, category, transaction и др.)
 - `src/shared` — API (httpClient, useApi, request), UI (The\*), lib (validation, confirm, message), config
 

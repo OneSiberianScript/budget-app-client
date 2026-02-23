@@ -6,8 +6,10 @@ export type TransactionFormValues = z.infer<typeof transactionFormSchema>
 
 export const transactionFormInitialValues: TransactionFormValues = {
     type: 'expense',
-    accountId: '',
+    debitAccountId: '',
+    creditAccountId: '',
     categoryId: '',
     amount: 0,
-    occurredAt: ''
+    occurredAt: '',
+    description: ''
 }

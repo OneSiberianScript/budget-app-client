@@ -25,6 +25,7 @@ const hasBudget = computed(() => !!budgetStore.currentBudgetId)
 const columns = [
     { title: 'Название', dataIndex: 'name', key: 'name' },
     { title: 'Тип', dataIndex: 'type', key: 'type', width: 120 },
+    { title: 'Цвет', dataIndex: 'color', key: 'color', width: 100 },
     { title: '', key: 'action', width: 160, align: 'right' as const }
 ]
 
@@ -132,6 +133,14 @@ watch(() => budgetStore.currentBudgetId, load)
                         <template v-if="column?.key === 'type'">
                             {{ typeLabel(record.type) }}
                         </template>
+                        <template v-else-if="column?.key === 'color'">
+                            <span
+                                v-if="(record as Category).color"
+                                class="categories-page__color"
+                                :style="{ backgroundColor: (record as Category).color! }"
+                            />
+                            <span v-else>—</span>
+                        </template>
                         <template v-else-if="column?.key === 'action'">
                             <span class="categories-page__actions">
                                 <TheButton
@@ -165,7 +174,13 @@ watch(() => budgetStore.currentBudgetId, load)
                 :key="editingCategory?.id ?? 'new'"
                 :initial-values="
                     editingCategory
-                        ? { name: editingCategory.name, type: editingCategory.type, parentId: editingCategory.parentId }
+                        ? {
+                              name: editingCategory.name,
+                              type: editingCategory.type,
+                              parentId: editingCategory.parentId,
+                              color: editingCategory.color,
+                              icon: editingCategory.icon
+                          }
                         : undefined
                 "
                 @submit="handleFormSubmit"
@@ -186,5 +201,13 @@ watch(() => budgetStore.currentBudgetId, load)
 .categories-page__actions {
     display: flex;
     gap: 8px;
+}
+
+.categories-page__color {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    vertical-align: middle;
 }
 </style>

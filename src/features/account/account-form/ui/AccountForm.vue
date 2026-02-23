@@ -20,10 +20,9 @@ const { handleSubmit, meta, isSubmitting, resetForm } = useForm<AccountFormValue
 const canSubmit = computed(() => meta.value.valid && !isSubmitting.value)
 
 const accountTypeOptions = [
-    { label: 'Наличные', value: 'cash' },
-    { label: 'Банк', value: 'bank' },
-    { label: 'Кредит', value: 'credit' },
-    { label: 'Накопительный', value: 'saving' }
+    { label: 'Счёт', value: 'account' },
+    { label: 'Карта', value: 'card' },
+    { label: 'Наличные', value: 'cash' }
 ]
 
 const emit = defineEmits<{ submit: [values: AccountFormValues] }>()
@@ -50,6 +49,16 @@ defineExpose({ submit: handleSubmit, resetForm })
             label="Тип счёта"
             placeholder="Выберите тип"
             :options="accountTypeOptions"
+        />
+        <TheInput
+            name="initialBalance"
+            label="Начальный баланс"
+            placeholder="0"
+        />
+        <TheInput
+            name="bank"
+            label="Банк"
+            placeholder="Название банка (необязательно)"
         />
         <TheButton
             type="primary"

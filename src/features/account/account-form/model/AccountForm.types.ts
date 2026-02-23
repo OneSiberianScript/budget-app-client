@@ -6,5 +6,7 @@ export type AccountFormValues = z.infer<typeof accountFormSchema>
 
 export const accountFormInitialValues: AccountFormValues = {
     name: '',
-    type: 'bank'
+    type: 'account',
+    initialBalance: '',
+    bank: null
 }

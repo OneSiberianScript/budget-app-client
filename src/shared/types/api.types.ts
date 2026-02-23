@@ -8,7 +8,7 @@
 export type BudgetMemberRole = 'owner' | 'editor' | 'viewer'
 export type BudgetInvitationRole = 'editor' | 'viewer'
 export type BudgetInvitationStatus = 'pending' | 'accepted' | 'rejected'
-export type AccountType = 'cash' | 'bank' | 'credit' | 'saving'
+export type AccountType = 'account' | 'card' | 'cash'
 export type CategoryType = 'expense' | 'income' | 'transfer' | 'saving'
 export type TransactionType = 'expense' | 'income' | 'transfer'
 
@@ -32,6 +32,7 @@ export interface AuthUser {
     email: string
     firstName: string
     lastName: string
+    emailConfirmedAt?: string | null
 }
 
 export interface Budget {
@@ -67,6 +68,9 @@ export interface Account {
     id: string
     name: string
     type: AccountType
+    initialBalance: string
+    currentBalance: string
+    bank: string | null
     budgetId: string
     createdAt: string
     updatedAt: string
@@ -79,6 +83,8 @@ export interface Category {
     type: CategoryType
     parentId: string | null
     budgetId: string
+    color: string | null
+    icon: string | null
     createdAt: string
     updatedAt: string
     deletedAt?: string | null
@@ -89,12 +95,14 @@ export interface Transaction {
     type: TransactionType
     amount: string
     occurredAt: string
+    description: string | null
     transferGroupId: string | null
     createdById: string
     updatedById: string | null
     budgetId: string
-    accountId: string
-    categoryId: string
+    debitAccountId: string | null
+    creditAccountId: string | null
+    categoryId: string | null
     createdAt: string
     updatedAt: string
     deletedAt?: string | null
@@ -130,6 +138,7 @@ export interface AuthRegisterResponse {
 export interface AuthLoginResponse {
     accessToken: string
     sessionId: string
+    user: AuthUser
 }
 
 export interface AuthRefreshResponse {
@@ -166,21 +175,38 @@ export type BudgetMemberUpdate = Pick<BudgetMember, 'role'>
 export type BudgetInvitationCreate = Pick<BudgetInvitation, 'budgetId' | 'email' | 'role'>
 export type BudgetInvitationUpdate = Partial<Pick<BudgetInvitation, 'role' | 'status'>>
 
-export type AccountCreate = Pick<Account, 'name' | 'type' | 'budgetId'>
-export type AccountUpdate = Partial<Pick<Account, 'name' | 'type'>>
+export type AccountCreate = Pick<Account, 'name' | 'type' | 'budgetId'> & {
+    initialBalance?: string
+    bank?: string | null
+}
+export type AccountUpdate = Partial<Pick<Account, 'name' | 'type' | 'initialBalance' | 'bank'>>
 
-export type CategoryCreate = Pick<Category, 'name' | 'type' | 'budgetId'> & { parentId?: string | null }
-export type CategoryUpdate = Partial<Pick<Category, 'name' | 'type' | 'parentId'>>
+export type CategoryCreate = Pick<Category, 'name' | 'type' | 'budgetId'> & {
+    parentId?: string | null
+    color?: string | null
+    icon?: string | null
+}
+export type CategoryUpdate = Partial<Pick<Category, 'name' | 'type' | 'parentId' | 'color' | 'icon'>>
 
-export type TransactionCreate = Pick<
-    Transaction,
-    'type' | 'amount' | 'occurredAt' | 'budgetId' | 'accountId' | 'categoryId'
-> & {
+export type TransactionCreate = Pick<Transaction, 'type' | 'amount' | 'occurredAt' | 'budgetId' | 'createdById'> & {
+    description?: string | null
     transferGroupId?: string | null
-    createdById: string
+    debitAccountId?: string | null
+    creditAccountId?: string | null
+    categoryId?: string | null
 }
 export type TransactionUpdate = Partial<
-    Pick<Transaction, 'type' | 'amount' | 'occurredAt' | 'accountId' | 'categoryId' | 'updatedById'>
+    Pick<
+        Transaction,
+        | 'type'
+        | 'amount'
+        | 'occurredAt'
+        | 'description'
+        | 'debitAccountId'
+        | 'creditAccountId'
+        | 'categoryId'
+        | 'updatedById'
+    >
 >
 
 export type MonthlyPlanCreate = Pick<MonthlyPlan, 'year' | 'month' | 'budgetId'>
@@ -194,8 +220,14 @@ export type MonthlyPlanItemUpdate = Partial<
 >
 
 // ============== Errors ==============
+// Нормализованный тип для приложения; сырой ответ бэкенда: { error: { code, message } }
 
 export interface ApiError {
+    code: string
     message: string
-    code?: string
+}
+
+/** Тело ответа 429 при POST /api/auth/resend-confirm-email (секунды до повтора). */
+export interface ResendConfirmEmail429Body {
+    retryAfter?: number
 }

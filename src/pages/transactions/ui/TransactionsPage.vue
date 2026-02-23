@@ -62,8 +62,10 @@ const columns = [
     { title: 'Тип', dataIndex: 'type', key: 'type', width: 90 },
     { title: 'Дата', dataIndex: 'occurredAt', key: 'occurredAt', width: 110 },
     { title: 'Сумма', dataIndex: 'amount', key: 'amount', width: 120 },
-    { title: 'Счёт', dataIndex: 'accountId', key: 'accountId' },
+    { title: 'Списание', dataIndex: 'debitAccountId', key: 'debitAccountId' },
+    { title: 'Зачисление', dataIndex: 'creditAccountId', key: 'creditAccountId' },
     { title: 'Категория', dataIndex: 'categoryId', key: 'categoryId' },
+    { title: 'Описание', dataIndex: 'description', key: 'description' },
     { title: '', key: 'action', width: 160, align: 'right' as const }
 ]
 
@@ -86,23 +88,31 @@ async function handleFormSubmit(values: TransactionFormValues) {
     const userId = sessionStore.user?.id
     if (!budgetId || !userId) return
     const amountStr = String(values.amount)
+    const debitId = values.debitAccountId || undefined
+    const creditId = values.creditAccountId || undefined
+    const categoryId = values.categoryId || undefined
+    const description = values.description?.trim() || null
     try {
         if (editingTransaction.value) {
             await updateTransaction(editingTransaction.value.id, {
                 type: values.type,
-                accountId: values.accountId,
-                categoryId: values.categoryId,
+                debitAccountId: debitId ?? null,
+                creditAccountId: creditId ?? null,
+                categoryId: categoryId ?? null,
                 amount: amountStr,
                 occurredAt: values.occurredAt,
+                description,
                 updatedById: userId
             })
             transactionStore.setTransaction({
                 ...editingTransaction.value,
                 type: values.type,
-                accountId: values.accountId,
-                categoryId: values.categoryId,
+                debitAccountId: debitId ?? null,
+                creditAccountId: creditId ?? null,
+                categoryId: categoryId ?? null,
                 amount: amountStr,
                 occurredAt: values.occurredAt,
+                description,
                 updatedById: userId
             } as Transaction)
             message.success('Транзакция обновлена')
@@ -110,10 +120,12 @@ async function handleFormSubmit(values: TransactionFormValues) {
             const created = await createTransaction({
                 type: values.type,
                 budgetId,
-                accountId: values.accountId,
-                categoryId: values.categoryId,
+                debitAccountId: debitId ?? null,
+                creditAccountId: creditId ?? null,
+                categoryId: categoryId ?? null,
                 amount: amountStr,
                 occurredAt: values.occurredAt,
+                description,
                 createdById: userId
             })
             transactionStore.setTransaction(created as Transaction)
@@ -201,11 +213,29 @@ watch(() => budgetStore.currentBudgetId, load)
                         <template v-else-if="column?.key === 'amount'">
                             {{ (record as Transaction).amount }}
                         </template>
-                        <template v-else-if="column?.key === 'accountId'">
-                            {{ accountName(record.accountId) }}
+                        <template v-else-if="column?.key === 'debitAccountId'">
+                            {{
+                                (record as Transaction).debitAccountId
+                                    ? accountName((record as Transaction).debitAccountId!)
+                                    : '—'
+                            }}
+                        </template>
+                        <template v-else-if="column?.key === 'creditAccountId'">
+                            {{
+                                (record as Transaction).creditAccountId
+                                    ? accountName((record as Transaction).creditAccountId!)
+                                    : '—'
+                            }}
                         </template>
                         <template v-else-if="column?.key === 'categoryId'">
-                            {{ categoryName(record.categoryId) }}
+                            {{
+                                (record as Transaction).categoryId
+                                    ? categoryName((record as Transaction).categoryId!)
+                                    : '—'
+                            }}
+                        </template>
+                        <template v-else-if="column?.key === 'description'">
+                            {{ (record as Transaction).description ?? '—' }}
                         </template>
                         <template v-else-if="column?.key === 'action'">
                             <span class="transactions-page__actions">
@@ -244,10 +274,12 @@ watch(() => budgetStore.currentBudgetId, load)
                     editingTransaction
                         ? {
                               type: editingTransaction.type,
-                              accountId: editingTransaction.accountId,
-                              categoryId: editingTransaction.categoryId,
+                              debitAccountId: editingTransaction.debitAccountId ?? '',
+                              creditAccountId: editingTransaction.creditAccountId ?? '',
+                              categoryId: editingTransaction.categoryId ?? '',
                               amount: parseFloat(editingTransaction.amount) || 0,
-                              occurredAt: editingTransaction.occurredAt.slice(0, 10)
+                              occurredAt: editingTransaction.occurredAt.slice(0, 10),
+                              description: editingTransaction.description ?? ''
                           }
                         : defaultTransactionInitials()
                 "

@@ -32,7 +32,7 @@ onMounted(async () => {
         }, 2000)
     } catch {
         success.value = false
-        errorMessage.value = 'Не удалось подтвердить email. Ссылка могла устареть.'
+        errorMessage.value = 'Ссылка недействительна или истекла.'
     } finally {
         loading.value = false
     }

@@ -30,12 +30,6 @@ export async function revokeBudgetInvitation(id: string): Promise<void> {
 }
 
 /**
- * Accept an invitation by token (from email link).
+ * Приём приглашения по токену в openapi.yaml не описан — эндпоинт accept отсутствует в спецификации.
+ * При появлении эндпоинта в спецификации реализовать вызов здесь.
  */
-export async function acceptBudgetInvitation(token: string): Promise<{ budgetId: string }> {
-    return request<{ budgetId: string }>({
-        method: 'POST',
-        url: '/budget-invitations/accept',
-        data: { token }
-    })
-}

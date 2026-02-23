@@ -1,22 +1,14 @@
+import { ResendConfirmEmailRateLimitError } from '@/shared/api/errors'
 import { request } from '@/shared/api/request'
-import type {
-    AuthLoginResponse,
-    AuthRefreshResponse,
-    AuthRegisterResponse,
-    AuthUser,
-    SessionInfo
-} from '@/shared/types'
-
-/** Ответ login: бэкенд может дополнительно вернуть user */
-export type LoginResponse = AuthLoginResponse & { user?: AuthUser }
+import type { AuthLoginResponse, AuthRefreshResponse, AuthRegisterResponse, SessionInfo, User } from '@/shared/types'
 
 /**
- * Вход. При успехе возвращает accessToken, sessionId и опционально user.
+ * Вход. Ответ содержит accessToken, sessionId и user (в т.ч. emailConfirmedAt).
  * @param email - Email
  * @param password - Пароль
  */
-export async function login(email: string, password: string): Promise<LoginResponse> {
-    return request<LoginResponse>({
+export async function login(email: string, password: string): Promise<AuthLoginResponse> {
+    return request<AuthLoginResponse>({
         method: 'POST',
         url: '/auth/login',
         data: { email, password }
@@ -39,15 +31,12 @@ export async function register(payload: {
     })
 }
 
-/** Ответ refresh: бэкенд может дополнительно вернуть user */
-export type RefreshResponse = AuthRefreshResponse & { user?: AuthUser }
-
 /**
  * Обновление access-токена. Использует HttpOnly cookie (withCredentials).
- * Возвращает accessToken, sessionId и опционально user.
+ * По openapi ответ — только accessToken, sessionId.
  */
-export async function refresh(): Promise<RefreshResponse> {
-    return request<RefreshResponse>({
+export async function refresh(): Promise<AuthRefreshResponse> {
+    return request<AuthRefreshResponse>({
         method: 'POST',
         url: '/auth/refresh',
         _suppressErrorNotification: true
@@ -74,6 +63,32 @@ export async function confirmEmail(token: string): Promise<void> {
         url: '/auth/confirm-email',
         data: { token }
     })
+}
+
+/**
+ * Текущий пользователь (данные авторизованного, в т.ч. emailConfirmedAt). Требуется access-токен.
+ */
+export async function getCurrentUser(): Promise<User> {
+    return request<User>({ method: 'GET', url: '/users/me' })
+}
+
+/**
+ * Повторная отправка письма с подтверждением email. При 429 бросает ResendConfirmEmailRateLimitError с retryAfter.
+ */
+export async function resendConfirmEmail(): Promise<void> {
+    try {
+        await request({
+            method: 'POST',
+            url: '/auth/resend-confirm-email',
+            _suppressErrorNotification: true
+        })
+    } catch (err: unknown) {
+        const res = (err as { response?: { status?: number; data?: { retryAfter?: number } } }).response
+        if (res?.status === 429) {
+            throw new ResendConfirmEmailRateLimitError(res.data?.retryAfter)
+        }
+        throw err
+    }
 }
 
 /**

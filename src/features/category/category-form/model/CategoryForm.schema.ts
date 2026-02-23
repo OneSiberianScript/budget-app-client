@@ -7,5 +7,7 @@ const categoryType = z.enum(['income', 'expense', 'transfer', 'saving'], { messa
 export const categoryFormSchema = z.object({
     name: nameField,
     type: categoryType,
-    parentId: z.string().nullable().optional()
+    parentId: z.string().nullable().optional(),
+    color: z.string().nullable().optional(),
+    icon: z.string().nullable().optional()
 })

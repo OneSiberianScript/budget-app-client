@@ -20,6 +20,12 @@ export default [
         meta: { requiresAuth: false, layout: 'auth', title: 'Подтверждение email' }
     },
     {
+        path: ROUTE_PATHS.CONFIRM_EMAIL_REQUIRED,
+        name: ROUTE_NAMES.CONFIRM_EMAIL_REQUIRED,
+        component: () => import('@/pages/auth/ui/ConfirmEmailRequiredPage.vue'),
+        meta: { requiresAuth: true, layout: 'auth', title: 'Подтвердите почту' }
+    },
+    {
         path: ROUTE_PATHS.HOME,
         name: ROUTE_NAMES.HOME,
         component: () => import('@/pages/home/ui/HomePage.vue'),

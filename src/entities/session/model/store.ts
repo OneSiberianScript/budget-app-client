@@ -1,12 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
+import type { User } from '@/shared/types'
+
 import * as sessionApi from '../api'
 
 import type { AuthUser } from './types'
-
-/** Ответ refresh (accessToken, sessionId, опционально user) */
-type RefreshResponse = { accessToken: string; sessionId: string; user?: AuthUser }
 
 export const useSessionStore = defineStore('session', () => {
     const accessToken = ref<string | null>(null)
@@ -17,6 +16,8 @@ export const useSessionStore = defineStore('session', () => {
     const restorePromise = ref<Promise<boolean> | null>(null)
 
     const isAuthenticated = computed(() => !!accessToken.value)
+
+    const isEmailConfirmed = computed(() => user.value?.emailConfirmedAt != null)
 
     function setSession(token: string, userData: AuthUser, currentSessionId?: string) {
         accessToken.value = token
@@ -29,6 +30,11 @@ export const useSessionStore = defineStore('session', () => {
         if (currentSessionId !== undefined) sessionId.value = currentSessionId
     }
 
+    /** Сохраняет/обновляет текущего пользователя (без смены токена). */
+    function setUser(userData: AuthUser | User | null) {
+        user.value = userData
+    }
+
     function clearSession() {
         accessToken.value = null
         sessionId.value = null
@@ -36,21 +42,20 @@ export const useSessionStore = defineStore('session', () => {
     }
 
     /**
-     * Восстанавливает сессию при старте приложения (вызов refresh по cookie).
+     * Восстанавливает сессию при старте приложения (refresh по cookie + GET /users/me).
      * Не вызывает clearSession и редирект при ошибке — только возвращает false.
      * Промис сохраняется в restorePromise, чтобы гард мог дождаться завершения до редиректа на логин.
      */
     async function restoreSession(): Promise<boolean> {
         const promise = (async (): Promise<boolean> => {
             try {
-                const res: RefreshResponse = await sessionApi.refresh()
-                if (res.user) {
-                    setSession(res.accessToken, res.user, res.sessionId)
-                } else {
-                    setAccessToken(res.accessToken, res.sessionId)
-                }
+                const res = await sessionApi.refresh()
+                setAccessToken(res.accessToken, res.sessionId)
+                const me = await sessionApi.getCurrentUser()
+                setUser(me)
                 return true
             } catch {
+                clearSession()
                 return false
             } finally {
                 restorePromise.value = null
@@ -62,12 +67,8 @@ export const useSessionStore = defineStore('session', () => {
 
     async function refreshSession(): Promise<boolean> {
         try {
-            const res: RefreshResponse = await sessionApi.refresh()
-            if (res.user) {
-                setSession(res.accessToken, res.user, res.sessionId)
-            } else {
-                setAccessToken(res.accessToken, res.sessionId)
-            }
+            const res = await sessionApi.refresh()
+            setAccessToken(res.accessToken, res.sessionId)
             return true
         } catch {
             clearSession()
@@ -80,9 +81,11 @@ export const useSessionStore = defineStore('session', () => {
         sessionId,
         user,
         isAuthenticated,
+        isEmailConfirmed,
         restorePromise,
         setSession,
         setAccessToken,
+        setUser,
         clearSession,
         restoreSession,
         refreshSession

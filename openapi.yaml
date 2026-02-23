@@ -1,0 +1,1600 @@
+openapi: 3.0.3
+info:
+  title: Budget App API
+  description: API сервера приложения учёта бюджета. Типы и контракты соответствуют api-types.ts и api-contracts.ts.
+  version: 1.0.0
+
+servers:
+  - url: /api
+    description: Base API path (mount point)
+
+tags:
+  - name: Main
+    description: Корневой эндпоинт
+  - name: Auth
+    description: Регистрация, логин, refresh, сессии, смена пароля, подтверждение email
+  - name: Users
+    description: Пользователи
+  - name: Budgets
+    description: Бюджеты
+  - name: Accounts
+    description: Счета
+  - name: Categories
+    description: Категории
+  - name: Transactions
+    description: Транзакции
+  - name: Budget Members
+    description: Участники бюджета
+  - name: Budget Invitations
+    description: Приглашения в бюджет
+  - name: Monthly Plans
+    description: Месячные планы
+  - name: Monthly Plan Items
+    description: Пункты месячного плана
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Access token (JWT). Заголовок Authorization Bearer &lt;token&gt;
+
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      description: UUID сущности
+      schema:
+        type: string
+        format: uuid
+    sessionId:
+      name: sessionId
+      in: path
+      required: true
+      description: Идентификатор сессии для отзыва
+      schema:
+        type: string
+        format: uuid
+    budgetIdQuery:
+      name: budgetId
+      in: query
+      required: true
+      description: ID бюджета для фильтрации списка
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    ApiError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              description: Код ошибки (например NOT_FOUND, BAD_REQUEST)
+            message:
+              type: string
+              description: Сообщение об ошибке
+
+    BudgetMemberRole:
+      type: string
+      enum: [owner, editor, viewer]
+    BudgetInvitationRole:
+      type: string
+      enum: [editor, viewer]
+    BudgetInvitationStatus:
+      type: string
+      enum: [pending, accepted, rejected]
+    AccountType:
+      type: string
+      enum: [account, card, cash]
+    CategoryType:
+      type: string
+      enum: [expense, income, transfer, saving]
+    TransactionType:
+      type: string
+      enum: [expense, income, transfer]
+
+    User:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        firstName: { type: string }
+        lastName: { type: string }
+        phone: { type: string, nullable: true }
+        telegram: { type: string, nullable: true }
+        emailConfirmedAt: { type: string, format: date-time, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    AuthUser:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        firstName: { type: string }
+        lastName: { type: string }
+        emailConfirmedAt: { type: string, format: date-time, nullable: true }
+
+    Budget:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        currency: { type: string }
+        initialBalance: { type: string, description: "Денежная сумма в виде строки" }
+        ownerId: { type: string, format: uuid }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    BudgetMember:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        role: { $ref: '#/components/schemas/BudgetMemberRole' }
+        budgetId: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    BudgetInvitation:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        role: { $ref: '#/components/schemas/BudgetInvitationRole' }
+        status: { $ref: '#/components/schemas/BudgetInvitationStatus' }
+        budgetId: { type: string, format: uuid }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    Account:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        type: { $ref: '#/components/schemas/AccountType' }
+        initialBalance: { type: string, description: "Денежная сумма в виде строки" }
+        currentBalance: { type: string, description: "Денежная сумма в виде строки" }
+        bank: { type: string, nullable: true }
+        budgetId: { type: string, format: uuid }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        deletedAt: { type: string, format: date-time, nullable: true }
+
+    Category:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        type: { $ref: '#/components/schemas/CategoryType' }
+        parentId: { type: string, format: uuid, nullable: true }
+        budgetId: { type: string, format: uuid }
+        color: { type: string, nullable: true }
+        icon: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        deletedAt: { type: string, format: date-time, nullable: true }
+
+    Transaction:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        type: { $ref: '#/components/schemas/TransactionType' }
+        amount: { type: string, description: "Сумма в виде строки" }
+        occurredAt: { type: string, format: date-time }
+        description: { type: string, nullable: true }
+        transferGroupId: { type: string, format: uuid, nullable: true }
+        createdById: { type: string, format: uuid }
+        updatedById: { type: string, format: uuid, nullable: true }
+        budgetId: { type: string, format: uuid }
+        debitAccountId: { type: string, format: uuid, nullable: true, description: "Счёт списания (расход, перевод)" }
+        creditAccountId: { type: string, format: uuid, nullable: true, description: "Счёт пополнения (доход, перевод)" }
+        categoryId: { type: string, format: uuid, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        deletedAt: { type: string, format: date-time, nullable: true }
+
+    MonthlyPlan:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        year: { type: integer }
+        month: { type: integer }
+        budgetId: { type: string, format: uuid }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    MonthlyPlanItem:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        plannedAmount: { type: string }
+        actualAmountSnapshot: { type: string, nullable: true }
+        monthlyPlanId: { type: string, format: uuid }
+        categoryId: { type: string, format: uuid }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    SessionInfo:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        createdAt: { type: string, format: date-time }
+        lastUsedAt: { type: string, format: date-time, nullable: true }
+        userAgent: { type: string, nullable: true }
+        ip: { type: string, nullable: true }
+        expiresAt: { type: string, format: date-time }
+
+    AuthRegisterResponse:
+      type: object
+      properties:
+        accessToken: { type: string }
+        sessionId: { type: string }
+        user: { $ref: '#/components/schemas/AuthUser' }
+
+    AuthLoginResponse:
+      type: object
+      properties:
+        accessToken: { type: string }
+        sessionId: { type: string }
+        user: { $ref: '#/components/schemas/AuthUser' }
+
+    AuthRefreshResponse:
+      type: object
+      properties:
+        accessToken: { type: string }
+        sessionId: { type: string }
+
+    AuthChangePasswordResponse:
+      type: object
+      properties:
+        accessToken: { type: string }
+        sessionId: { type: string }
+
+    AuthRegisterRequest:
+      type: object
+      required: [email, password, firstName, lastName]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+        firstName: { type: string }
+        lastName: { type: string }
+
+    AuthLoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+
+    AuthChangePasswordRequest:
+      type: object
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword: { type: string }
+        newPassword: { type: string }
+
+    AuthConfirmEmailRequest:
+      type: object
+      required: [token]
+      properties:
+        token: { type: string }
+
+    UserCreate:
+      type: object
+      required: [email, password, firstName, lastName]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+        firstName: { type: string }
+        lastName: { type: string }
+
+    UserUpdate:
+      type: object
+      properties:
+        firstName: { type: string }
+        lastName: { type: string }
+        phone: { type: string, nullable: true }
+        telegram: { type: string, nullable: true }
+
+    BudgetCreate:
+      type: object
+      required: [name, currency]
+      properties:
+        name: { type: string }
+        currency: { type: string }
+        initialBalance: { type: string, description: "Опционально" }
+
+    BudgetUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        currency: { type: string }
+        initialBalance: { type: string }
+
+    BudgetMemberCreate:
+      type: object
+      required: [budgetId, userId, role]
+      properties:
+        budgetId: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        role: { $ref: '#/components/schemas/BudgetMemberRole' }
+
+    BudgetMemberUpdate:
+      type: object
+      required: [role]
+      properties:
+        role: { $ref: '#/components/schemas/BudgetMemberRole' }
+
+    BudgetInvitationCreate:
+      type: object
+      required: [budgetId, email, role]
+      properties:
+        budgetId: { type: string, format: uuid }
+        email: { type: string, format: email }
+        role: { $ref: '#/components/schemas/BudgetInvitationRole' }
+
+    BudgetInvitationUpdate:
+      type: object
+      properties:
+        role: { $ref: '#/components/schemas/BudgetInvitationRole' }
+        status: { $ref: '#/components/schemas/BudgetInvitationStatus' }
+
+    AccountCreate:
+      type: object
+      required: [name, type, budgetId]
+      properties:
+        name: { type: string }
+        type: { $ref: '#/components/schemas/AccountType' }
+        initialBalance: { type: string, description: "Опционально, по умолчанию 0" }
+        bank: { type: string, nullable: true }
+        budgetId: { type: string, format: uuid }
+
+    AccountUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        type: { $ref: '#/components/schemas/AccountType' }
+        initialBalance: { type: string }
+        bank: { type: string, nullable: true }
+
+    CategoryCreate:
+      type: object
+      required: [name, type, budgetId]
+      properties:
+        name: { type: string }
+        type: { $ref: '#/components/schemas/CategoryType' }
+        budgetId: { type: string, format: uuid }
+        parentId: { type: string, format: uuid, nullable: true }
+        color: { type: string, nullable: true }
+        icon: { type: string, nullable: true }
+
+    CategoryUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        type: { $ref: '#/components/schemas/CategoryType' }
+        parentId: { type: string, format: uuid, nullable: true }
+        color: { type: string, nullable: true }
+        icon: { type: string, nullable: true }
+
+    TransactionCreate:
+      type: object
+      required: [type, amount, occurredAt, budgetId, createdById]
+      properties:
+        type: { $ref: '#/components/schemas/TransactionType' }
+        amount: { type: string }
+        occurredAt: { type: string, format: date-time }
+        description: { type: string, nullable: true }
+        transferGroupId: { type: string, format: uuid, nullable: true }
+        budgetId: { type: string, format: uuid }
+        debitAccountId: { type: string, format: uuid, nullable: true }
+        creditAccountId: { type: string, format: uuid, nullable: true }
+        categoryId: { type: string, format: uuid, nullable: true }
+        createdById: { type: string, format: uuid }
+
+    TransactionUpdate:
+      type: object
+      properties:
+        type: { $ref: '#/components/schemas/TransactionType' }
+        amount: { type: string }
+        occurredAt: { type: string, format: date-time }
+        description: { type: string, nullable: true }
+        debitAccountId: { type: string, format: uuid, nullable: true }
+        creditAccountId: { type: string, format: uuid, nullable: true }
+        categoryId: { type: string, format: uuid, nullable: true }
+        updatedById: { type: string, format: uuid, nullable: true }
+
+    MonthlyPlanCreate:
+      type: object
+      required: [year, month, budgetId]
+      properties:
+        year: { type: integer }
+        month: { type: integer }
+        budgetId: { type: string, format: uuid }
+
+    MonthlyPlanUpdate:
+      type: object
+      properties:
+        year: { type: integer }
+        month: { type: integer }
+
+    MonthlyPlanItemCreate:
+      type: object
+      required: [plannedAmount, monthlyPlanId, categoryId]
+      properties:
+        plannedAmount: { type: string }
+        actualAmountSnapshot: { type: string, nullable: true }
+        monthlyPlanId: { type: string, format: uuid }
+        categoryId: { type: string, format: uuid }
+
+    MonthlyPlanItemUpdate:
+      type: object
+      properties:
+        plannedAmount: { type: string }
+        actualAmountSnapshot: { type: string, nullable: true }
+        categoryId: { type: string, format: uuid }
+
+  responses:
+    ApiError400:
+      description: Bad request
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    ApiError401:
+      description: Unauthorized
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    ApiError403:
+      description: Forbidden
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    ApiError404:
+      description: Not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    ApiError409:
+      description: Conflict (e.g. email already in use)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+    ApiError500:
+      description: Internal server error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ApiError' }
+
+paths:
+  /:
+    get:
+      tags: [Main]
+      summary: Корневой эндпоинт API
+      description: Возвращает plain text (приветствие или статус).
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema: { type: string }
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Регистрация пользователя
+      description: После успешной регистрации на email пользователя отправляется письмо со ссылкой для подтверждения (см. POST /auth/confirm-email).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AuthRegisterRequest' }
+      responses:
+        '201':
+          description: Пользователь создан, возвращаются токены и данные пользователя
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthRegisterResponse' }
+        '400':
+          $ref: '#/components/responses/ApiError400'
+        '409':
+          $ref: '#/components/responses/ApiError409'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Вход по email и паролю
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AuthLoginRequest' }
+      responses:
+        '200':
+          description: Успешный вход
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthLoginResponse' }
+        '400':
+          $ref: '#/components/responses/ApiError400'
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Обновление access-токена по refresh-токену из cookie
+      description: Тело не требуется. Refresh-токен передаётся в HttpOnly cookie.
+      responses:
+        '200':
+          description: Новый access-токен и sessionId
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthRefreshResponse' }
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Выход из текущей сессии
+      description: Ревокация refresh-сессии по cookie. Тело не требуется.
+      responses:
+        '204':
+          description: Успешный выход
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /auth/sessions:
+    get:
+      tags: [Auth]
+      summary: Список активных сессий пользователя
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Список сессий
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/SessionInfo' }
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    delete:
+      tags: [Auth]
+      summary: Завершить все сессии кроме текущей
+      description: Текущая сессия определяется по refresh-cookie. Тело не требуется.
+      responses:
+        '204':
+          description: Успешно
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /auth/sessions/{sessionId}:
+    delete:
+      tags: [Auth]
+      summary: Отозвать конкретную сессию
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/sessionId'
+      responses:
+        '204':
+          description: Сессия отозвана
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '403':
+          $ref: '#/components/responses/ApiError403'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /auth/change-password:
+    post:
+      tags: [Auth]
+      summary: Смена пароля
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AuthChangePasswordRequest' }
+      responses:
+        '200':
+          description: Пароль изменён, возвращаются новые токены
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthChangePasswordResponse' }
+        '400':
+          $ref: '#/components/responses/ApiError400'
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /auth/confirm-email:
+    post:
+      tags: [Auth]
+      summary: Подтверждение email по токену из письма
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AuthConfirmEmailRequest' }
+      responses:
+        '204':
+          description: Email подтверждён
+        '400':
+          $ref: '#/components/responses/ApiError400'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /auth/resend-confirm-email:
+    post:
+      tags: [Auth]
+      summary: Повторная отправка письма с подтверждением email
+      description: Требуется авторизация. Не чаще одного раза в 60 секунд на пользователя.
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204':
+          description: Письмо отправлено
+        '400':
+          $ref: '#/components/responses/ApiError400'
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '429':
+          description: Слишком частый запрос, повторите позже (retryAfter в теле ответа)
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /users:
+    get:
+      tags: [Users]
+      summary: Список всех пользователей
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Список пользователей
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/User' }
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    post:
+      tags: [Users]
+      summary: Создать пользователя
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserCreate' }
+      responses:
+        '201':
+          description: Пользователь создан
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '400':
+          $ref: '#/components/responses/ApiError400'
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Текущий пользователь
+      description: Возвращает данные авторизованного пользователя (в т.ч. emailConfirmedAt). Требуется access-токен.
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Текущий пользователь
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /users/{id}:
+    get:
+      tags: [Users]
+      summary: Получить пользователя по ID
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: Пользователь
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    patch:
+      tags: [Users]
+      summary: Обновить пользователя
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserUpdate' }
+      responses:
+        '200':
+          description: Обновлённый пользователь
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '400':
+          $ref: '#/components/responses/ApiError400'
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    delete:
+      tags: [Users]
+      summary: Удалить пользователя
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '204':
+          description: Пользователь удалён
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /budgets:
+    get:
+      tags: [Budgets]
+      summary: Список бюджетов текущего пользователя
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Список бюджетов
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Budget' }
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    post:
+      tags: [Budgets]
+      summary: Создать бюджет
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BudgetCreate' }
+      responses:
+        '201':
+          description: Бюджет создан
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Budget' }
+        '400':
+          $ref: '#/components/responses/ApiError400'
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /budgets/{id}:
+    get:
+      tags: [Budgets]
+      summary: Получить бюджет по ID
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: Бюджет
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Budget' }
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '403':
+          $ref: '#/components/responses/ApiError403'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    patch:
+      tags: [Budgets]
+      summary: Обновить бюджет
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BudgetUpdate' }
+      responses:
+        '200':
+          description: Обновлённый бюджет
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Budget' }
+        '400':
+          $ref: '#/components/responses/ApiError400'
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '403':
+          $ref: '#/components/responses/ApiError403'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    delete:
+      tags: [Budgets]
+      summary: Удалить бюджет
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '204':
+          description: Бюджет удалён
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '403':
+          $ref: '#/components/responses/ApiError403'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /accounts:
+    get:
+      tags: [Accounts]
+      summary: Список счетов
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Список счетов
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Account' }
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    post:
+      tags: [Accounts]
+      summary: Создать счёт
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AccountCreate' }
+      responses:
+        '201':
+          description: Счёт создан
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Account' }
+        '400':
+          $ref: '#/components/responses/ApiError400'
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /accounts/{id}:
+    get:
+      tags: [Accounts]
+      summary: Получить счёт по ID
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: Счёт
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Account' }
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    patch:
+      tags: [Accounts]
+      summary: Обновить счёт
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AccountUpdate' }
+      responses:
+        '200':
+          description: Обновлённый счёт
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Account' }
+        '400':
+          $ref: '#/components/responses/ApiError400'
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    delete:
+      tags: [Accounts]
+      summary: Удалить счёт
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '204':
+          description: Счёт удалён
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /categories:
+    get:
+      tags: [Categories]
+      summary: Список категорий
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Список категорий
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Category' }
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    post:
+      tags: [Categories]
+      summary: Создать категорию
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CategoryCreate' }
+      responses:
+        '201':
+          description: Категория создана
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+        '400':
+          $ref: '#/components/responses/ApiError400'
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /categories/{id}:
+    get:
+      tags: [Categories]
+      summary: Получить категорию по ID
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: Категория
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    patch:
+      tags: [Categories]
+      summary: Обновить категорию
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CategoryUpdate' }
+      responses:
+        '200':
+          description: Обновлённая категория
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+        '400':
+          $ref: '#/components/responses/ApiError400'
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    delete:
+      tags: [Categories]
+      summary: Удалить категорию
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '204':
+          description: Категория удалена
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /transactions:
+    get:
+      tags: [Transactions]
+      summary: Список транзакций
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Список транзакций
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Transaction' }
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    post:
+      tags: [Transactions]
+      summary: Создать транзакцию
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TransactionCreate' }
+      responses:
+        '201':
+          description: Транзакция создана
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Transaction' }
+        '400':
+          $ref: '#/components/responses/ApiError400'
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /transactions/{id}:
+    get:
+      tags: [Transactions]
+      summary: Получить транзакцию по ID
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: Транзакция
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Transaction' }
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    patch:
+      tags: [Transactions]
+      summary: Обновить транзакцию
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TransactionUpdate' }
+      responses:
+        '200':
+          description: Обновлённая транзакция
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Transaction' }
+        '400':
+          $ref: '#/components/responses/ApiError400'
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    delete:
+      tags: [Transactions]
+      summary: Удалить транзакцию
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '204':
+          description: Транзакция удалена
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /budget-members:
+    get:
+      tags: [Budget Members]
+      summary: Список участников бюджета
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/budgetIdQuery'
+      responses:
+        '200':
+          description: Список участников
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/BudgetMember' }
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '403':
+          $ref: '#/components/responses/ApiError403'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    post:
+      tags: [Budget Members]
+      summary: Добавить участника в бюджет
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BudgetMemberCreate' }
+      responses:
+        '201':
+          description: Участник добавлен
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BudgetMember' }
+        '400':
+          $ref: '#/components/responses/ApiError400'
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '403':
+          $ref: '#/components/responses/ApiError403'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /budget-members/{id}:
+    get:
+      tags: [Budget Members]
+      summary: Получить участника по ID
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: Участник бюджета
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BudgetMember' }
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '403':
+          $ref: '#/components/responses/ApiError403'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    patch:
+      tags: [Budget Members]
+      summary: Обновить роль участника
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BudgetMemberUpdate' }
+      responses:
+        '200':
+          description: Обновлённый участник
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BudgetMember' }
+        '400':
+          $ref: '#/components/responses/ApiError400'
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '403':
+          $ref: '#/components/responses/ApiError403'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    delete:
+      tags: [Budget Members]
+      summary: Удалить участника из бюджета
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '204':
+          description: Участник удалён
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '403':
+          $ref: '#/components/responses/ApiError403'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /budget-invitations:
+    get:
+      tags: [Budget Invitations]
+      summary: Список приглашений в бюджет
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/budgetIdQuery'
+      responses:
+        '200':
+          description: Список приглашений
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/BudgetInvitation' }
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '403':
+          $ref: '#/components/responses/ApiError403'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    post:
+      tags: [Budget Invitations]
+      summary: Создать приглашение в бюджет
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BudgetInvitationCreate' }
+      responses:
+        '201':
+          description: Приглашение создано
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BudgetInvitation' }
+        '400':
+          $ref: '#/components/responses/ApiError400'
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '403':
+          $ref: '#/components/responses/ApiError403'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /budget-invitations/{id}:
+    get:
+      tags: [Budget Invitations]
+      summary: Получить приглашение по ID
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: Приглашение
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BudgetInvitation' }
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '403':
+          $ref: '#/components/responses/ApiError403'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    patch:
+      tags: [Budget Invitations]
+      summary: Обновить приглашение (роль/статус)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BudgetInvitationUpdate' }
+      responses:
+        '200':
+          description: Обновлённое приглашение
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BudgetInvitation' }
+        '400':
+          $ref: '#/components/responses/ApiError400'
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '403':
+          $ref: '#/components/responses/ApiError403'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    delete:
+      tags: [Budget Invitations]
+      summary: Удалить приглашение
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '204':
+          description: Приглашение удалено
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '403':
+          $ref: '#/components/responses/ApiError403'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /monthly-plans:
+    get:
+      tags: [Monthly Plans]
+      summary: Список месячных планов
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Список планов
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/MonthlyPlan' }
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    post:
+      tags: [Monthly Plans]
+      summary: Создать месячный план
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MonthlyPlanCreate' }
+      responses:
+        '201':
+          description: План создан
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MonthlyPlan' }
+        '400':
+          $ref: '#/components/responses/ApiError400'
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /monthly-plans/{id}:
+    get:
+      tags: [Monthly Plans]
+      summary: Получить месячный план по ID
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: Месячный план
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MonthlyPlan' }
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    patch:
+      tags: [Monthly Plans]
+      summary: Обновить месячный план
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MonthlyPlanUpdate' }
+      responses:
+        '200':
+          description: Обновлённый план
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MonthlyPlan' }
+        '400':
+          $ref: '#/components/responses/ApiError400'
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    delete:
+      tags: [Monthly Plans]
+      summary: Удалить месячный план
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '204':
+          description: План удалён
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /monthly-plan-items:
+    get:
+      tags: [Monthly Plan Items]
+      summary: Список пунктов месячного плана
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Список пунктов плана
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/MonthlyPlanItem' }
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    post:
+      tags: [Monthly Plan Items]
+      summary: Создать пункт плана
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MonthlyPlanItemCreate' }
+      responses:
+        '201':
+          description: Пункт плана создан
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MonthlyPlanItem' }
+        '400':
+          $ref: '#/components/responses/ApiError400'
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /monthly-plan-items/{id}:
+    get:
+      tags: [Monthly Plan Items]
+      summary: Получить пункт плана по ID
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: Пункт плана
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MonthlyPlanItem' }
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    patch:
+      tags: [Monthly Plan Items]
+      summary: Обновить пункт плана
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/MonthlyPlanItemUpdate' }
+      responses:
+        '200':
+          description: Обновлённый пункт плана
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MonthlyPlanItem' }
+        '400':
+          $ref: '#/components/responses/ApiError400'
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+    delete:
+      tags: [Monthly Plan Items]
+      summary: Удалить пункт плана
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '204':
+          description: Пункт плана удалён
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'

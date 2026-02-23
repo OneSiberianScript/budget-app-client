@@ -4,11 +4,11 @@ import type { CategoryCreate, CategoryUpdate } from '@/shared/types'
 import type { Category } from '../model/types'
 
 /**
- * Fetch categories for a budget.
+ * Fetch all categories (openapi: GET /categories has no query params). Filter by budgetId on the client.
  */
 export async function fetchCategories(budgetId: string): Promise<Category[]> {
-    const data = await request<Category[]>({ method: 'GET', url: '/categories', params: { budgetId } })
-    return data
+    const data = await request<Category[]>({ method: 'GET', url: '/categories' })
+    return data.filter((c) => c.budgetId === budgetId)
 }
 
 /**

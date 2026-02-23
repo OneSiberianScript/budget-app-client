@@ -8,7 +8,7 @@ import { register } from '@/entities/session/api'
 import { useSessionStore } from '@/entities/session/model/store'
 
 import { toApiError } from '@/shared/api/errors'
-import { ROUTE_NAMES } from '@/shared/config/router'
+import { ROUTE_NAMES, ROUTE_PATHS } from '@/shared/config/router'
 import { message } from '@/shared/lib/message'
 import { TheButton, TheInput } from '@/shared/ui'
 
@@ -37,7 +37,11 @@ const onSubmit = handleSubmit(async (values) => {
         })
         sessionStore.setSession(res.accessToken, res.user, res.sessionId)
         message.success('Регистрация успешна')
-        router.push({ name: ROUTE_NAMES.HOME })
+        router.push(
+            res.user.emailConfirmedAt == null
+                ? { path: ROUTE_PATHS.CONFIRM_EMAIL_REQUIRED }
+                : { name: ROUTE_NAMES.HOME }
+        )
     } catch (err) {
         const apiErr = toApiError(err)
         if (apiErr.code === 'CONFLICT' || apiErr.message.toLowerCase().includes('email')) {

@@ -22,15 +22,16 @@ const loading = ref(true)
 
 const hasBudget = computed(() => !!budgetStore.currentBudgetId)
 const accountTypeLabels: Record<string, string> = {
-    cash: 'Наличные',
-    bank: 'Банк',
-    credit: 'Кредит',
-    saving: 'Накопительный'
+    account: 'Счёт',
+    card: 'Карта',
+    cash: 'Наличные'
 }
 
 const columns = [
     { title: 'Название', dataIndex: 'name', key: 'name' },
-    { title: 'Тип', dataIndex: 'type', key: 'type', width: 120 },
+    { title: 'Тип', dataIndex: 'type', key: 'type', width: 100 },
+    { title: 'Баланс', dataIndex: 'currentBalance', key: 'currentBalance', width: 120 },
+    { title: 'Банк', dataIndex: 'bank', key: 'bank', width: 120 },
     { title: '', key: 'action', width: 160, align: 'right' as const }
 ]
 
@@ -127,6 +128,9 @@ watch(() => budgetStore.currentBudgetId, load)
                         <template v-if="column?.key === 'type'">
                             {{ accountTypeLabels[(record as Account).type] ?? (record as Account).type }}
                         </template>
+                        <template v-else-if="column?.key === 'bank'">
+                            {{ (record as Account).bank ?? '—' }}
+                        </template>
                         <template v-else-if="column?.key === 'action'">
                             <span class="accounts-page__actions">
                                 <TheButton
@@ -158,7 +162,16 @@ watch(() => budgetStore.currentBudgetId, load)
         >
             <AccountForm
                 :key="editingAccount?.id ?? 'new'"
-                :initial-values="editingAccount ? { name: editingAccount.name, type: editingAccount.type } : undefined"
+                :initial-values="
+                    editingAccount
+                        ? {
+                              name: editingAccount.name,
+                              type: editingAccount.type,
+                              initialBalance: editingAccount.initialBalance ?? '',
+                              bank: editingAccount.bank
+                          }
+                        : undefined
+                "
                 @submit="handleFormSubmit"
             />
         </TheDrawer>

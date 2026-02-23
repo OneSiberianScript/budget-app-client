@@ -6,9 +6,10 @@ export {
     refresh,
     logout,
     confirmEmail,
+    getCurrentUser,
+    resendConfirmEmail,
     changePassword,
     getSessions,
     revokeSession,
     revokeAllSessions
 } from './api'
-export type { LoginResponse } from './api'

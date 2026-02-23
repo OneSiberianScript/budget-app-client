@@ -53,15 +53,21 @@ defineExpose({ submit: handleSubmit, resetForm })
             :options="typeOptions"
         />
         <TheSelect
-            name="accountId"
-            label="Счёт"
-            placeholder="Выберите счёт"
+            name="debitAccountId"
+            label="Счёт списания"
+            placeholder="Для расхода или перевода"
+            :options="accountOptions"
+        />
+        <TheSelect
+            name="creditAccountId"
+            label="Счёт зачисления"
+            placeholder="Для дохода или перевода"
             :options="accountOptions"
         />
         <TheSelect
             name="categoryId"
             label="Категория"
-            placeholder="Выберите категорию"
+            placeholder="Выберите категорию (необязательно)"
             :options="categoryOptions"
         />
         <TheInputNumber
@@ -73,6 +79,11 @@ defineExpose({ submit: handleSubmit, resetForm })
             name="occurredAt"
             label="Дата"
             type="date"
+        />
+        <TheInput
+            name="description"
+            label="Описание"
+            placeholder="Необязательно"
         />
         <TheButton
             type="primary"

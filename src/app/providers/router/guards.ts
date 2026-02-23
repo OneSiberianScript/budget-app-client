@@ -35,6 +35,14 @@ export async function createGuards(
                 next({ path: ROUTE_PATHS.LOGIN, query: to.query })
                 return
             }
+            if (
+                sessionStore.user &&
+                sessionStore.user.emailConfirmedAt == null &&
+                to.path !== ROUTE_PATHS.CONFIRM_EMAIL_REQUIRED
+            ) {
+                next({ path: ROUTE_PATHS.CONFIRM_EMAIL_REQUIRED })
+                return
+            }
         }
     }
     next()

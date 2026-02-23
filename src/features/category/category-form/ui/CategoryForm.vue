@@ -57,6 +57,16 @@ defineExpose({ submit: handleSubmit, resetForm })
             placeholder="Выберите тип"
             :options="typeOptions"
         />
+        <TheInput
+            name="color"
+            label="Цвет"
+            placeholder="Например #hex или название (необязательно)"
+        />
+        <TheInput
+            name="icon"
+            label="Иконка"
+            placeholder="Название иконки (необязательно)"
+        />
         <TheButton
             type="primary"
             html-type="submit"

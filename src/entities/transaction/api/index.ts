@@ -4,18 +4,21 @@ import type { TransactionCreate, TransactionUpdate } from '@/shared/types'
 import type { Transaction } from '../model/types'
 
 /**
- * Fetch transactions for a budget (optional filters).
+ * Fetch all transactions (openapi: GET /transactions has no query params). Filter by budgetId and optional filters on the client.
  */
 export async function fetchTransactions(
     budgetId: string,
     params?: { accountId?: string; categoryId?: string; from?: string; to?: string }
 ): Promise<Transaction[]> {
-    const data = await request<Transaction[]>({
-        method: 'GET',
-        url: '/transactions',
-        params: { budgetId, ...params }
-    })
-    return data
+    const data = await request<Transaction[]>({ method: 'GET', url: '/transactions' })
+    let list = data.filter((t) => t.budgetId === budgetId)
+    if (params?.accountId) {
+        list = list.filter((t) => t.debitAccountId === params.accountId || t.creditAccountId === params.accountId)
+    }
+    if (params?.categoryId) list = list.filter((t) => t.categoryId === params.categoryId)
+    if (params?.from) list = list.filter((t) => t.occurredAt >= params.from!)
+    if (params?.to) list = list.filter((t) => t.occurredAt <= params.to!)
+    return list
 }
 
 /**

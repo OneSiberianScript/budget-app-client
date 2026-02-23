@@ -8,27 +8,19 @@ import type {
 } from '@/shared/types'
 
 /**
- * Fetch monthly plan for a budget and year/month.
+ * Fetch monthly plan for a budget and year/month (openapi: GET /monthly-plans returns array; find on client).
  */
 export async function fetchMonthlyPlan(budgetId: string, year: number, month: number): Promise<MonthlyPlan | null> {
-    const data = await request<MonthlyPlan | null>({
-        method: 'GET',
-        url: '/monthly-plans',
-        params: { budgetId, year, month }
-    })
-    return data
+    const data = await request<MonthlyPlan[]>({ method: 'GET', url: '/monthly-plans' })
+    return data.find((p) => p.budgetId === budgetId && p.year === year && p.month === month) ?? null
 }
 
 /**
- * Fetch items (category limits) for a monthly plan.
+ * Fetch items for a monthly plan (openapi: GET /monthly-plan-items returns array; filter on client).
  */
 export async function fetchMonthlyPlanItems(monthlyPlanId: string): Promise<MonthlyPlanItem[]> {
-    const data = await request<MonthlyPlanItem[]>({
-        method: 'GET',
-        url: '/monthly-plan-items',
-        params: { monthlyPlanId }
-    })
-    return data
+    const data = await request<MonthlyPlanItem[]>({ method: 'GET', url: '/monthly-plan-items' })
+    return data.filter((i) => i.monthlyPlanId === monthlyPlanId)
 }
 
 /**

@@ -51,7 +51,7 @@ const spentCents = computed(() => {
     const expenseCategoryIds = new Set(categories.filter((c) => c.type === 'expense').map((c) => c.id))
     const transactions = transactionStore.transactions ?? []
     return transactions
-        .filter((t) => t.budgetId === budgetId && expenseCategoryIds.has(t.categoryId))
+        .filter((t) => t.budgetId === budgetId && t.categoryId != null && expenseCategoryIds.has(t.categoryId))
         .reduce((sum, t) => sum + Math.round((parseFloat(t.amount) || 0) * 100), 0)
 })
 
@@ -71,7 +71,7 @@ const pieOption = computed(() => {
     const sums: Record<string, number> = {}
     const txList = transactionStore.transactions ?? []
     for (const t of txList) {
-        if (t.budgetId !== budgetId || !byId[t.categoryId]) continue
+        if (t.budgetId !== budgetId || t.categoryId == null || !byId[t.categoryId]) continue
         const amountCents = Math.round((parseFloat(t.amount) || 0) * 100)
         sums[t.categoryId] = (sums[t.categoryId] ?? 0) + amountCents
     }

@@ -40,3 +40,14 @@ export function toApiError(error: unknown): ApiError {
     const message = error instanceof Error ? error.message : typeof error === 'string' ? error : 'Неизвестная ошибка'
     return { code: 'UNKNOWN', message }
 }
+
+/**
+ * Ошибка 429 при POST /api/auth/resend-confirm-email.
+ * retryAfter — секунды до возможности повторной отправки (если бэкенд вернул в теле).
+ */
+export class ResendConfirmEmailRateLimitError extends Error {
+    constructor(public readonly retryAfter?: number) {
+        super('Слишком частый запрос')
+        this.name = 'ResendConfirmEmailRateLimitError'
+    }
+}
