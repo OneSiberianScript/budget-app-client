@@ -3,7 +3,7 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { computed } from 'vue'
 
-import { TheButton, TheInput, TheInputNumber, TheSelect } from '@/shared/ui'
+import { TheButton, TheForm, TheInput, TheInputNumber, TheSelect } from '@/shared/ui'
 
 import { transactionFormSchema } from '../model/TransactionForm.schema'
 import { transactionFormInitialValues } from '../model/TransactionForm.types'
@@ -38,66 +38,77 @@ function onSubmit(values: TransactionFormValues) {
     emit('submit', values)
 }
 
+function formSubmitHandler(e: SubmitEvent) {
+    handleSubmit(onSubmit)(e)
+}
+
 defineExpose({ submit: handleSubmit, resetForm })
 </script>
 
 <template>
-    <form
+    <div
         class="transaction-form"
-        @submit.prevent="handleSubmit(onSubmit)"
+        @keydown.enter.prevent="formSubmitHandler($event as unknown as SubmitEvent)"
     >
-        <TheSelect
-            name="type"
-            label="Тип"
-            placeholder="Выберите тип"
-            :options="typeOptions"
-        />
-        <TheSelect
-            name="debitAccountId"
-            label="Счёт списания"
-            placeholder="Для расхода или перевода"
-            :options="accountOptions"
-        />
-        <TheSelect
-            name="creditAccountId"
-            label="Счёт зачисления"
-            placeholder="Для дохода или перевода"
-            :options="accountOptions"
-        />
-        <TheSelect
-            name="categoryId"
-            label="Категория"
-            placeholder="Выберите категорию (необязательно)"
-            :options="categoryOptions"
-        />
-        <TheInputNumber
-            name="amount"
-            label="Сумма"
-            :precision="2"
-        />
-        <TheInput
-            name="occurredAt"
-            label="Дата"
-            type="date"
-        />
-        <TheInput
-            name="description"
-            label="Описание"
-            placeholder="Необязательно"
-        />
-        <TheButton
-            type="primary"
-            html-type="submit"
-            :loading="isSubmitting"
-            :disabled="!canSubmit"
+        <TheForm
+            class="transaction-form__form"
+            @submit="formSubmitHandler"
         >
-            Сохранить
-        </TheButton>
-    </form>
+            <TheSelect
+                name="type"
+                label="Тип"
+                placeholder="Выберите тип"
+                :options="typeOptions"
+            />
+            <TheSelect
+                name="debitAccountId"
+                label="Счёт списания"
+                placeholder="Для расхода или перевода"
+                :options="accountOptions"
+            />
+            <TheSelect
+                name="creditAccountId"
+                label="Счёт зачисления"
+                placeholder="Для дохода или перевода"
+                :options="accountOptions"
+            />
+            <TheSelect
+                name="categoryId"
+                label="Категория"
+                placeholder="Выберите категорию (необязательно)"
+                :options="categoryOptions"
+            />
+            <TheInputNumber
+                name="amount"
+                label="Сумма"
+                :precision="2"
+            />
+            <TheInput
+                name="occurredAt"
+                label="Дата"
+                type="date"
+            />
+            <TheInput
+                name="description"
+                label="Описание"
+                placeholder="Необязательно"
+            />
+            <TheButton
+                type="primary"
+                html-type="submit"
+                :loading="isSubmitting"
+                :disabled="!canSubmit"
+                @click.prevent="formSubmitHandler($event as unknown as SubmitEvent)"
+            >
+                Сохранить
+            </TheButton>
+        </TheForm>
+    </div>
 </template>
 
 <style scoped>
-.transaction-form {
+.transaction-form,
+.transaction-form__form {
     display: flex;
     flex-direction: column;
     gap: 16px;

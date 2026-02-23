@@ -3,7 +3,7 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { computed } from 'vue'
 
-import { TheButton, TheInput } from '@/shared/ui'
+import { TheButton, TheForm, TheInput } from '@/shared/ui'
 
 import { budgetFormSchema } from '../model/BudgetForm.schema'
 import { budgetFormInitialValues } from '../model/BudgetForm.types'
@@ -25,42 +25,53 @@ function onSubmit(values: BudgetFormValues) {
     emit('submit', values)
 }
 
+function formSubmitHandler(e: SubmitEvent) {
+    handleSubmit(onSubmit)(e)
+}
+
 defineExpose({ submit: handleSubmit, resetForm })
 </script>
 
 <template>
-    <form
+    <div
         class="budget-form"
-        @submit.prevent="handleSubmit(onSubmit)"
+        @keydown.enter.prevent="formSubmitHandler($event as unknown as SubmitEvent)"
     >
-        <TheInput
-            name="name"
-            label="Название"
-            placeholder="Бюджет"
-        />
-        <TheInput
-            name="currency"
-            label="Валюта"
-            placeholder="RUB"
-        />
-        <TheInput
-            name="initialBalance"
-            label="Начальный баланс (опционально)"
-            placeholder="0"
-        />
-        <TheButton
-            type="primary"
-            html-type="submit"
-            :loading="isSubmitting"
-            :disabled="!canSubmit"
+        <TheForm
+            class="budget-form__form"
+            @submit="formSubmitHandler"
         >
-            Сохранить
-        </TheButton>
-    </form>
+            <TheInput
+                name="name"
+                label="Название"
+                placeholder="Бюджет"
+            />
+            <TheInput
+                name="currency"
+                label="Валюта"
+                placeholder="RUB"
+            />
+            <TheInput
+                name="initialBalance"
+                label="Начальный баланс (опционально)"
+                placeholder="0"
+            />
+            <TheButton
+                type="primary"
+                html-type="submit"
+                :loading="isSubmitting"
+                :disabled="!canSubmit"
+                @click.prevent="formSubmitHandler($event as unknown as SubmitEvent)"
+            >
+                Сохранить
+            </TheButton>
+        </TheForm>
+    </div>
 </template>
 
 <style scoped>
-.budget-form {
+.budget-form,
+.budget-form__form {
     display: flex;
     flex-direction: column;
     gap: 16px;

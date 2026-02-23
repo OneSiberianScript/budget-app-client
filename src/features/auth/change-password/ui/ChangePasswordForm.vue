@@ -6,7 +6,7 @@ import { computed } from 'vue'
 import { changePassword } from '@/entities/session/api'
 
 import { message } from '@/shared/lib/message'
-import { TheButton, TheInput } from '@/shared/ui'
+import { TheButton, TheForm, TheInput } from '@/shared/ui'
 
 import { changePasswordFormSchema } from '../model/ChangePasswordForm.schema'
 import { changePasswordFormInitialValues } from '../model/ChangePasswordForm.types'
@@ -33,45 +33,56 @@ async function onSubmit(values: ChangePasswordFormValues) {
     }
 }
 
+function formSubmitHandler(e: SubmitEvent) {
+    handleSubmit(onSubmit)(e)
+}
+
 defineExpose({ submit: handleSubmit, resetForm })
 </script>
 
 <template>
-    <form
+    <div
         class="change-password-form"
-        @submit.prevent="handleSubmit(onSubmit)"
+        @keydown.enter.prevent="formSubmitHandler($event as unknown as SubmitEvent)"
     >
-        <TheInput
-            name="currentPassword"
-            label="Текущий пароль"
-            type="password"
-            autocomplete="current-password"
-        />
-        <TheInput
-            name="newPassword"
-            label="Новый пароль"
-            type="password"
-            autocomplete="new-password"
-        />
-        <TheInput
-            name="confirmNewPassword"
-            label="Повторите новый пароль"
-            type="password"
-            autocomplete="new-password"
-        />
-        <TheButton
-            type="primary"
-            html-type="submit"
-            :loading="isSubmitting"
-            :disabled="!canSubmit"
+        <TheForm
+            class="change-password-form__form"
+            @submit="formSubmitHandler"
         >
-            Сменить пароль
-        </TheButton>
-    </form>
+            <TheInput
+                name="currentPassword"
+                label="Текущий пароль"
+                type="password"
+                autocomplete="current-password"
+            />
+            <TheInput
+                name="newPassword"
+                label="Новый пароль"
+                type="password"
+                autocomplete="new-password"
+            />
+            <TheInput
+                name="confirmNewPassword"
+                label="Повторите новый пароль"
+                type="password"
+                autocomplete="new-password"
+            />
+            <TheButton
+                type="primary"
+                html-type="submit"
+                :loading="isSubmitting"
+                :disabled="!canSubmit"
+                @click.prevent="formSubmitHandler($event as unknown as SubmitEvent)"
+            >
+                Сменить пароль
+            </TheButton>
+        </TheForm>
+    </div>
 </template>
 
 <style scoped>
-.change-password-form {
+.change-password-form,
+.change-password-form__form {
     display: flex;
     flex-direction: column;
     gap: 16px;

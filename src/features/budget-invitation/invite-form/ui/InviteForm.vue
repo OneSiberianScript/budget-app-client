@@ -3,7 +3,7 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { computed } from 'vue'
 
-import { TheButton, TheInput, TheSelect } from '@/shared/ui'
+import { TheButton, TheForm, TheInput, TheSelect } from '@/shared/ui'
 
 import { inviteFormSchema } from '../model/InviteForm.schema'
 import { inviteFormInitialValues } from '../model/InviteForm.types'
@@ -30,39 +30,50 @@ function onSubmit(values: InviteFormValues) {
     emit('submit', values)
 }
 
+function formSubmitHandler(e: SubmitEvent) {
+    handleSubmit(onSubmit)(e)
+}
+
 defineExpose({ submit: handleSubmit, resetForm })
 </script>
 
 <template>
-    <form
+    <div
         class="invite-form"
-        @submit.prevent="handleSubmit(onSubmit)"
+        @keydown.enter.prevent="formSubmitHandler($event as unknown as SubmitEvent)"
     >
-        <TheInput
-            name="email"
-            label="Email приглашаемого"
-            type="email"
-            placeholder="user@example.com"
-        />
-        <TheSelect
-            name="role"
-            label="Роль в бюджете"
-            placeholder="Выберите роль"
-            :options="roleOptions"
-        />
-        <TheButton
-            type="primary"
-            html-type="submit"
-            :loading="isSubmitting"
-            :disabled="!canSubmit"
+        <TheForm
+            class="invite-form__form"
+            @submit="formSubmitHandler"
         >
-            Пригласить
-        </TheButton>
-    </form>
+            <TheInput
+                name="email"
+                label="Email приглашаемого"
+                type="email"
+                placeholder="user@example.com"
+            />
+            <TheSelect
+                name="role"
+                label="Роль в бюджете"
+                placeholder="Выберите роль"
+                :options="roleOptions"
+            />
+            <TheButton
+                type="primary"
+                html-type="submit"
+                :loading="isSubmitting"
+                :disabled="!canSubmit"
+                @click.prevent="formSubmitHandler($event as unknown as SubmitEvent)"
+            >
+                Пригласить
+            </TheButton>
+        </TheForm>
+    </div>
 </template>
 
 <style scoped>
-.invite-form {
+.invite-form,
+.invite-form__form {
     display: flex;
     flex-direction: column;
     gap: 16px;

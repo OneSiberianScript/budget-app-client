@@ -2,7 +2,9 @@
 import { Form } from 'ant-design-vue'
 
 /**
- * Обёртка над a-form. Использовать с VeeValidate useForm; валидация на полях (TheInput, TheSelect и т.д.).
+ * Обёртка над Form (Ant Design Vue). Использовать с VeeValidate useForm; валидация на полях (TheInput, TheSelect и т.д.).
+ * При сабмите предотвращает отправку по умолчанию и эмитит submit — подключать @submit="handleSubmit(onSubmit)" (или formSubmitHandler).
+ * Нативный submit формы может не срабатывать (напр. в Drawer/Modal), поэтому в формах дополнительно вешают обработчик на клик по кнопке и keydown.enter по обёртке — см. AccountForm.vue.
  * Корневой класс: the-form.
  */
 interface Props {
@@ -16,6 +18,16 @@ const props = withDefaults(defineProps<Props>(), {
     layout: 'vertical',
     labelAlign: 'left'
 })
+
+const emit = defineEmits<{
+    /** Событие сабмита формы (вызывать handleSubmit из VeeValidate) */
+    submit: [event: SubmitEvent]
+}>()
+
+function onFormSubmit(event: SubmitEvent) {
+    event.preventDefault()
+    emit('submit', event)
+}
 </script>
 
 <template>
@@ -24,6 +36,7 @@ const props = withDefaults(defineProps<Props>(), {
         :layout="props.layout"
         :label-align="props.labelAlign"
         v-bind="$attrs"
+        @submit="onFormSubmit"
     >
         <slot />
     </Form>

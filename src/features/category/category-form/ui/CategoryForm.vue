@@ -3,7 +3,7 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { computed } from 'vue'
 
-import { TheButton, TheInput, TheSelect } from '@/shared/ui'
+import { TheButton, TheForm, TheInput, TheSelect } from '@/shared/ui'
 
 import { categoryFormSchema } from '../model/CategoryForm.schema'
 import { categoryFormInitialValues } from '../model/CategoryForm.types'
@@ -38,48 +38,59 @@ function onSubmit(values: CategoryFormValues) {
     emit('submit', values)
 }
 
+function formSubmitHandler(e: SubmitEvent) {
+    handleSubmit(onSubmit)(e)
+}
+
 defineExpose({ submit: handleSubmit, resetForm })
 </script>
 
 <template>
-    <form
+    <div
         class="category-form"
-        @submit.prevent="handleSubmit(onSubmit)"
+        @keydown.enter.prevent="formSubmitHandler($event as unknown as SubmitEvent)"
     >
-        <TheInput
-            name="name"
-            label="Название"
-            placeholder="Категория"
-        />
-        <TheSelect
-            name="type"
-            label="Тип"
-            placeholder="Выберите тип"
-            :options="typeOptions"
-        />
-        <TheInput
-            name="color"
-            label="Цвет"
-            placeholder="Например #hex или название (необязательно)"
-        />
-        <TheInput
-            name="icon"
-            label="Иконка"
-            placeholder="Название иконки (необязательно)"
-        />
-        <TheButton
-            type="primary"
-            html-type="submit"
-            :loading="isSubmitting"
-            :disabled="!canSubmit"
+        <TheForm
+            class="category-form__form"
+            @submit="formSubmitHandler"
         >
-            Сохранить
-        </TheButton>
-    </form>
+            <TheInput
+                name="name"
+                label="Название"
+                placeholder="Категория"
+            />
+            <TheSelect
+                name="type"
+                label="Тип"
+                placeholder="Выберите тип"
+                :options="typeOptions"
+            />
+            <TheInput
+                name="color"
+                label="Цвет"
+                placeholder="Например #hex или название (необязательно)"
+            />
+            <TheInput
+                name="icon"
+                label="Иконка"
+                placeholder="Название иконки (необязательно)"
+            />
+            <TheButton
+                type="primary"
+                html-type="submit"
+                :loading="isSubmitting"
+                :disabled="!canSubmit"
+                @click.prevent="formSubmitHandler($event as unknown as SubmitEvent)"
+            >
+                Сохранить
+            </TheButton>
+        </TheForm>
+    </div>
 </template>
 
 <style scoped>
-.category-form {
+.category-form,
+.category-form__form {
     display: flex;
     flex-direction: column;
     gap: 16px;

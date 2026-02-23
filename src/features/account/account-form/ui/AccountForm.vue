@@ -3,7 +3,7 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { computed } from 'vue'
 
-import { TheButton, TheInput, TheSelect } from '@/shared/ui'
+import { TheButton, TheForm, TheInput, TheSelect } from '@/shared/ui'
 
 import { accountFormSchema } from '../model/AccountForm.schema'
 import { accountFormInitialValues } from '../model/AccountForm.types'
@@ -31,48 +31,59 @@ function onSubmit(values: AccountFormValues) {
     emit('submit', values)
 }
 
+function formSubmitHandler(e: SubmitEvent) {
+    handleSubmit(onSubmit)(e)
+}
+
 defineExpose({ submit: handleSubmit, resetForm })
 </script>
 
 <template>
-    <form
+    <div
         class="account-form"
-        @submit.prevent="handleSubmit(onSubmit)"
+        @keydown.enter.prevent="formSubmitHandler($event as unknown as SubmitEvent)"
     >
-        <TheInput
-            name="name"
-            label="Название"
-            placeholder="Счёт"
-        />
-        <TheSelect
-            name="type"
-            label="Тип счёта"
-            placeholder="Выберите тип"
-            :options="accountTypeOptions"
-        />
-        <TheInput
-            name="initialBalance"
-            label="Начальный баланс"
-            placeholder="0"
-        />
-        <TheInput
-            name="bank"
-            label="Банк"
-            placeholder="Название банка (необязательно)"
-        />
-        <TheButton
-            type="primary"
-            html-type="submit"
-            :loading="isSubmitting"
-            :disabled="!canSubmit"
+        <TheForm
+            class="account-form__form"
+            @submit="formSubmitHandler"
         >
-            Сохранить
-        </TheButton>
-    </form>
+            <TheInput
+                name="name"
+                label="Название"
+                placeholder="Счёт"
+            />
+            <TheSelect
+                name="type"
+                label="Тип счёта"
+                placeholder="Выберите тип"
+                :options="accountTypeOptions"
+            />
+            <TheInput
+                name="initialBalance"
+                label="Начальный баланс"
+                placeholder="0"
+            />
+            <TheInput
+                name="bank"
+                label="Банк"
+                placeholder="Название банка (необязательно)"
+            />
+            <TheButton
+                type="primary"
+                html-type="submit"
+                :loading="isSubmitting"
+                :disabled="!canSubmit"
+                @click.prevent="formSubmitHandler($event as unknown as SubmitEvent)"
+            >
+                Сохранить
+            </TheButton>
+        </TheForm>
+    </div>
 </template>
 
 <style scoped>
-.account-form {
+.account-form,
+.account-form__form {
     display: flex;
     flex-direction: column;
     gap: 16px;

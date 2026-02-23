@@ -10,7 +10,7 @@ import { useSessionStore } from '@/entities/session/model/store'
 import { toApiError } from '@/shared/api/errors'
 import { ROUTE_NAMES, ROUTE_PATHS } from '@/shared/config/router'
 import { message } from '@/shared/lib/message'
-import { TheButton, TheInput } from '@/shared/ui'
+import { TheButton, TheForm, TheInput } from '@/shared/ui'
 
 import { loginFormSchema } from '../model/LoginForm.schema'
 import { loginFormInitialValues } from '../model/LoginForm.types'
@@ -46,38 +46,49 @@ const onSubmit = handleSubmit(async (values) => {
         }
     }
 })
+
+function formSubmitHandler(e: SubmitEvent) {
+    onSubmit(e)
+}
 </script>
 
 <template>
-    <form
+    <div
         class="login-form"
-        @submit.prevent="onSubmit"
+        @keydown.enter.prevent="formSubmitHandler($event as unknown as SubmitEvent)"
     >
-        <TheInput
-            name="email"
-            label="Email"
-            type="email"
-            autocomplete="email"
-        />
-        <TheInput
-            name="password"
-            label="Пароль"
-            type="password"
-            autocomplete="current-password"
-        />
-        <TheButton
-            type="primary"
-            html-type="submit"
-            :loading="isSubmitting"
-            :disabled="!canSubmit"
+        <TheForm
+            class="login-form__form"
+            @submit="formSubmitHandler"
         >
-            Войти
-        </TheButton>
-    </form>
+            <TheInput
+                name="email"
+                label="Email"
+                type="email"
+                autocomplete="email"
+            />
+            <TheInput
+                name="password"
+                label="Пароль"
+                type="password"
+                autocomplete="current-password"
+            />
+            <TheButton
+                type="primary"
+                html-type="submit"
+                :loading="isSubmitting"
+                :disabled="!canSubmit"
+                @click.prevent="formSubmitHandler($event as unknown as SubmitEvent)"
+            >
+                Войти
+            </TheButton>
+        </TheForm>
+    </div>
 </template>
 
 <style scoped>
-.login-form {
+.login-form,
+.login-form__form {
     display: flex;
     flex-direction: column;
     gap: 16px;
