@@ -26,8 +26,10 @@ const sessionStore = useSessionStore()
 const budgetStore = useBudgetStore()
 budgetStore.hydrateFromStorage()
 ;(async () => {
-    await sessionStore.restoreSession()
-    await budgetStore.fetchBudgets()
+    const restored = await sessionStore.restoreSession()
+    if (restored) {
+        await budgetStore.fetchBudgets()
+    }
     await router.isReady()
     app.mount('#app')
 })()
