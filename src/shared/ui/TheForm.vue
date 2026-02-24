@@ -24,9 +24,9 @@ const emit = defineEmits<{
     submit: [event: SubmitEvent]
 }>()
 
-function onFormSubmit(event: SubmitEvent) {
+function onFormSubmit(event: Event) {
     event.preventDefault()
-    emit('submit', event)
+    emit('submit', event as SubmitEvent)
 }
 </script>
 
