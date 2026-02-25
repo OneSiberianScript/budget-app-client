@@ -76,6 +76,10 @@ httpClient.interceptors.response.use(
             }
             const sessionStore = useSessionStore(pinia)
 
+            if (sessionStore.restorePromise !== null) {
+                return Promise.reject(error)
+            }
+
             if (!refreshPromise) {
                 refreshPromise = (async (): Promise<{ ok: boolean; error?: unknown }> => {
                     try {

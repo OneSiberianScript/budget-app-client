@@ -55,7 +55,6 @@ export const useSessionStore = defineStore('session', () => {
                 setUser(me)
                 return true
             } catch {
-                clearSession()
                 return false
             } finally {
                 restorePromise.value = null

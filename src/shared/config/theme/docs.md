@@ -1,10 +1,12 @@
 # Темы (useTheme, getThemeOverrides)
 
-Поддержка светлой и тёмной темы. Палитра — из `design-tokens.tokens.json`. Состояние хранится в `data-theme` на `<html>` и в localStorage.
+Поддержка светлой и тёмной темы. Палитра — из `design-tokens.tokens.json`.
+
+**Поведение:** по умолчанию тема берётся из настроек ОС/браузера (`prefers-color-scheme`). Явный выбор пользователя сохраняется в localStorage (ключ `app_theme`) и имеет приоритет. При смене системной темы приложение следует ей, если пользователь ещё не выбирал тему вручную. Атрибут `data-theme` на `<html>` обновляется при смене темы.
 
 ## useTheme()
 
-Composable: реактивные `currentTheme`, `setTheme(id)` и `themeOverrides`. При смене темы обновляются атрибут и localStorage. Передавайте `themeOverrides` в ConfigProvider (Ant Design Vue).
+Composable: реактивные `currentTheme`, `setTheme(id)` и `themeOverrides`. Вызов `setTheme(id)` сохраняет выбор в localStorage; без сохранённого выбора используется системная тема. Передавайте `themeOverrides` в ConfigProvider (Ant Design Vue).
 
 ```ts
 import { useTheme } from '@/shared/config/theme/useTheme'

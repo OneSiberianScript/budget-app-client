@@ -6,9 +6,6 @@ import { APP_NAV_ITEMS, type NavItem } from '@/widgets/app-nav/model/nav-config'
 const route = useRoute()
 
 function isItemActive(item: NavItem): boolean {
-    if (item.name === 'profile') {
-        return route.path.startsWith('/profile')
-    }
     if (item.name === 'budgets') {
         return route.name === 'budgets' || route.path.startsWith('/budgets')
     }
@@ -43,7 +40,7 @@ function isItemActive(item: NavItem): boolean {
 /* Мобильные и планшеты: нижняя панель на всю ширину */
 .app-nav {
     position: fixed;
-    bottom: 0;
+    bottom: 12px;
     left: 0;
     right: 0;
     z-index: 100;
@@ -51,7 +48,7 @@ function isItemActive(item: NavItem): boolean {
     flex-direction: row;
     align-items: center;
     justify-content: space-around;
-    min-height: 56px;
+    min-height: 72px;
     padding-inline: max(8px, env(safe-area-inset-left)) max(8px, env(safe-area-inset-right));
     padding-bottom: env(safe-area-inset-bottom);
     background: var(--color-bg-container, #fff);
@@ -65,7 +62,7 @@ function isItemActive(item: NavItem): boolean {
     align-items: center;
     justify-content: center;
     gap: 4px;
-    min-height: 44px;
+    min-height: 62px;
     padding: 8px 4px;
     color: var(--color-text-secondary);
     text-decoration: none;
@@ -88,7 +85,7 @@ function isItemActive(item: NavItem): boolean {
 }
 
 .app-nav__icon {
-    font-size: 1.25rem;
+    font-size: 1.75rem;
     flex-shrink: 0;
 }
 
@@ -124,6 +121,10 @@ function isItemActive(item: NavItem): boolean {
         min-width: auto;
         padding: 8px 12px;
         font-size: 0.875rem;
+    }
+
+    .app-nav__icon {
+        font-size: 1.25rem;
     }
 
     .visually-hidden-mobile {

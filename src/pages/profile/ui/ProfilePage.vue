@@ -4,8 +4,9 @@ import { useRouter } from 'vue-router'
 import { BudgetSwitcher } from '@/widgets/budget-switcher'
 
 import { useSessionStore } from '@/entities/session'
+import { logout } from '@/entities/session/api'
 
-import { ROUTE_NAMES } from '@/shared/config/router'
+import { ROUTE_NAMES, ROUTE_PATHS } from '@/shared/config/router'
 import type { ThemeId } from '@/shared/config/theme/types'
 import { useTheme } from '@/shared/config/theme/useTheme'
 import { TheButton, ThePageHeader } from '@/shared/ui'
@@ -27,6 +28,15 @@ function goToChangePassword() {
 
 function goToSessions() {
     router.push({ name: ROUTE_NAMES.SESSIONS })
+}
+
+async function handleLogout() {
+    try {
+        await logout()
+    } finally {
+        sessionStore.clearSession()
+        router.push(ROUTE_PATHS.LOGIN)
+    }
 }
 </script>
 
@@ -91,6 +101,11 @@ function goToSessions() {
                 Список бюджетов, к которым у вас есть доступ, и приглашения — на страницах «Бюджеты» и в настройках
                 конкретного бюджета.
             </p>
+        </section>
+
+        <section class="profile-page__section">
+            <h2 class="profile-page__section-title">Выход</h2>
+            <TheButton @click="handleLogout"> Выйти </TheButton>
         </section>
     </div>
 </template>

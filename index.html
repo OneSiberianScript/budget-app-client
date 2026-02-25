@@ -1,9 +1,21 @@
 <!doctype html>
-<html
-    lang="ru"
-    data-theme="light"
->
+<html lang="ru">
     <head>
+        <script>
+            (function () {
+                var key = 'app_theme';
+                var stored = localStorage.getItem(key);
+                var theme = 'light';
+                if (stored === 'light' || stored === 'dark') {
+                    theme = stored;
+                } else {
+                    try {
+                        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) theme = 'dark';
+                    } catch (e) {}
+                }
+                document.documentElement.setAttribute('data-theme', theme);
+            })();
+        </script>
         <meta charset="UTF-8" />
         <link
             rel="icon"

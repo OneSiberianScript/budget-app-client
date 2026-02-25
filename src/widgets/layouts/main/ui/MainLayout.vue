@@ -1,17 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
 
 import { AppNav } from '@/widgets/app-nav'
 
-import { logout } from '@/entities/session/api'
 import { useSessionStore } from '@/entities/session/model/store'
 
-import { ROUTE_PATHS } from '@/shared/config/router'
+import { ROUTE_NAMES } from '@/shared/config/router'
 import { useTheme } from '@/shared/config/theme/useTheme'
-import { TheButton } from '@/shared/ui'
 
-const router = useRouter()
 const sessionStore = useSessionStore()
 const { currentTheme } = useTheme()
 
@@ -19,15 +15,6 @@ const logoSrc = computed(() => {
     const name = currentTheme.value === 'dark' ? 'Logo Dark.svg' : 'Logo Light.svg'
     return `/logo/${encodeURI(name)}`
 })
-
-async function handleLogout() {
-    try {
-        await logout()
-    } finally {
-        sessionStore.clearSession()
-        router.push(ROUTE_PATHS.LOGIN)
-    }
-}
 </script>
 
 <template>
@@ -39,12 +26,13 @@ async function handleLogout() {
                 class="main-layout__logo"
             />
             <AppNav class="main-layout__nav" />
-            <TheButton
+            <router-link
                 v-if="sessionStore.isAuthenticated"
-                @click="handleLogout"
+                :to="{ name: ROUTE_NAMES.PROFILE }"
+                class="main-layout__profile-link"
             >
-                Выйти
-            </TheButton>
+                Профиль
+            </router-link>
         </header>
         <main class="main-layout__content">
             <slot />
@@ -63,6 +51,7 @@ async function handleLogout() {
     padding: 16px max(24px, env(safe-area-inset-right)) 16px max(24px, env(safe-area-inset-left));
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 16px;
     background: var(--color-bg-primary);
 }
@@ -77,19 +66,47 @@ async function handleLogout() {
     width: auto;
     display: block;
 }
+
+.main-layout__profile-link {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 4px 15px;
+    color: var(--color-text);
+    text-decoration: none;
+    font-size: 14px;
+    line-height: 1.5715;
+    background: var(--color-bg-container);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.main-layout__profile-link:hover {
+    color: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+    background: var(--color-primary-bg-hover);
+}
+
 .main-layout__content {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
-    padding-bottom: calc(56px + env(safe-area-inset-bottom));
+    padding-bottom: calc(84px + env(safe-area-inset-bottom));
     background: var(--color-bg-primary);
 }
 
 @media (min-width: 768px) {
     .main-layout__content {
         padding-bottom: env(safe-area-inset-bottom);
+    }
+    .main-layout__header {
+        justify-content: none;
     }
 }
 </style>
