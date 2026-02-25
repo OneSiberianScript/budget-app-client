@@ -15,6 +15,9 @@ ARG VITE_API_TIMEOUT_MS
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 ENV VITE_API_TIMEOUT_MS=$VITE_API_TIMEOUT_MS
 
+# Увеличиваем лимит кучи Node для vue-tsc и vite build (иначе heap out of memory в контейнере)
+ENV NODE_OPTIONS="--max-old-space-size=2048"
+
 RUN npm run build
 
 # ---------
