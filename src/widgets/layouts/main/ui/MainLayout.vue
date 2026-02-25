@@ -21,8 +21,12 @@ const logoSrc = computed(() => {
 })
 
 async function handleLogout() {
-    await logout()
-    router.push(ROUTE_PATHS.LOGIN)
+    try {
+        await logout()
+    } finally {
+        sessionStore.clearSession()
+        router.push(ROUTE_PATHS.LOGIN)
+    }
 }
 </script>
 

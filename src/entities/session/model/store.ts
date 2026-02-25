@@ -8,7 +8,7 @@ import * as sessionApi from '../api'
 import type { AuthUser } from './types'
 
 export const useSessionStore = defineStore('session', () => {
-    const accessToken = ref<string | null>('null')
+    const accessToken = ref<string | null>(null)
     const sessionId = ref<string | null>(null)
     const user = ref<AuthUser | null>(null)
 

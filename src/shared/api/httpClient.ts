@@ -9,6 +9,11 @@ import { getMessage } from '@/shared/lib/message'
 import { apiConfig } from './config'
 import { toApiError } from './errors'
 
+function isNetworkError(error: unknown): boolean {
+    const ax = error as { code?: string } | null
+    return !!ax && typeof ax === 'object' && (ax.code === 'ECONNABORTED' || ax.code === 'ERR_NETWORK')
+}
+
 /**
  * Расширенная конфигурация запроса для перехватчиков.
  * @property _suppressErrorNotification - Не показывать toast при ошибке
@@ -38,8 +43,8 @@ export const httpClient = axios.create({
     withCredentials
 })
 
-/** Pending refresh promise so concurrent 401s share one refresh */
-let refreshPromise: Promise<boolean> | null = null
+/** Pending refresh promise so concurrent 401s share one refresh. Resolves with { ok, error? } to distinguish network vs 401/403. */
+let refreshPromise: Promise<{ ok: boolean; error?: unknown }> | null = null
 
 httpClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
     const pinia = getActivePinia()
@@ -72,7 +77,7 @@ httpClient.interceptors.response.use(
             const sessionStore = useSessionStore(pinia)
 
             if (!refreshPromise) {
-                refreshPromise = (async () => {
+                refreshPromise = (async (): Promise<{ ok: boolean; error?: unknown }> => {
                     try {
                         const { data } = await refreshClient.post<{
                             accessToken: string
@@ -84,23 +89,25 @@ httpClient.interceptors.response.use(
                         } else {
                             sessionStore.setAccessToken(data.accessToken, data.sessionId)
                         }
-                        return true
-                    } catch {
-                        return false
+                        return { ok: true }
+                    } catch (err) {
+                        return { ok: false, error: err }
                     } finally {
                         refreshPromise = null
                     }
                 })()
             }
 
-            const refreshed = await refreshPromise
-            if (refreshed) {
+            const result = await refreshPromise
+            if (result.ok) {
                 originalConfig._isRetry = true
                 return httpClient(originalConfig)
             }
             const msg = getMessage()
             if (msg) {
-                msg.error('Сессия истекла. Войдите снова.')
+                msg.error(
+                    isNetworkError(result.error) ? 'Нет сети. Проверьте подключение.' : 'Сессия истекла. Войдите снова.'
+                )
             }
             ;(error as Error & { _sessionExpired?: boolean })._sessionExpired = true
             sessionStore.clearSession()
