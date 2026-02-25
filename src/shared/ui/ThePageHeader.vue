@@ -78,3 +78,9 @@ function handleBack() {
         <slot />
     </PageHeader>
 </template>
+
+<style scoped>
+.the-page-header {
+    padding: 0;
+}
+</style>

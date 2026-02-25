@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { toTypedSchema } from '@vee-validate/zod'
-import { useForm } from 'vee-validate'
+import { useForm, useField } from 'vee-validate'
 import { computed } from 'vue'
 
 import { TheButton, TheForm, TheInput, TheInputNumber, TheSelect } from '@/shared/ui'
@@ -23,6 +23,11 @@ const { handleSubmit, isSubmitting, resetForm } = useForm<TransactionFormValues>
     validationSchema: toTypedSchema(transactionFormSchema),
     initialValues: { ...transactionFormInitialValues, ...props.initialValues }
 })
+
+const { value: transactionType } = useField<TransactionFormValues['type']>('type')
+
+const showDebitAccount = computed(() => transactionType.value === 'expense' || transactionType.value === 'transfer')
+const showCreditAccount = computed(() => transactionType.value === 'income' || transactionType.value === 'transfer')
 
 const canSubmit = computed(() => !isSubmitting.value)
 
@@ -61,12 +66,14 @@ defineExpose({ submit: handleSubmit, resetForm })
                 :options="typeOptions"
             />
             <TheSelect
+                v-if="showDebitAccount"
                 name="debitAccountId"
                 label="Счёт списания"
                 placeholder="Для расхода или перевода"
                 :options="accountOptions"
             />
             <TheSelect
+                v-if="showCreditAccount"
                 name="creditAccountId"
                 label="Счёт зачисления"
                 placeholder="Для дохода или перевода"

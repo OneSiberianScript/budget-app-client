@@ -9,6 +9,7 @@ import { useMonthlyPlanStore } from '@/entities/monthly-plan'
 import { useTransactionStore } from '@/entities/transaction'
 
 import { ROUTE_NAMES } from '@/shared/config/router'
+import { getCurrentMonth as getCurrentMonthUtil, getMonthRange } from '@/shared/lib/date'
 import { formatMoneyFromCents } from '@/shared/lib/format-money'
 import { TheAlert, TheButton, TheEmpty, ThePageHeader, TheSpin } from '@/shared/ui'
 
@@ -21,24 +22,7 @@ const transactionStore = useTransactionStore()
 const loading = ref(true)
 const error = ref<string | null>(null)
 
-/** Текущий месяц в формате YYYY-MM */
-function getCurrentMonth(): string {
-    const d = new Date()
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-}
-
-/** Границы месяца from/to для API */
-function getMonthRange(month: string): { from: string; to: string } {
-    const [y, m] = month.split('-').map(Number)
-    const from = new Date(y, m - 1, 1)
-    const to = new Date(y, m, 0)
-    return {
-        from: from.toISOString().slice(0, 10),
-        to: to.toISOString().slice(0, 10)
-    }
-}
-
-const currentMonth = computed(() => getCurrentMonth())
+const currentMonth = computed(() => getCurrentMonthUtil())
 const monthRange = computed(() => getMonthRange(currentMonth.value))
 
 const hasBudget = computed(() => !!budgetStore.currentBudgetId)

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useMediaQuery } from '@vueuse/core'
 import { ref, computed, onMounted, watch } from 'vue'
 
 import { TransactionForm } from '@/features/transaction/transaction-form'
@@ -13,8 +14,9 @@ import type { Transaction } from '@/entities/transaction'
 import { createTransaction, updateTransaction, deleteTransaction } from '@/entities/transaction/api'
 
 import { confirm } from '@/shared/lib/confirm'
+import { formatRubles } from '@/shared/lib/format-money'
 import { message } from '@/shared/lib/message'
-import { TheButton, TheDrawer, TheEmpty, ThePageHeader, TheSpin, TheTable } from '@/shared/ui'
+import { TheCreateButton, TheDrawer, TheEmpty, ThePageHeader, TheSpin, TheTable } from '@/shared/ui'
 
 const budgetStore = useBudgetStore()
 const accountStore = useAccountStore()
@@ -47,10 +49,12 @@ function categoryName(id: string) {
     return list.find((c) => c.id === id)?.name ?? id
 }
 
-function transactionTypeLabel(type: string) {
-    const labels: Record<string, string> = { expense: 'Расход', income: 'Доход', transfer: 'Перевод' }
-    return labels[type] ?? type
-}
+const EMPTY_FILTER_VALUE = '__empty__'
+
+/** Desktop: ≥768px; на мобилках и планшетах скрываем столбцы «Списание» и «Зачисление». */
+const isDesktop = useMediaQuery('(min-width: 768px)')
+/** Планшет и выше: ≥576px; на мобилках скрываем столбец «Описание». */
+const isTabletOrDesktop = useMediaQuery('(min-width: 576px)')
 
 function formatDate(dateStr: string) {
     if (!dateStr) return ''
@@ -58,16 +62,85 @@ function formatDate(dateStr: string) {
     return d.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
-const columns = [
-    { title: 'Тип', dataIndex: 'type', key: 'type', width: 90 },
-    { title: 'Дата', dataIndex: 'occurredAt', key: 'occurredAt', width: 110 },
-    { title: 'Сумма', dataIndex: 'amount', key: 'amount', width: 120 },
-    { title: 'Списание', dataIndex: 'debitAccountId', key: 'debitAccountId' },
-    { title: 'Зачисление', dataIndex: 'creditAccountId', key: 'creditAccountId' },
-    { title: 'Категория', dataIndex: 'categoryId', key: 'categoryId' },
-    { title: 'Описание', dataIndex: 'description', key: 'description' },
-    { title: '', key: 'action', width: 160, align: 'right' as const }
-]
+const columns = computed(() => {
+    const transactions = Array.isArray(transactionStore.transactions) ? transactionStore.transactions : []
+    const accounts = Array.isArray(accountStore.accounts) ? accountStore.accounts : []
+    const categories = Array.isArray(categoryStore.categories) ? categoryStore.categories : []
+
+    const dateFilters = [...new Set(transactions.map((t) => t.occurredAt))]
+        .sort()
+        .map((d) => ({ text: formatDate(d), value: d }))
+
+    const debitFilters = [
+        ...accounts.map((a) => ({ text: a.name, value: a.id })),
+        ...(transactions.some((t) => !t.debitAccountId) ? [{ text: '—', value: EMPTY_FILTER_VALUE }] : [])
+    ]
+    const creditFilters = [
+        ...accounts.map((a) => ({ text: a.name, value: a.id })),
+        ...(transactions.some((t) => !t.creditAccountId) ? [{ text: '—', value: EMPTY_FILTER_VALUE }] : [])
+    ]
+    const categoryFilters = [
+        ...categories.map((c) => ({ text: c.name, value: c.id })),
+        ...(transactions.some((t) => !t.categoryId) ? [{ text: '—', value: EMPTY_FILTER_VALUE }] : [])
+    ]
+
+    const baseColumns = [
+        {
+            title: 'Дата',
+            dataIndex: 'occurredAt',
+            key: 'occurredAt',
+            width: 110,
+            filters: dateFilters,
+            onFilter: (value: string, record: Record<string, unknown>) => (record as Transaction).occurredAt === value,
+            sorter: (a: Transaction, b: Transaction) =>
+                new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime()
+        },
+        {
+            title: 'Категория',
+            dataIndex: 'categoryId',
+            key: 'categoryId',
+            filters: categoryFilters,
+            onFilter: (value: string, record: Record<string, unknown>) => {
+                const id = (record as Transaction).categoryId
+                return value === EMPTY_FILTER_VALUE ? !id : id === value
+            }
+        },
+        ...(isTabletOrDesktop.value ? [{ title: 'Описание', dataIndex: 'description', key: 'description' }] : []),
+        {
+            title: 'Сумма',
+            dataIndex: 'amount',
+            key: 'amount',
+            width: 120,
+            sorter: (a: Transaction, b: Transaction) => parseFloat(a.amount) - parseFloat(b.amount)
+        },
+        ...(isDesktop.value
+            ? [
+                  {
+                      title: 'Списание',
+                      dataIndex: 'debitAccountId',
+                      key: 'debitAccountId',
+                      filters: debitFilters,
+                      onFilter: (value: string, record: Record<string, unknown>) => {
+                          const id = (record as Transaction).debitAccountId
+                          return value === EMPTY_FILTER_VALUE ? !id : id === value
+                      }
+                  },
+                  {
+                      title: 'Зачисление',
+                      dataIndex: 'creditAccountId',
+                      key: 'creditAccountId',
+                      filters: creditFilters,
+                      onFilter: (value: string, record: Record<string, unknown>) => {
+                          const id = (record as Transaction).creditAccountId
+                          return value === EMPTY_FILTER_VALUE ? !id : id === value
+                      }
+                  }
+              ]
+            : []),
+        { title: '', key: 'action', width: 160, align: 'right' as const }
+    ]
+    return baseColumns
+})
 
 function openCreate() {
     editingTransaction.value = null
@@ -140,7 +213,7 @@ async function handleFormSubmit(values: TransactionFormValues) {
 async function handleDelete(record: Transaction) {
     const ok = await confirm({
         title: 'Удалить транзакцию?',
-        content: `Транзакция от ${formatDate(record.occurredAt)} на сумму ${record.amount} будет удалена.`,
+        content: `Транзакция от ${formatDate(record.occurredAt)} на сумму ${formatRubles(record.amount, { maxFractionDigits: 0 })} будет удалена.`,
         type: 'warning',
         positiveText: 'Удалить'
     })
@@ -182,13 +255,11 @@ watch(() => budgetStore.currentBudgetId, load)
     <div class="transactions-page">
         <ThePageHeader title="Транзакции">
             <template #extra>
-                <TheButton
+                <TheCreateButton
                     v-if="hasBudget"
-                    type="primary"
+                    label="Создать транзакцию"
                     @click="openCreate"
-                >
-                    Создать транзакцию
-                </TheButton>
+                />
             </template>
         </ThePageHeader>
 
@@ -202,16 +273,31 @@ watch(() => budgetStore.currentBudgetId, load)
                     :data-source="transactionStore.transactions"
                     :loading="loading"
                     row-key="id"
+                    :action-handlers="{
+                        onEdit: (r) => openEdit(r as unknown as Transaction),
+                        onDelete: (r) => handleDelete(r as unknown as Transaction)
+                    }"
                 >
                     <template #bodyCell="{ column, record }">
-                        <template v-if="column?.key === 'type'">
-                            {{ transactionTypeLabel((record as Transaction).type) }}
-                        </template>
-                        <template v-else-if="column?.key === 'occurredAt'">
+                        <template v-if="column?.key === 'occurredAt'">
                             {{ formatDate((record as Transaction).occurredAt) }}
                         </template>
                         <template v-else-if="column?.key === 'amount'">
-                            {{ (record as Transaction).amount }}
+                            <span
+                                :class="[
+                                    'transactions-page__amount',
+                                    (record as Transaction).type === 'expense' && 'transactions-page__amount_expense',
+                                    (record as Transaction).type === 'income' && 'transactions-page__amount_income'
+                                ]"
+                            >
+                                {{
+                                    (record as Transaction).type === 'expense'
+                                        ? '− '
+                                        : (record as Transaction).type === 'income'
+                                          ? '+ '
+                                          : ''
+                                }}{{ formatRubles((record as Transaction).amount, { maxFractionDigits: 0 }) }}
+                            </span>
                         </template>
                         <template v-else-if="column?.key === 'debitAccountId'">
                             {{
@@ -235,25 +321,8 @@ watch(() => budgetStore.currentBudgetId, load)
                             }}
                         </template>
                         <template v-else-if="column?.key === 'description'">
-                            {{ (record as Transaction).description ?? '—' }}
-                        </template>
-                        <template v-else-if="column?.key === 'action'">
-                            <span class="transactions-page__actions">
-                                <TheButton
-                                    type="link"
-                                    size="small"
-                                    @click="openEdit(record as Transaction)"
-                                >
-                                    Изменить
-                                </TheButton>
-                                <TheButton
-                                    type="link"
-                                    size="small"
-                                    danger
-                                    @click="handleDelete(record as Transaction)"
-                                >
-                                    Удалить
-                                </TheButton>
+                            <span class="transactions-page__cell-description">
+                                {{ (record as Transaction).description ?? '—' }}
                             </span>
                         </template>
                     </template>
@@ -298,8 +367,15 @@ watch(() => budgetStore.currentBudgetId, load)
     min-height: 0;
 }
 
-.transactions-page__actions {
-    display: flex;
-    gap: 8px;
+.transactions-page__amount_expense {
+    color: var(--color-semantic-error);
+}
+
+.transactions-page__amount_income {
+    color: var(--color-semantic-success);
+}
+
+.transactions-page__cell-description {
+    color: var(--color-text-secondary);
 }
 </style>

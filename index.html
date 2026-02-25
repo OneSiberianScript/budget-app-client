@@ -1,6 +1,10 @@
 <!doctype html>
 <html lang="ru">
     <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+        <%- preconnect %>
+        <!-- theme -->
         <script>
             (function () {
                 var key = 'app_theme';
@@ -16,66 +20,21 @@
                 document.documentElement.setAttribute('data-theme', theme);
             })();
         </script>
-        <meta charset="UTF-8" />
-        <link
-            rel="icon"
-            type="image/png"
-            sizes="32x32"
-            href="/icons/favicon-light-32x32.png"
-            media="(prefers-color-scheme: light)"
-        />
-        <link
-            rel="icon"
-            type="image/png"
-            sizes="32x32"
-            href="/icons/favicon-dark-32x32.png"
-            media="(prefers-color-scheme: dark)"
-        />
-        <link
-            rel="icon"
-            type="image/png"
-            sizes="32x32"
-            href="/icons/favicon-light-32x32.png"
-        />
-        <link
-            rel="apple-touch-icon"
-            href="/icons/apple-touch-icon-light.png"
-            media="(prefers-color-scheme: light)"
-        />
-        <link
-            rel="apple-touch-icon"
-            href="/icons/apple-touch-icon-dark.png"
-            media="(prefers-color-scheme: dark)"
-        />
-        <link
-            rel="manifest"
-            href="/manifest.webmanifest"
-        />
-        <meta
-            name="theme-color"
-            content="#F5B72B"
-            media="(prefers-color-scheme: light)"
-        />
-        <meta
-            name="theme-color"
-            content="#312F2C"
-            media="(prefers-color-scheme: dark)"
-        />
-        <meta
-            name="theme-color"
-            content="#F5B72B"
-        />
-        <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1.0"
-        />
+        <!-- icons -->
+        <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-light-32x32.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-dark-32x32.png" media="(prefers-color-scheme: dark)" />
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon-light.png" />
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon-dark.png" media="(prefers-color-scheme: dark)" />
+        <!-- manifest & theme-color -->
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <meta name="theme-color" content="#F5B72B" />
+        <meta name="theme-color" content="#312F2C" media="(prefers-color-scheme: dark)" />
         <title>Budget App</title>
     </head>
     <body>
-        <div id="app"></div>
-        <script
-            type="module"
-            src="/src/app/entrypoint/main.ts"
-        ></script>
+        <div id="app">
+            <noscript>Для работы приложения включите JavaScript.</noscript>
+        </div>
+        <script type="module" src="/src/app/entrypoint/main.ts"></script>
     </body>
 </html>

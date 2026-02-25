@@ -17,8 +17,9 @@ import {
 } from '@/entities/monthly-plan/api'
 
 import { confirm } from '@/shared/lib/confirm'
+import { formatRubles } from '@/shared/lib/format-money'
 import { message } from '@/shared/lib/message'
-import { TheButton, TheDrawer, TheEmpty, ThePageHeader, TheSpin, TheTable } from '@/shared/ui'
+import { TheCreateButton, TheDrawer, TheEmpty, ThePageHeader, TheSpin, TheTable } from '@/shared/ui'
 
 const budgetStore = useBudgetStore()
 const categoryStore = useCategoryStore()
@@ -51,17 +52,6 @@ const columns = [
 function categoryName(categoryId: string) {
     const list = categoryStore.categories ?? []
     return list.find((c) => c.id === categoryId)?.name ?? categoryId
-}
-
-/** plannedAmount в API — строка (рубли); форматируем для отображения */
-function formatPlannedAmount(plannedAmount: string) {
-    const rub = parseFloat(plannedAmount) || 0
-    return new Intl.NumberFormat('ru-RU', {
-        style: 'currency',
-        currency: 'RUB',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(rub)
 }
 
 function openCreate() {
@@ -157,13 +147,11 @@ watch(() => budgetStore.currentBudgetId, load)
     <div class="budget-plans-page">
         <ThePageHeader title="Планы по бюджету">
             <template #extra>
-                <TheButton
+                <TheCreateButton
                     v-if="hasBudget"
-                    type="primary"
+                    label="Добавить лимит"
                     @click="openCreate"
-                >
-                    Добавить лимит
-                </TheButton>
+                />
             </template>
         </ThePageHeader>
 
@@ -178,32 +166,17 @@ watch(() => budgetStore.currentBudgetId, load)
                     :data-source="monthlyPlanStore.planItems"
                     :loading="loading"
                     row-key="id"
+                    :action-handlers="{
+                        onEdit: (r) => openEdit(r as unknown as MonthlyPlanItem),
+                        onDelete: (r) => handleDelete(r as unknown as MonthlyPlanItem)
+                    }"
                 >
                     <template #bodyCell="{ column, record }">
                         <template v-if="column?.key === 'categoryId'">
                             {{ categoryName(record.categoryId) }}
                         </template>
                         <template v-else-if="column?.key === 'plannedAmount'">
-                            {{ formatPlannedAmount(record.plannedAmount) }}
-                        </template>
-                        <template v-else-if="column?.key === 'action'">
-                            <span class="budget-plans-page__actions">
-                                <TheButton
-                                    type="link"
-                                    size="small"
-                                    @click="openEdit(record as MonthlyPlanItem)"
-                                >
-                                    Изменить
-                                </TheButton>
-                                <TheButton
-                                    type="link"
-                                    size="small"
-                                    danger
-                                    @click="handleDelete(record as MonthlyPlanItem)"
-                                >
-                                    Удалить
-                                </TheButton>
-                            </span>
+                            {{ formatRubles(record.plannedAmount, { maxFractionDigits: 0 }) }}
                         </template>
                     </template>
                 </TheTable>
@@ -244,10 +217,5 @@ watch(() => budgetStore.currentBudgetId, load)
 .budget-plans-page__month {
     margin: 0;
     color: var(--color-text-secondary);
-}
-
-.budget-plans-page__actions {
-    display: flex;
-    gap: 8px;
 }
 </style>

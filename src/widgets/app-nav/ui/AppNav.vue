@@ -40,7 +40,7 @@ function isItemActive(item: NavItem): boolean {
 /* Мобильные и планшеты: нижняя панель на всю ширину */
 .app-nav {
     position: fixed;
-    bottom: 12px;
+    bottom: 0;
     left: 0;
     right: 0;
     z-index: 100;
@@ -85,8 +85,10 @@ function isItemActive(item: NavItem): boolean {
 }
 
 .app-nav__icon {
-    font-size: 1.75rem;
+    width: 1.75rem;
+    height: 1.75rem;
     flex-shrink: 0;
+    color: currentColor;
 }
 
 .visually-hidden-mobile {
@@ -124,7 +126,8 @@ function isItemActive(item: NavItem): boolean {
     }
 
     .app-nav__icon {
-        font-size: 1.25rem;
+        width: 1.25rem;
+        height: 1.25rem;
     }
 
     .visually-hidden-mobile {

@@ -2,7 +2,12 @@
 import { Form, Select } from 'ant-design-vue'
 import { useField } from 'vee-validate'
 
-type Option = { label: string; value: string | number }
+/** Опция селекта; в слоте option доступны и дополнительные поля (например logoUrl) */
+export type Option = {
+    label: string
+    value: string | number | null
+    logoUrl?: string | null
+}
 
 type Props = {
     /** Имя поля для VeeValidate (должно совпадать с ключом в схеме формы) */
@@ -11,7 +16,7 @@ type Props = {
     label?: string
     /** Placeholder при пустом выборе */
     placeholder?: string
-    /** Список опций { label, value } */
+    /** Список опций { label, value } (доп. поля доступны в слоте option) */
     options?: Option[]
     /** Неактивно */
     disabled?: boolean
@@ -24,7 +29,12 @@ const props = withDefaults(defineProps<Props>(), {
     disabled: false
 })
 
-const { value, errorMessage } = useField<string | number | undefined>(() => props.name)
+defineSlots<{
+    /** Кастомный рендер опции в выпадающем списке (получает объект опции) */
+    option?: (props: { option: Option }) => unknown
+}>()
+
+const { value, errorMessage } = useField<string | number | undefined | null>(() => props.name)
 </script>
 
 <template>
@@ -42,6 +52,16 @@ const { value, errorMessage } = useField<string | number | undefined>(() => prop
             :disabled="disabled"
             :aria-label="label || name"
             allow-clear
-        />
+        >
+            <template
+                v-if="$slots.option"
+                #option="slotProps"
+            >
+                <slot
+                    name="option"
+                    :option="slotProps"
+                />
+            </template>
+        </Select>
     </Form.Item>
 </template>

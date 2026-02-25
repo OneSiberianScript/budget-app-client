@@ -21,6 +21,20 @@ body {
     overflow: hidden;
 }
 
+a {
+    color: var(--color-accent-primary);
+}
+a:hover {
+    color: var(--color-accent-hover);
+}
+a:active {
+    color: var(--color-accent-active);
+}
+a:focus-visible {
+    outline: 2px solid var(--color-accent-primary);
+    outline-offset: 2px;
+}
+
 @media (max-width: 767px) {
     .ant-input,
     .the-input .ant-input {

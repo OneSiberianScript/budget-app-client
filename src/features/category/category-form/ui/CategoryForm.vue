@@ -3,7 +3,9 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { computed } from 'vue'
 
-import { TheButton, TheForm, TheInput, TheSelect } from '@/shared/ui'
+import { getCategoryIconComponent, CATEGORY_COLOR_OPTIONS, CATEGORY_ICON_OPTIONS } from '@/entities/category'
+
+import { TheButton, TheForm, TheInput, TheSelect, TheTag } from '@/shared/ui'
 
 import { categoryFormSchema } from '../model/CategoryForm.schema'
 import { categoryFormInitialValues } from '../model/CategoryForm.types'
@@ -65,16 +67,37 @@ defineExpose({ submit: handleSubmit, resetForm })
                 placeholder="Выберите тип"
                 :options="typeOptions"
             />
-            <TheInput
+            <TheSelect
                 name="color"
                 label="Цвет"
-                placeholder="Например #hex или название (необязательно)"
-            />
-            <TheInput
+                placeholder="Выберите цвет"
+                :options="CATEGORY_COLOR_OPTIONS"
+            >
+                <template #option="{ option }">
+                    <TheTag
+                        v-if="option?.value != null"
+                        :color="String(option.value)"
+                    >
+                        {{ option?.label }}
+                    </TheTag>
+                    <span v-else>{{ option?.label }}</span>
+                </template>
+            </TheSelect>
+            <TheSelect
                 name="icon"
                 label="Иконка"
-                placeholder="Название иконки (необязательно)"
-            />
+                placeholder="Выберите иконку"
+                :options="CATEGORY_ICON_OPTIONS"
+            >
+                <template #option="{ option }">
+                    <component
+                        :is="getCategoryIconComponent(option?.value != null ? String(option.value) : null)"
+                        class="category-form__option-icon"
+                        aria-hidden
+                    />
+                    <span>{{ option?.label }}</span>
+                </template>
+            </TheSelect>
             <TheButton
                 type="primary"
                 html-type="submit"
@@ -94,5 +117,12 @@ defineExpose({ submit: handleSubmit, resetForm })
     display: flex;
     flex-direction: column;
     gap: 16px;
+}
+
+.category-form__option-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-right: 8px;
+    vertical-align: middle;
 }
 </style>

@@ -18,15 +18,12 @@ import { ROUTE_PATHS } from '@/shared/config/router'
 </template>
 
 <style scoped>
-.register-page {
-    padding: 24px;
-    max-width: 400px;
-    margin: 0 auto;
-}
 .register-page h1 {
     margin-bottom: 24px;
+    text-align: center;
 }
 .register-page p {
     margin-top: 16px;
+    text-align: center;
 }
 </style>

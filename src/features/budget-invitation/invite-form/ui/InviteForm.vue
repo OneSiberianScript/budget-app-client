@@ -3,7 +3,7 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { computed } from 'vue'
 
-import { TheButton, TheForm, TheInput, TheSelect } from '@/shared/ui'
+import { TheCreateButton, TheForm, TheInput, TheSelect } from '@/shared/ui'
 
 import { inviteFormSchema } from '../model/InviteForm.schema'
 import { inviteFormInitialValues } from '../model/InviteForm.types'
@@ -58,15 +58,14 @@ defineExpose({ submit: handleSubmit, resetForm })
                 placeholder="Выберите роль"
                 :options="roleOptions"
             />
-            <TheButton
+            <TheCreateButton
+                label="Пригласить"
                 type="primary"
                 html-type="submit"
                 :loading="isSubmitting"
                 :disabled="!canSubmit"
                 @click.prevent="formSubmitHandler($event as unknown as SubmitEvent)"
-            >
-                Пригласить
-            </TheButton>
+            />
         </TheForm>
     </div>
 </template>

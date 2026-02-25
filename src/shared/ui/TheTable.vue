@@ -1,11 +1,20 @@
 <script setup lang="ts">
-import { Table } from 'ant-design-vue'
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons-vue'
+import { Button, Table } from 'ant-design-vue'
 import { computed } from 'vue'
 
 /**
  * Обёртка над a-table. Корневой класс: the-table.
  * Колонки и данные через props или слот по умолчанию для кастомного тела.
+ * При передаче actionHandlers колонка с key: 'action' рендерит иконки редактирования и удаления.
  */
+interface ActionHandlers {
+    /** Вызов при клике на иконку редактирования */
+    onEdit?: (record: Record<string, unknown>) => void
+    /** Вызов при клике на иконку удаления */
+    onDelete?: (record: Record<string, unknown>) => void
+}
+
 interface Column {
     /** Уникальный ключ колонки */
     key?: string
@@ -49,6 +58,11 @@ interface Props {
     pagination?: false | PaginationConfig
     /** Размер строк */
     size?: 'small' | 'middle' | 'large'
+    /**
+     * Обработчики для колонки действий (key: 'action').
+     * При задании таблица рендерит иконки «редактировать» и «удалить» вместо слота bodyCell для этой колонки.
+     */
+    actionHandlers?: ActionHandlers
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -57,11 +71,20 @@ const props = withDefaults(defineProps<Props>(), {
     loading: false,
     rowKey: 'id',
     pagination: false,
-    size: 'middle'
+    size: 'middle',
+    actionHandlers: undefined
 })
 
 /** Всегда массив, чтобы a-table не падал на .forEach/.some при неверной форме данных (напр. объект из API). */
 const normalizedDataSource = computed(() => (Array.isArray(props.dataSource) ? props.dataSource : []))
+
+const hasActionHandlers = computed(
+    () => !!props.actionHandlers && (!!props.actionHandlers.onEdit || !!props.actionHandlers.onDelete)
+)
+
+function useDefaultActionCell(column: { key?: string | number } | undefined): boolean {
+    return column?.key === 'action' && hasActionHandlers.value
+}
 </script>
 
 <template>
@@ -76,10 +99,42 @@ const normalizedDataSource = computed(() => (Array.isArray(props.dataSource) ? p
         v-bind="$attrs"
     >
         <template
-            v-if="$slots.bodyCell"
+            v-if="$slots.bodyCell || hasActionHandlers"
             #bodyCell="{ column, record, index }"
         >
+            <template v-if="useDefaultActionCell(column)">
+                <span class="the-table__actions">
+                    <slot
+                        name="actionPrepend"
+                        :record="record"
+                    />
+                    <Button
+                        v-if="props.actionHandlers?.onEdit"
+                        type="text"
+                        size="small"
+                        class="the-table__action-btn the-table__action-btn_edit"
+                        aria-label="Редактировать"
+                        title="Редактировать"
+                        @click="props.actionHandlers!.onEdit!(record)"
+                    >
+                        <EditOutlined />
+                    </Button>
+                    <Button
+                        v-if="props.actionHandlers?.onDelete"
+                        type="text"
+                        size="small"
+                        danger
+                        class="the-table__action-btn the-table__action-btn_delete"
+                        aria-label="Удалить"
+                        title="Удалить"
+                        @click="props.actionHandlers!.onDelete!(record)"
+                    >
+                        <DeleteOutlined />
+                    </Button>
+                </span>
+            </template>
             <slot
+                v-else-if="$slots.bodyCell"
                 name="bodyCell"
                 :column="column"
                 :record="record"
@@ -98,3 +153,29 @@ const normalizedDataSource = computed(() => (Array.isArray(props.dataSource) ? p
         <slot />
     </Table>
 </template>
+
+<style scoped>
+.the-table__actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.the-table__action-btn_edit {
+    color: var(--color-text-primary);
+}
+
+.the-table__action-btn_edit:hover {
+    color: var(--color-text-primary);
+    opacity: 0.8;
+}
+
+.the-table__action-btn_delete {
+    color: var(--color-error);
+}
+
+.the-table__action-btn_delete:hover {
+    color: var(--color-error);
+    opacity: 0.8;
+}
+</style>

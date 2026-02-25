@@ -74,6 +74,7 @@ function formSubmitHandler(e: SubmitEvent) {
                 autocomplete="current-password"
             />
             <TheButton
+                class="login-form__submit"
                 type="primary"
                 html-type="submit"
                 :loading="isSubmitting"
@@ -92,5 +93,8 @@ function formSubmitHandler(e: SubmitEvent) {
     display: flex;
     flex-direction: column;
     gap: 16px;
+}
+.login-form__submit {
+    margin-top: 24px;
 }
 </style>

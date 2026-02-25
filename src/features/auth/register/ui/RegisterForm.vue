@@ -89,6 +89,7 @@ function formSubmitHandler(e: SubmitEvent) {
                 autocomplete="family-name"
             />
             <TheButton
+                class="register-form__submit"
                 type="primary"
                 html-type="submit"
                 :loading="isSubmitting"
@@ -107,5 +108,8 @@ function formSubmitHandler(e: SubmitEvent) {
     display: flex;
     flex-direction: column;
     gap: 16px;
+}
+.register-form__submit {
+    margin-top: 24px;
 }
 </style>

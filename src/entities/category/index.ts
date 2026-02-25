@@ -1,3 +1,7 @@
+export { CATEGORY_COLOR_OPTIONS } from './model/category-colors'
+export type { CategoryColorOption } from './model/category-colors'
+export { getCategoryIconComponent, CATEGORY_ICON_OPTIONS } from './model/icon-map'
+export type { CategoryIconOption } from './model/icon-map'
 export { useCategoryStore } from './model/store'
 export type { Category, CategoryType } from './model/types'
 export { fetchCategories, fetchCategoryById, createCategory, updateCategory, deleteCategory } from './api'

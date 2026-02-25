@@ -11,7 +11,7 @@ import { createBudget, updateBudget, deleteBudget } from '@/entities/budget/api'
 import { ROUTE_NAMES } from '@/shared/config/router'
 import { confirm } from '@/shared/lib/confirm'
 import { message } from '@/shared/lib/message'
-import { TheButton, TheDrawer, ThePageHeader, TheSpin, TheTable } from '@/shared/ui'
+import { TheCreateButton, TheDrawer, ThePageHeader, TheSpin, TheTable } from '@/shared/ui'
 
 const budgetStore = useBudgetStore()
 
@@ -84,12 +84,10 @@ onMounted(load)
     <div class="budgets-page">
         <ThePageHeader title="Бюджеты">
             <template #extra>
-                <TheButton
-                    type="primary"
+                <TheCreateButton
+                    label="Создать бюджет"
                     @click="openCreate"
-                >
-                    Создать бюджет
-                </TheButton>
+                />
             </template>
         </ThePageHeader>
 
@@ -99,33 +97,18 @@ onMounted(load)
                 :data-source="budgetStore.budgets"
                 :loading="loading"
                 row-key="id"
+                :action-handlers="{
+                    onEdit: (r) => openEdit(r as unknown as Budget),
+                    onDelete: (r) => handleDelete(r as unknown as Budget)
+                }"
             >
-                <template #bodyCell="{ column, record }">
-                    <template v-if="column?.key === 'action'">
-                        <span class="budgets-page__actions">
-                            <router-link
-                                :to="{ name: ROUTE_NAMES.BUDGET_SETTINGS, params: { id: (record as Budget).id } }"
-                                class="budgets-page__link"
-                            >
-                                Настройки
-                            </router-link>
-                            <TheButton
-                                type="link"
-                                size="small"
-                                @click="openEdit(record as Budget)"
-                            >
-                                Изменить
-                            </TheButton>
-                            <TheButton
-                                type="link"
-                                size="small"
-                                danger
-                                @click="handleDelete(record as Budget)"
-                            >
-                                Удалить
-                            </TheButton>
-                        </span>
-                    </template>
+                <template #actionPrepend="{ record }">
+                    <router-link
+                        :to="{ name: ROUTE_NAMES.BUDGET_SETTINGS, params: { id: (record as Budget).id } }"
+                        class="budgets-page__link"
+                    >
+                        Настройки
+                    </router-link>
                 </template>
             </TheTable>
         </TheSpin>
@@ -159,10 +142,5 @@ onMounted(load)
     flex-direction: column;
     gap: 16px;
     min-height: 0;
-}
-
-.budgets-page__actions {
-    display: flex;
-    gap: 8px;
 }
 </style>

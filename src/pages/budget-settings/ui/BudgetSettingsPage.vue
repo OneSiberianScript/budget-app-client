@@ -10,7 +10,7 @@ import type { BudgetInvitation } from '@/entities/budget-invitation'
 import { useBudgetInvitationStore } from '@/entities/budget-invitation'
 
 import { message } from '@/shared/lib/message'
-import { TheButton, TheModal, ThePageHeader, TheSpin, TheTable } from '@/shared/ui'
+import { TheCreateButton, TheModal, ThePageHeader, TheSpin, TheTable } from '@/shared/ui'
 
 const route = useRoute()
 const budgetStore = useBudgetStore()
@@ -93,14 +93,12 @@ async function handleRevoke(inv: BudgetInvitation) {
             >
                 <h2 class="budget-settings-page__section-title">Приглашения</h2>
                 <div class="budget-settings-page__toolbar">
-                    <TheButton
+                    <TheCreateButton
                         v-if="isOwner"
-                        type="primary"
+                        label="Пригласить"
                         size="small"
                         @click="inviteModalOpen = true"
-                    >
-                        Пригласить
-                    </TheButton>
+                    />
                 </div>
                 <TheTable
                     :columns="columns"

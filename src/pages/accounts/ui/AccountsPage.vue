@@ -4,14 +4,15 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { AccountForm } from '@/features/account/account-form'
 import type { AccountFormValues } from '@/features/account/account-form'
 
-import { useAccountStore } from '@/entities/account'
+import { getBankLogoUrl, useAccountStore } from '@/entities/account'
 import type { Account } from '@/entities/account'
 import { createAccount, updateAccount, deleteAccount } from '@/entities/account/api'
 import { useBudgetStore } from '@/entities/budget'
 
 import { confirm } from '@/shared/lib/confirm'
+import { formatRubles } from '@/shared/lib/format-money'
 import { message } from '@/shared/lib/message'
-import { TheButton, TheDrawer, TheEmpty, ThePageHeader, TheSpin, TheTable } from '@/shared/ui'
+import { TheCreateButton, TheDrawer, TheEmpty, ThePageHeader, TheSpin, TheTable } from '@/shared/ui'
 
 const budgetStore = useBudgetStore()
 const accountStore = useAccountStore()
@@ -28,10 +29,10 @@ const accountTypeLabels: Record<string, string> = {
 }
 
 const columns = [
+    { title: '', dataIndex: 'bank', key: 'bank', width: 40 },
     { title: 'Название', dataIndex: 'name', key: 'name' },
     { title: 'Тип', dataIndex: 'type', key: 'type', width: 100 },
     { title: 'Баланс', dataIndex: 'currentBalance', key: 'currentBalance', width: 120 },
-    { title: 'Банк', dataIndex: 'bank', key: 'bank', width: 120 },
     { title: '', key: 'action', width: 160, align: 'right' as const }
 ]
 
@@ -103,13 +104,11 @@ watch(() => budgetStore.currentBudgetId, load)
     <div class="accounts-page">
         <ThePageHeader title="Счета">
             <template #extra>
-                <TheButton
+                <TheCreateButton
                     v-if="hasBudget"
-                    type="primary"
+                    label="Создать счёт"
                     @click="openCreate"
-                >
-                    Создать счёт
-                </TheButton>
+                />
             </template>
         </ThePageHeader>
 
@@ -123,32 +122,28 @@ watch(() => budgetStore.currentBudgetId, load)
                     :data-source="accountStore.accounts"
                     :loading="loading"
                     row-key="id"
+                    :action-handlers="{
+                        onEdit: (r) => openEdit(r as unknown as Account),
+                        onDelete: (r) => handleDelete(r as unknown as Account)
+                    }"
                 >
                     <template #bodyCell="{ column, record }">
-                        <template v-if="column?.key === 'type'">
+                        <template v-if="column?.key === 'bank'">
+                            <span class="accounts-page__bank-cell">
+                                <img
+                                    v-if="getBankLogoUrl((record as Account).bank)"
+                                    :src="getBankLogoUrl((record as Account).bank)!"
+                                    alt=""
+                                    class="accounts-page__bank-logo"
+                                />
+                                <template v-else>{{ (record as Account).bank ?? '—' }}</template>
+                            </span>
+                        </template>
+                        <template v-else-if="column?.key === 'type'">
                             {{ accountTypeLabels[(record as Account).type] ?? (record as Account).type }}
                         </template>
-                        <template v-else-if="column?.key === 'bank'">
-                            {{ (record as Account).bank ?? '—' }}
-                        </template>
-                        <template v-else-if="column?.key === 'action'">
-                            <span class="accounts-page__actions">
-                                <TheButton
-                                    type="link"
-                                    size="small"
-                                    @click="openEdit(record as Account)"
-                                >
-                                    Изменить
-                                </TheButton>
-                                <TheButton
-                                    type="link"
-                                    size="small"
-                                    danger
-                                    @click="handleDelete(record as Account)"
-                                >
-                                    Удалить
-                                </TheButton>
-                            </span>
+                        <template v-else-if="column?.key === 'currentBalance'">
+                            {{ formatRubles((record as Account).currentBalance) }}
                         </template>
                     </template>
                 </TheTable>
@@ -187,8 +182,16 @@ watch(() => budgetStore.currentBudgetId, load)
     min-height: 0;
 }
 
-.accounts-page__actions {
-    display: flex;
+.accounts-page__bank-cell {
+    display: inline-flex;
+    align-items: center;
     gap: 8px;
+}
+
+.accounts-page__bank-logo {
+    display: block;
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
 }
 </style>
