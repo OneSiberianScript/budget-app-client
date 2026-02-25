@@ -65,6 +65,6 @@ async function handleResend() {
 }
 
 .confirm-email-required-page__rate-limit {
-    color: var(--color-warning, #faad14);
+    color: var(--color-warning);
 }
 </style>

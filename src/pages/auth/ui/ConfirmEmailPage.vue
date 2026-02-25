@@ -120,11 +120,11 @@ async function handleResend() {
 }
 
 .confirm-email-page__error {
-    color: var(--color-error, #ff4d4f);
+    color: var(--color-error);
 }
 
 .confirm-email-page__rate-limit {
-    color: var(--color-warning, #faad14);
+    color: var(--color-warning);
 }
 
 .confirm-email-page__actions {

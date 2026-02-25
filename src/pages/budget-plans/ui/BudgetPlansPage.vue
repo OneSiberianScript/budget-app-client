@@ -243,7 +243,7 @@ watch(() => budgetStore.currentBudgetId, load)
 
 .budget-plans-page__month {
     margin: 0;
-    color: var(--color-text-secondary, #666);
+    color: var(--color-text-secondary);
 }
 
 .budget-plans-page__actions {

@@ -235,7 +235,7 @@ function goToAddTransaction(type: 'expense' | 'income') {
 
 .home-page__summary-label {
     font-size: 0.875rem;
-    color: var(--color-text-secondary, #666);
+    color: var(--color-text-secondary);
 }
 
 .home-page__summary-value {
@@ -244,7 +244,7 @@ function goToAddTransaction(type: 'expense' | 'income') {
 }
 
 .home-page__summary-value_spent {
-    color: var(--color-error, #ff4d4f);
+    color: var(--color-error);
 }
 
 .home-page__chart {

@@ -8,13 +8,15 @@ import type { ThemeConfig } from 'ant-design-vue/es/config-provider/context'
 
 const STORAGE_KEY = 'app_theme'
 
+const VALID_THEMES: ThemeId[] = ['light', 'dark']
+
 function readStored(): ThemeId {
     if (typeof document === 'undefined') return DEFAULT_THEME
     try {
         const v = document.documentElement.getAttribute('data-theme') as ThemeId | null
-        if (v && (v === 'light' || v === 'dark' || v === 'monochrome')) return v
+        if (v && VALID_THEMES.includes(v)) return v
         const s = localStorage.getItem(STORAGE_KEY) as ThemeId | null
-        if (s && (s === 'light' || s === 'dark' || s === 'monochrome')) return s
+        if (s && VALID_THEMES.includes(s)) return s
     } catch {
         // ignore
     }

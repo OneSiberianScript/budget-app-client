@@ -40,7 +40,13 @@ function isItemActive(item: NavItem): boolean {
 </template>
 
 <style scoped>
+/* Мобильные и планшеты: нижняя панель на всю ширину */
 .app-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -50,11 +56,6 @@ function isItemActive(item: NavItem): boolean {
     padding-bottom: env(safe-area-inset-bottom);
     background: var(--color-bg-container, #fff);
     border-top: 1px solid var(--color-border, #d9d9d9);
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
 }
 
 .app-nav__item {
@@ -66,7 +67,7 @@ function isItemActive(item: NavItem): boolean {
     gap: 4px;
     min-height: 44px;
     padding: 8px 4px;
-    color: var(--color-text-secondary, rgba(0, 0, 0, 0.65));
+    color: var(--color-text-secondary);
     text-decoration: none;
     font-size: 0.75rem;
     transition:
@@ -75,15 +76,15 @@ function isItemActive(item: NavItem): boolean {
 }
 
 .app-nav__item:hover {
-    color: var(--color-primary, #1677ff);
+    color: var(--color-primary);
 }
 
 .app-nav__item--active {
-    color: var(--color-primary, #1677ff);
+    color: var(--color-primary);
 }
 
 .app-nav__item--active .app-nav__icon {
-    color: var(--color-primary, #1677ff);
+    color: var(--color-primary);
 }
 
 .app-nav__icon {
@@ -103,20 +104,25 @@ function isItemActive(item: NavItem): boolean {
     border: 0;
 }
 
+/* Desktop: навигация в header */
 @media (min-width: 768px) {
     .app-nav {
         position: static;
+        flex: 1;
+        justify-content: center;
+        min-height: 0;
+        padding: 0;
+        background: transparent;
         border-top: none;
-        border-bottom: 1px solid var(--color-border, #d9d9d9);
-        padding-bottom: 0;
-        min-height: 48px;
+        gap: 4px;
     }
 
     .app-nav__item {
         flex: 0 1 auto;
         flex-direction: row;
         gap: 8px;
-        padding: 12px 16px;
+        min-width: auto;
+        padding: 8px 12px;
         font-size: 0.875rem;
     }
 

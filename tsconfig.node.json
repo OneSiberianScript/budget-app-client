@@ -5,7 +5,8 @@
         "moduleResolution": "bundler",
         "strict": true,
         "types": ["node"],
-        "outDir": "dist-node"
+        "outDir": "dist-node",
+        "skipLibCheck": true
     },
     "include": ["vite.config.ts"]
 }

@@ -1,1 +1,1 @@
-export type ThemeId = 'light' | 'dark' | 'monochrome'
+export type ThemeId = 'light' | 'dark'

@@ -1,23 +1,22 @@
 # Темы (useTheme, getThemeOverrides)
 
-Поддержка светлой, тёмной и монохромной темы. Состояние хранится в `data-theme` на `<html>` и в localStorage.
+Поддержка светлой и тёмной темы. Палитра — из `design-tokens.tokens.json`. Состояние хранится в `data-theme` на `<html>` и в localStorage.
 
 ## useTheme()
 
-Composable: реактивные `themeId` и `setThemeId(id)`. При смене темы обновляются атрибут и localStorage. Передавайте `getThemeOverrides(themeId)` в ConfigProvider (Ant Design Vue) для токенов и компонентов.
+Composable: реактивные `currentTheme`, `setTheme(id)` и `themeOverrides`. При смене темы обновляются атрибут и localStorage. Передавайте `themeOverrides` в ConfigProvider (Ant Design Vue).
 
 ```ts
 import { useTheme } from '@/shared/config/theme/useTheme'
-import { getThemeOverrides } from '@/shared/config/theme/getThemeOverrides'
 
-const { themeId, setThemeId } = useTheme()
-const themeOverrides = computed(() => getThemeOverrides(themeId.value))
+const { currentTheme, setTheme, themeOverrides } = useTheme()
+// В App.vue: <ConfigProvider :theme="themeOverrides">
 ```
 
 ## getThemeOverrides(themeId)
 
-Возвращает объект переопределений темы для Ant Design Vue ConfigProvider (`ThemeConfig`). Идентификаторы: `'light' | 'dark' | 'monochrome'`.
+Возвращает объект переопределений темы для Ant Design Vue ConfigProvider (`ThemeConfig`). Идентификаторы: `'light' | 'dark'`.
 
 ## Токены и CSS
 
-Переменные для `data-theme` задаются в `src/app/styles/tokens.css`. Компоненты и глобальные стили используют эти переменные для цветов и отступов.
+Переменные для `[data-theme='light']` и `[data-theme='dark']` задаются в `src/app/styles/tokens.css`; значения соответствуют `design-tokens.tokens.json`. Компоненты используют эти переменные для цветов (в т.ч. алиасы обратной совместимости: `--color-bg`, `--color-text`, `--color-border`, `--color-primary`, `--color-error`, `--color-warning`, `--color-bg-container`).

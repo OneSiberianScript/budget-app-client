@@ -58,6 +58,6 @@ function goToLogin() {
 }
 
 .incoming-invitation-page__error {
-    color: var(--color-error, #ff4d4f);
+    color: var(--color-error);
 }
 </style>

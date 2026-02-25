@@ -1,19 +1,75 @@
-/* CSS variables by data-theme. Used by app and components. */
+/* CSS variables by data-theme. Source: design-tokens.tokens.json */
 :root,
 [data-theme='light'] {
-    --color-bg: #ffffff;
-    --color-text: #000000e0;
-    --color-border: #d9d9d9;
+    /* Backgrounds */
+    --color-bg-primary: #fafafaff;
+    --color-bg-secondary: #f2f2f2ff;
+    --color-bg-tertiary: #e8e8e8ff;
+    /* Text */
+    --color-text-primary: #312f2cff;
+    --color-text-secondary: #5f5c58ff;
+    --color-text-muted: #8b8783ff;
+    --color-text-inverse: #fafafaff;
+    /* Borders */
+    --color-border-default: #d6d3cfff;
+    --color-border-strong: #bebab5ff;
+    /* Accent */
+    --color-accent-primary: #f5b72bff;
+    --color-accent-hover: #dfa31fff;
+    --color-accent-active: #b98516ff;
+    --color-accent-soft: #feefc3ff;
+    /* Semantic */
+    --color-semantic-error: #d64545ff;
+    --color-semantic-warning: #e6a23cff;
+    --color-semantic-info: #3a7afeff;
+    --color-semantic-success: #4caf6dff;
+    --color-error-soft: #f4d4d4ff;
+    --color-warning-soft: #f7e7c6ff;
+    --color-success-soft: #ddf2e6ff;
+
+    /* Backward-compat aliases */
+    --color-bg: var(--color-bg-primary);
+    --color-text: var(--color-text-primary);
+    --color-border: var(--color-border-default);
+    --color-primary: var(--color-accent-primary);
+    --color-bg-container: var(--color-bg-secondary);
+    --color-error: var(--color-semantic-error);
+    --color-warning: var(--color-semantic-warning);
 }
 
 [data-theme='dark'] {
-    --color-bg: #141414;
-    --color-text: #ffffffd9;
-    --color-border: #424242;
-}
+    /* Backgrounds */
+    --color-bg-primary: #312f2cff;
+    --color-bg-secondary: #3a3734ff;
+    --color-bg-tertiary: #45423fff;
+    /* Text */
+    --color-text-primary: #fafafaff;
+    --color-text-secondary: #d6d3cfff;
+    --color-text-muted: #a9a5a0ff;
+    --color-text-inverse: #312f2cff;
+    /* Borders */
+    --color-border-default: #4e4a47ff;
+    --color-border-strong: #6a6662ff;
+    /* Accent (shared) */
+    --color-accent-primary: #f5b72bff;
+    --color-accent-hover: #dfa31fff;
+    --color-accent-active: #b98516ff;
+    --color-accent-soft: #5f460dff;
+    /* Semantic (shared) */
+    --color-semantic-error: #d64545ff;
+    --color-semantic-warning: #e6a23cff;
+    --color-semantic-info: #3a7afeff;
+    --color-semantic-success: #4caf6dff;
+    --color-error-soft: #f4d4d4ff;
+    --color-warning-soft: #f7e7c6ff;
+    --color-success-soft: #ddf2e6ff;
 
-[data-theme='monochrome'] {
-    --color-bg: #fafafa;
-    --color-text: #262626;
-    --color-border: #bfbfbf;
+    /* Backward-compat aliases */
+    --color-bg: var(--color-bg-primary);
+    --color-text: var(--color-text-primary);
+    --color-border: var(--color-border-default);
+    --color-primary: var(--color-accent-primary);
+    --color-bg-container: var(--color-bg-secondary);
+    --color-error: var(--color-semantic-error);
+    --color-warning: var(--color-semantic-warning);
 }

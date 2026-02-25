@@ -159,6 +159,6 @@ onMounted(load)
 }
 
 .sessions-page__current {
-    color: var(--color-text-secondary, #999);
+    color: var(--color-text-secondary);
 }
 </style>

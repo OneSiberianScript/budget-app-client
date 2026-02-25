@@ -1,15 +1,25 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 
+import { BudgetSwitcher } from '@/widgets/budget-switcher'
+
 import { useSessionStore } from '@/entities/session'
 
 import { ROUTE_NAMES } from '@/shared/config/router'
+import type { ThemeId } from '@/shared/config/theme/types'
+import { useTheme } from '@/shared/config/theme/useTheme'
 import { TheButton, ThePageHeader } from '@/shared/ui'
 
 const router = useRouter()
 const sessionStore = useSessionStore()
+const { currentTheme, setTheme } = useTheme()
 
 const user = sessionStore.user
+
+const themeOptions: { label: string; value: ThemeId }[] = [
+    { label: 'Светлая', value: 'light' },
+    { label: 'Тёмная', value: 'dark' }
+]
 
 function goToChangePassword() {
     router.push({ name: ROUTE_NAMES.CHANGE_PASSWORD })
@@ -34,6 +44,29 @@ function goToSessions() {
                 <dt>Фамилия</dt>
                 <dd>{{ user?.lastName ?? '—' }}</dd>
             </dl>
+        </section>
+
+        <section class="profile-page__section">
+            <h2 class="profile-page__section-title">Текущий бюджет</h2>
+            <p class="profile-page__section-desc">
+                Бюджет, с которым вы работаете на дашборде, в разделах «Счета», «Категории», «Планирование» и
+                «Транзакции». Список доступных бюджетов — на странице «Бюджеты».
+            </p>
+            <div class="profile-page__switcher">
+                <BudgetSwitcher />
+            </div>
+        </section>
+
+        <section class="profile-page__section">
+            <h2 class="profile-page__section-title">Внешний вид</h2>
+            <p class="profile-page__section-desc">Тема оформления приложения.</p>
+            <a-radio-group
+                :value="currentTheme"
+                :options="themeOptions"
+                option-type="button"
+                button-style="solid"
+                @update:value="setTheme"
+            />
         </section>
 
         <section class="profile-page__section">
@@ -85,7 +118,7 @@ function goToSessions() {
 
 .profile-page__section-desc {
     margin: 0;
-    color: var(--color-text-secondary, #666);
+    color: var(--color-text-secondary);
     font-size: 0.875rem;
 }
 
@@ -98,10 +131,14 @@ function goToSessions() {
 
 .profile-page__dl dt {
     font-weight: 500;
-    color: var(--color-text-secondary, #666);
+    color: var(--color-text-secondary);
 }
 
 .profile-page__dl dd {
     margin: 0;
+}
+
+.profile-page__switcher {
+    max-width: 320px;
 }
 </style>

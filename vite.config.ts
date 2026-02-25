@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import { VitePWA } from 'vite-plugin-pwa'
 import { visualizer } from 'rollup-plugin-visualizer'
 import { fileURLToPath, URL } from 'node:url'
 
@@ -17,6 +18,13 @@ export default defineConfig({
     },
     plugins: [
         vue(),
+        VitePWA({
+            registerType: 'autoUpdate',
+            manifest: false,
+            workbox: {
+                globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,webmanifest}']
+            }
+        }),
         process.env.NODE_ENV === 'analyze'
             ? visualizer({ open: true, gzipSize: true, filename: 'dist/stats.html' })
             : []

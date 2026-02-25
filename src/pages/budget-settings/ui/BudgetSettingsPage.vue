@@ -179,6 +179,6 @@ async function handleRevoke(inv: BudgetInvitation) {
 
 .budget-settings-page__no-budget {
     margin: 0;
-    color: var(--color-text-secondary, #666);
+    color: var(--color-text-secondary);
 }
 </style>
