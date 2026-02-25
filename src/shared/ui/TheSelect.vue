@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Form, Select } from 'ant-design-vue'
 import { useField } from 'vee-validate'
+import { computed } from 'vue'
 
 /** Опция селекта; в слоте option доступны и дополнительные поля (например logoUrl) */
 export type Option = {
@@ -35,6 +36,14 @@ defineSlots<{
 }>()
 
 const { value, errorMessage } = useField<string | number | undefined | null>(() => props.name)
+
+/** Для a-select: value не принимает null, нормализуем null ↔ undefined. */
+const selectValue = computed({
+    get: () => (value.value === null ? undefined : value.value),
+    set: (v: string | number | undefined | null) => {
+        value.value = v === undefined ? null : v
+    }
+})
 </script>
 
 <template>
@@ -45,7 +54,7 @@ const { value, errorMessage } = useField<string | number | undefined | null>(() 
     >
         <Select
             :id="name"
-            v-model:value="value"
+            v-model:value="selectValue"
             class="the-select"
             :placeholder="placeholder"
             :options="options"

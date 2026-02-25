@@ -91,7 +91,8 @@ const columns = computed(() => {
             key: 'occurredAt',
             width: 110,
             filters: dateFilters,
-            onFilter: (value: string, record: Record<string, unknown>) => (record as Transaction).occurredAt === value,
+            onFilter: (value: string, record: Record<string, unknown>) =>
+                (record as unknown as Transaction).occurredAt === value,
             sorter: (a: Transaction, b: Transaction) =>
                 new Date(a.occurredAt).getTime() - new Date(b.occurredAt).getTime()
         },
@@ -101,7 +102,7 @@ const columns = computed(() => {
             key: 'categoryId',
             filters: categoryFilters,
             onFilter: (value: string, record: Record<string, unknown>) => {
-                const id = (record as Transaction).categoryId
+                const id = (record as unknown as Transaction).categoryId
                 return value === EMPTY_FILTER_VALUE ? !id : id === value
             }
         },
@@ -121,7 +122,7 @@ const columns = computed(() => {
                       key: 'debitAccountId',
                       filters: debitFilters,
                       onFilter: (value: string, record: Record<string, unknown>) => {
-                          const id = (record as Transaction).debitAccountId
+                          const id = (record as unknown as Transaction).debitAccountId
                           return value === EMPTY_FILTER_VALUE ? !id : id === value
                       }
                   },
@@ -131,7 +132,7 @@ const columns = computed(() => {
                       key: 'creditAccountId',
                       filters: creditFilters,
                       onFilter: (value: string, record: Record<string, unknown>) => {
-                          const id = (record as Transaction).creditAccountId
+                          const id = (record as unknown as Transaction).creditAccountId
                           return value === EMPTY_FILTER_VALUE ? !id : id === value
                       }
                   }
