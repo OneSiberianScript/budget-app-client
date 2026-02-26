@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed } from 'vue'
 
 import { AccountForm } from '@/features/account/account-form'
 import type { AccountFormValues } from '@/features/account/account-form'
@@ -12,14 +12,14 @@ import { useBudgetStore } from '@/entities/budget'
 import { confirm } from '@/shared/lib/confirm'
 import { formatRubles } from '@/shared/lib/format-money'
 import { message } from '@/shared/lib/message'
-import { TheCreateButton, TheDrawer, TheEmpty, ThePageHeader, TheSpin, TheTable } from '@/shared/ui'
+import { usePageData } from '@/shared/lib/usePageData'
+import { TheCreateButton, TheDrawer, ThePageDataBoundary, ThePageHeader, TheTable } from '@/shared/ui'
 
 const budgetStore = useBudgetStore()
 const accountStore = useAccountStore()
 
 const drawerOpen = ref(false)
 const editingAccount = ref<Account | null>(null)
-const loading = ref(true)
 
 const hasBudget = computed(() => !!budgetStore.currentBudgetId)
 const accountTypeLabels: Record<string, string> = {
@@ -84,20 +84,13 @@ async function handleDelete(record: Account) {
 
 async function load() {
     const budgetId = budgetStore.currentBudgetId
-    if (!budgetId) {
-        loading.value = false
-        return
-    }
-    loading.value = true
-    try {
-        await accountStore.fetchAccounts(budgetId)
-    } finally {
-        loading.value = false
-    }
+    if (!budgetId) return
+    await accountStore.fetchAccounts(budgetId)
 }
 
-onMounted(load)
-watch(() => budgetStore.currentBudgetId, load)
+const { loading, error } = usePageData(load, {
+    watchSources: [() => budgetStore.currentBudgetId]
+})
 </script>
 
 <template>
@@ -112,43 +105,42 @@ watch(() => budgetStore.currentBudgetId, load)
             </template>
         </ThePageHeader>
 
-        <TheSpin :spinning="loading">
-            <template v-if="!hasBudget">
-                <TheEmpty description="Выберите бюджет" />
-            </template>
-            <template v-else>
-                <TheTable
-                    :columns="columns"
-                    :data-source="accountStore.accounts"
-                    :loading="loading"
-                    row-key="id"
-                    :action-handlers="{
-                        onEdit: (r) => openEdit(r as unknown as Account),
-                        onDelete: (r) => handleDelete(r as unknown as Account)
-                    }"
-                >
-                    <template #bodyCell="{ column, record }">
-                        <template v-if="column?.key === 'bank'">
-                            <span class="accounts-page__bank-cell">
-                                <img
-                                    v-if="getBankLogoUrl((record as Account).bank)"
-                                    :src="getBankLogoUrl((record as Account).bank)!"
-                                    alt=""
-                                    class="accounts-page__bank-logo"
-                                />
-                                <template v-else>{{ (record as Account).bank ?? '—' }}</template>
-                            </span>
-                        </template>
-                        <template v-else-if="column?.key === 'type'">
-                            {{ accountTypeLabels[(record as Account).type] ?? (record as Account).type }}
-                        </template>
-                        <template v-else-if="column?.key === 'currentBalance'">
-                            {{ formatRubles((record as Account).currentBalance) }}
-                        </template>
+        <ThePageDataBoundary
+            :loading="loading"
+            :has-budget="hasBudget"
+            :error="error"
+        >
+            <TheTable
+                :columns="columns"
+                :data-source="accountStore.accounts"
+                :loading="loading"
+                row-key="id"
+                :action-handlers="{
+                    onEdit: (r) => openEdit(r as unknown as Account),
+                    onDelete: (r) => handleDelete(r as unknown as Account)
+                }"
+            >
+                <template #bodyCell="{ column, record }">
+                    <template v-if="column?.key === 'bank'">
+                        <span class="accounts-page__bank-cell">
+                            <img
+                                v-if="getBankLogoUrl((record as Account).bank)"
+                                :src="getBankLogoUrl((record as Account).bank)!"
+                                alt=""
+                                class="accounts-page__bank-logo"
+                            />
+                            <template v-else>{{ (record as Account).bank ?? '—' }}</template>
+                        </span>
                     </template>
-                </TheTable>
-            </template>
-        </TheSpin>
+                    <template v-else-if="column?.key === 'type'">
+                        {{ accountTypeLabels[(record as Account).type] ?? (record as Account).type }}
+                    </template>
+                    <template v-else-if="column?.key === 'currentBalance'">
+                        {{ formatRubles((record as Account).currentBalance) }}
+                    </template>
+                </template>
+            </TheTable>
+        </ThePageDataBoundary>
 
         <TheDrawer
             v-model:open="drawerOpen"

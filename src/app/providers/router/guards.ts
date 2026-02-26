@@ -1,5 +1,6 @@
 import { getActivePinia } from 'pinia'
 
+import { useBudgetStore } from '@/entities/budget'
 import { useSessionStore } from '@/entities/session'
 
 import { ROUTE_PATHS } from '@/shared/config/router'
@@ -42,6 +43,10 @@ export async function createGuards(
             ) {
                 next({ path: ROUTE_PATHS.CONFIRM_EMAIL_REQUIRED })
                 return
+            }
+            if (meta.layout === 'main') {
+                const budgetStore = useBudgetStore(pinia)
+                await budgetStore.ensureBudgetsLoaded()
             }
         }
     }

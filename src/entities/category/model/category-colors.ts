@@ -25,7 +25,7 @@ export const CATEGORY_COLOR_OPTIONS: CategoryColorOption[] = [
     { label: 'Фиолетовый', value: '#7e57c2' },
     { label: 'Сливовый', value: '#8e6c88' },
     { label: 'Серый', value: '#5f5c58' },
-    { label: 'Тёмно-серый', value: '#312f2c' },
+    { label: 'Светло-серый', value: '#9e9e9e' },
     { label: 'Графит', value: '#546e7a' },
     { label: 'Песочный', value: '#bebab5' },
     { label: 'Светло-жёлтый', value: '#feefc3' },

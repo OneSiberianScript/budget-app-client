@@ -10,7 +10,7 @@ import { useSessionStore } from '@/entities/session/model/store'
 import { toApiError } from '@/shared/api/errors'
 import { ROUTE_NAMES, ROUTE_PATHS } from '@/shared/config/router'
 import { message } from '@/shared/lib/message'
-import { TheButton, TheForm, TheInput } from '@/shared/ui'
+import { TheButton, TheForm, TheInput, ThePasswordInput } from '@/shared/ui'
 
 import { loginFormSchema } from '../model/LoginForm.schema'
 import { loginFormInitialValues } from '../model/LoginForm.types'
@@ -67,10 +67,9 @@ function formSubmitHandler(e: SubmitEvent) {
                 type="email"
                 autocomplete="email"
             />
-            <TheInput
+            <ThePasswordInput
                 name="password"
                 label="Пароль"
-                type="password"
                 autocomplete="current-password"
             />
             <TheButton

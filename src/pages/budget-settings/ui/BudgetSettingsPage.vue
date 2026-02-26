@@ -47,7 +47,7 @@ async function load() {
     if (!budgetId.value) return
     loading.value = true
     try {
-        await Promise.all([budgetStore.fetchBudgets(), invitationStore.fetchBudgetInvitations(budgetId.value)])
+        await Promise.all([budgetStore.ensureBudgetsLoaded(), invitationStore.fetchBudgetInvitations(budgetId.value)])
     } finally {
         loading.value = false
     }

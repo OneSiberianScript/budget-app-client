@@ -16,7 +16,7 @@ const currentValue = computed({
 
 onMounted(() => {
     if (budgetStore.budgets.length === 0) {
-        budgetStore.fetchBudgets()
+        budgetStore.ensureBudgetsLoaded()
     }
 })
 </script>

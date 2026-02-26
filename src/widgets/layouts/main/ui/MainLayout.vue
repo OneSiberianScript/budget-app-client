@@ -3,12 +3,15 @@ import { computed } from 'vue'
 
 import { AppNav } from '@/widgets/app-nav'
 
+import { useBudgetStore } from '@/entities/budget'
 import { useSessionStore } from '@/entities/session/model/store'
 
 import { ROUTE_NAMES } from '@/shared/config/router'
 import { useTheme } from '@/shared/config/theme/useTheme'
+import { TheSpin } from '@/shared/ui'
 
 const sessionStore = useSessionStore()
+const budgetStore = useBudgetStore()
 const { currentTheme } = useTheme()
 
 const logoSrc = computed(() => {
@@ -35,7 +38,16 @@ const logoSrc = computed(() => {
             </router-link>
         </header>
         <main class="main-layout__content">
-            <slot />
+            <div
+                v-if="!budgetStore.budgetsLoadedOnce"
+                class="main-layout__loader"
+            >
+                <TheSpin
+                    :spinning="true"
+                    size="large"
+                />
+            </div>
+            <slot v-else />
         </main>
     </div>
 </template>
@@ -99,6 +111,13 @@ const logoSrc = computed(() => {
     -webkit-overflow-scrolling: touch;
     padding-bottom: calc(84px + env(safe-area-inset-bottom));
     background: var(--color-bg-primary);
+}
+
+.main-layout__loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
 }
 
 @media (min-width: 768px) {

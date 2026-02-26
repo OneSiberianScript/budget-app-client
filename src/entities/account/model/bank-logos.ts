@@ -4,7 +4,8 @@
 
 const logoModules = import.meta.glob('../assets/bank-logos/*.svg', {
     eager: true,
-    as: 'url'
+    query: '?url',
+    import: 'default'
 }) as Record<string, string>
 
 const logoUrls: Record<string, string> = {}

@@ -18,7 +18,9 @@ ENV VITE_API_TIMEOUT_MS=$VITE_API_TIMEOUT_MS
 # Увеличиваем лимит кучи Node для vue-tsc и vite build (иначе heap out of memory в контейнере)
 ENV NODE_OPTIONS="--max-old-space-size=2048"
 
-RUN npm run build
+# Кэш Vite (transform/cache) между пересборками — ускоряет повторные сборки
+RUN --mount=type=cache,target=/app/node_modules/.vite \
+    npm run build
 
 # ---------
 

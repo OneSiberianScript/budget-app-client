@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useMediaQuery } from '@vueuse/core'
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed } from 'vue'
 
 import { TransactionForm } from '@/features/transaction/transaction-form'
 import type { TransactionFormValues } from '@/features/transaction/transaction-form'
@@ -16,7 +16,8 @@ import { createTransaction, updateTransaction, deleteTransaction } from '@/entit
 import { confirm } from '@/shared/lib/confirm'
 import { formatRubles } from '@/shared/lib/format-money'
 import { message } from '@/shared/lib/message'
-import { TheCreateButton, TheDrawer, TheEmpty, ThePageHeader, TheSpin, TheTable } from '@/shared/ui'
+import { usePageData } from '@/shared/lib/usePageData'
+import { TheCreateButton, TheDrawer, ThePageDataBoundary, ThePageHeader, TheTable } from '@/shared/ui'
 
 const budgetStore = useBudgetStore()
 const accountStore = useAccountStore()
@@ -26,7 +27,6 @@ const transactionStore = useTransactionStore()
 
 const drawerOpen = ref(false)
 const editingTransaction = ref<Transaction | null>(null)
-const loading = ref(true)
 
 const hasBudget = computed(() => !!budgetStore.currentBudgetId)
 
@@ -230,26 +230,17 @@ async function handleDelete(record: Transaction) {
 
 async function load() {
     const budgetId = budgetStore.currentBudgetId
-    if (!budgetId) {
-        loading.value = false
-        return
-    }
-    loading.value = true
-    try {
-        await Promise.all([
-            accountStore.fetchAccounts(budgetId),
-            categoryStore.fetchCategories(budgetId),
-            transactionStore.fetchTransactions(budgetId)
-        ])
-    } catch {
-        loading.value = false
-    } finally {
-        loading.value = false
-    }
+    if (!budgetId) return
+    await Promise.all([
+        accountStore.fetchAccounts(budgetId),
+        categoryStore.fetchCategories(budgetId),
+        transactionStore.fetchTransactions(budgetId)
+    ])
 }
 
-onMounted(load)
-watch(() => budgetStore.currentBudgetId, load)
+const { loading, error } = usePageData(load, {
+    watchSources: [() => budgetStore.currentBudgetId]
+})
 </script>
 
 <template>
@@ -264,72 +255,69 @@ watch(() => budgetStore.currentBudgetId, load)
             </template>
         </ThePageHeader>
 
-        <TheSpin :spinning="loading">
-            <template v-if="!hasBudget">
-                <TheEmpty description="Выберите бюджет" />
-            </template>
-            <template v-else>
-                <TheTable
-                    :columns="columns"
-                    :data-source="transactionStore.transactions"
-                    :loading="loading"
-                    row-key="id"
-                    :action-handlers="{
-                        onEdit: (r) => openEdit(r as unknown as Transaction),
-                        onDelete: (r) => handleDelete(r as unknown as Transaction)
-                    }"
-                >
-                    <template #bodyCell="{ column, record }">
-                        <template v-if="column?.key === 'occurredAt'">
-                            {{ formatDate((record as Transaction).occurredAt) }}
-                        </template>
-                        <template v-else-if="column?.key === 'amount'">
-                            <span
-                                :class="[
-                                    'transactions-page__amount',
-                                    (record as Transaction).type === 'expense' && 'transactions-page__amount_expense',
-                                    (record as Transaction).type === 'income' && 'transactions-page__amount_income'
-                                ]"
-                            >
-                                {{
-                                    (record as Transaction).type === 'expense'
-                                        ? '− '
-                                        : (record as Transaction).type === 'income'
-                                          ? '+ '
-                                          : ''
-                                }}{{ formatRubles((record as Transaction).amount, { maxFractionDigits: 0 }) }}
-                            </span>
-                        </template>
-                        <template v-else-if="column?.key === 'debitAccountId'">
-                            {{
-                                (record as Transaction).debitAccountId
-                                    ? accountName((record as Transaction).debitAccountId!)
-                                    : '—'
-                            }}
-                        </template>
-                        <template v-else-if="column?.key === 'creditAccountId'">
-                            {{
-                                (record as Transaction).creditAccountId
-                                    ? accountName((record as Transaction).creditAccountId!)
-                                    : '—'
-                            }}
-                        </template>
-                        <template v-else-if="column?.key === 'categoryId'">
-                            {{
-                                (record as Transaction).categoryId
-                                    ? categoryName((record as Transaction).categoryId!)
-                                    : '—'
-                            }}
-                        </template>
-                        <template v-else-if="column?.key === 'description'">
-                            <span class="transactions-page__cell-description">
-                                {{ (record as Transaction).description ?? '—' }}
-                            </span>
-                        </template>
+        <ThePageDataBoundary
+            :loading="loading"
+            :has-budget="hasBudget"
+            :error="error"
+        >
+            <TheTable
+                :columns="columns"
+                :data-source="transactionStore.transactions"
+                :loading="loading"
+                row-key="id"
+                :action-handlers="{
+                    onEdit: (r) => openEdit(r as unknown as Transaction),
+                    onDelete: (r) => handleDelete(r as unknown as Transaction)
+                }"
+            >
+                <template #bodyCell="{ column, record }">
+                    <template v-if="column?.key === 'occurredAt'">
+                        {{ formatDate((record as Transaction).occurredAt) }}
                     </template>
-                </TheTable>
-            </template>
-        </TheSpin>
+                    <template v-else-if="column?.key === 'amount'">
+                        <span
+                            :class="[
+                                'transactions-page__amount',
+                                (record as Transaction).type === 'expense' && 'transactions-page__amount_expense',
+                                (record as Transaction).type === 'income' && 'transactions-page__amount_income'
+                            ]"
+                        >
+                            {{
+                                (record as Transaction).type === 'expense'
+                                    ? '− '
+                                    : (record as Transaction).type === 'income'
+                                      ? '+ '
+                                      : ''
+                            }}{{ formatRubles((record as Transaction).amount, { maxFractionDigits: 0 }) }}
+                        </span>
+                    </template>
+                    <template v-else-if="column?.key === 'debitAccountId'">
+                        {{
+                            (record as Transaction).debitAccountId
+                                ? accountName((record as Transaction).debitAccountId!)
+                                : '—'
+                        }}
+                    </template>
+                    <template v-else-if="column?.key === 'creditAccountId'">
+                        {{
+                            (record as Transaction).creditAccountId
+                                ? accountName((record as Transaction).creditAccountId!)
+                                : '—'
+                        }}
+                    </template>
+                    <template v-else-if="column?.key === 'categoryId'">
+                        {{
+                            (record as Transaction).categoryId ? categoryName((record as Transaction).categoryId!) : '—'
+                        }}
+                    </template>
+                    <template v-else-if="column?.key === 'description'">
+                        <span class="transactions-page__cell-description">
+                            {{ (record as Transaction).description ?? '—' }}
+                        </span>
+                    </template>
+                </template>
+            </TheTable>
+        </ThePageDataBoundary>
 
         <TheDrawer
             v-model:open="drawerOpen"

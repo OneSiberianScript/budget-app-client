@@ -6,7 +6,7 @@ import { computed } from 'vue'
 import { changePassword } from '@/entities/session/api'
 
 import { message } from '@/shared/lib/message'
-import { TheButton, TheForm, TheInput } from '@/shared/ui'
+import { TheButton, TheForm, ThePasswordInput } from '@/shared/ui'
 
 import { changePasswordFormSchema } from '../model/ChangePasswordForm.schema'
 import { changePasswordFormInitialValues } from '../model/ChangePasswordForm.types'
@@ -49,22 +49,19 @@ defineExpose({ submit: handleSubmit, resetForm })
             class="change-password-form__form"
             @submit="formSubmitHandler"
         >
-            <TheInput
+            <ThePasswordInput
                 name="currentPassword"
                 label="Текущий пароль"
-                type="password"
                 autocomplete="current-password"
             />
-            <TheInput
+            <ThePasswordInput
                 name="newPassword"
                 label="Новый пароль"
-                type="password"
                 autocomplete="new-password"
             />
-            <TheInput
+            <ThePasswordInput
                 name="confirmNewPassword"
                 label="Повторите новый пароль"
-                type="password"
                 autocomplete="new-password"
             />
             <TheButton

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed } from 'vue'
 
 import { CategoryCard } from '@/features/category/category-card'
 import { CategoryForm } from '@/features/category/category-form'
@@ -15,16 +15,8 @@ import { useTransactionStore } from '@/entities/transaction'
 import { confirm } from '@/shared/lib/confirm'
 import { getCurrentMonth, getMonthRange } from '@/shared/lib/date'
 import { message } from '@/shared/lib/message'
-import {
-    TheButton,
-    TheCreateButton,
-    TheDrawer,
-    TheDivider,
-    TheEmpty,
-    ThePageHeader,
-    TheSpin,
-    TheTable
-} from '@/shared/ui'
+import { usePageData } from '@/shared/lib/usePageData'
+import { TheCreateButton, TheDrawer, TheDivider, ThePageDataBoundary, ThePageHeader, TheTable } from '@/shared/ui'
 
 const budgetStore = useBudgetStore()
 const categoryStore = useCategoryStore()
@@ -33,7 +25,6 @@ const transactionStore = useTransactionStore()
 
 const drawerOpen = ref(false)
 const editingCategory = ref<Category | null>(null)
-const loading = ref(true)
 const submitLoading = ref(false)
 
 const hasBudget = computed(() => !!budgetStore.currentBudgetId)
@@ -163,26 +154,19 @@ const categoriesByType = computed(() => {
 
 async function load() {
     const budgetId = budgetStore.currentBudgetId
-    if (!budgetId) {
-        loading.value = false
-        return
-    }
-    loading.value = true
-    try {
-        const { from, to } = monthRange.value
-        const [year, month] = currentMonth.value.split('-').map(Number)
-        await Promise.all([
-            categoryStore.fetchCategories(budgetId),
-            monthlyPlanStore.fetchMonthlyPlan(budgetId, year, month),
-            transactionStore.fetchTransactions(budgetId, { from, to })
-        ])
-    } finally {
-        loading.value = false
-    }
+    if (!budgetId) return
+    const { from, to } = monthRange.value
+    const [year, month] = currentMonth.value.split('-').map(Number)
+    await Promise.all([
+        categoryStore.fetchCategories(budgetId),
+        monthlyPlanStore.fetchMonthlyPlan(budgetId, year, month),
+        transactionStore.fetchTransactions(budgetId, { from, to })
+    ])
 }
 
-onMounted(load)
-watch(() => budgetStore.currentBudgetId, load)
+const { loading, error } = usePageData(load, {
+    watchSources: [() => budgetStore.currentBudgetId, () => currentMonth.value]
+})
 </script>
 
 <template>
@@ -197,62 +181,61 @@ watch(() => budgetStore.currentBudgetId, load)
             </template>
         </ThePageHeader>
 
-        <TheSpin :spinning="loading">
-            <template v-if="!hasBudget">
-                <TheEmpty description="Выберите бюджет" />
-            </template>
-            <template v-else>
-                <template
-                    v-for="(group, groupIndex) in categoriesByType"
-                    :key="group.type"
-                >
-                    <TheDivider v-if="groupIndex > 0" />
-                    <div class="categories-page__grid">
-                        <CategoryCard
-                            v-for="{ category, fillPercent } in group.items"
-                            :key="category.id"
-                            :category="category"
-                            :fill-percent="fillPercent"
-                            @edit="openEdit"
-                        />
-                    </div>
-                </template>
-                <div class="categories-page__table">
-                    <template
-                        v-for="group in categoriesByType"
-                        :key="group.type"
-                    >
-                        <TheDivider orientation="left">
-                            {{ group.label }}
-                        </TheDivider>
-                        <TheTable
-                            :columns="columns"
-                            :data-source="group.items.map((i) => i.category)"
-                            :loading="loading"
-                            row-key="id"
-                            :action-handlers="{
-                                onEdit: (r) => openEdit(r as unknown as Category),
-                                onDelete: (r) => handleDelete(r as unknown as Category)
-                            }"
-                        >
-                            <template #bodyCell="{ column, record }">
-                                <template v-if="column?.key === 'type'">
-                                    {{ typeLabel(record.type) }}
-                                </template>
-                                <template v-else-if="column?.key === 'color'">
-                                    <span
-                                        v-if="(record as Category).color"
-                                        class="categories-page__color"
-                                        :style="{ backgroundColor: (record as Category).color! }"
-                                    />
-                                    <span v-else>—</span>
-                                </template>
-                            </template>
-                        </TheTable>
-                    </template>
+        <ThePageDataBoundary
+            :loading="loading"
+            :has-budget="hasBudget"
+            :error="error"
+        >
+            <template
+                v-for="(group, groupIndex) in categoriesByType"
+                :key="group.type"
+            >
+                <TheDivider v-if="groupIndex > 0" />
+                <div class="categories-page__grid">
+                    <CategoryCard
+                        v-for="{ category, fillPercent } in group.items"
+                        :key="category.id"
+                        :category="category"
+                        :fill-percent="fillPercent"
+                        @edit="openEdit"
+                    />
                 </div>
             </template>
-        </TheSpin>
+            <div class="categories-page__table">
+                <template
+                    v-for="group in categoriesByType"
+                    :key="group.type"
+                >
+                    <TheDivider orientation="left">
+                        {{ group.label }}
+                    </TheDivider>
+                    <TheTable
+                        :columns="columns"
+                        :data-source="group.items.map((i) => i.category)"
+                        :loading="loading"
+                        row-key="id"
+                        :action-handlers="{
+                            onEdit: (r) => openEdit(r as unknown as Category),
+                            onDelete: (r) => handleDelete(r as unknown as Category)
+                        }"
+                    >
+                        <template #bodyCell="{ column, record }">
+                            <template v-if="column?.key === 'type'">
+                                {{ typeLabel(record.type) }}
+                            </template>
+                            <template v-else-if="column?.key === 'color'">
+                                <span
+                                    v-if="(record as Category).color"
+                                    class="categories-page__color"
+                                    :style="{ backgroundColor: (record as Category).color! }"
+                                />
+                                <span v-else>—</span>
+                            </template>
+                        </template>
+                    </TheTable>
+                </template>
+            </div>
+        </ThePageDataBoundary>
 
         <TheDrawer
             v-model:open="drawerOpen"

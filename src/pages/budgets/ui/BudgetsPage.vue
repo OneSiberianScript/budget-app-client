@@ -71,7 +71,7 @@ async function handleDelete(record: Budget) {
 async function load() {
     loading.value = true
     try {
-        await budgetStore.fetchBudgets()
+        await budgetStore.ensureBudgetsLoaded()
     } finally {
         loading.value = false
     }

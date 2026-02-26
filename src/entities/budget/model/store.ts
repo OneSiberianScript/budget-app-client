@@ -13,6 +13,8 @@ export const useBudgetStore = defineStore('budget', () => {
     const budgets = ref<Budget[]>([])
     const currentBudgetId = ref<string | null>(null)
     const currentBudgetRole = ref<BudgetRole | null>(null)
+    const budgetsLoadedOnce = ref(false)
+    let budgetsLoadPromise: Promise<void> | null = null
 
     const currentBudget = computed(() => {
         const id = currentBudgetId.value
@@ -85,7 +87,19 @@ export const useBudgetStore = defineStore('budget', () => {
         } catch {
             setBudgets([])
             return []
+        } finally {
+            budgetsLoadedOnce.value = true
         }
+    }
+
+    function ensureBudgetsLoaded(): Promise<void> {
+        if (budgetsLoadPromise !== null) return budgetsLoadPromise
+        budgetsLoadPromise = fetchBudgets()
+            .then(() => {})
+            .finally(() => {
+                budgetsLoadPromise = null
+            })
+        return budgetsLoadPromise
     }
 
     return {
@@ -93,12 +107,14 @@ export const useBudgetStore = defineStore('budget', () => {
         currentBudgetId,
         currentBudgetRole,
         currentBudget,
+        budgetsLoadedOnce,
         hasBudgetSelected,
         setCurrentBudget,
         setBudgets,
         setBudget,
         removeBudget,
         hydrateFromStorage,
-        fetchBudgets
+        fetchBudgets,
+        ensureBudgetsLoaded
     }
 })
