@@ -16,7 +16,7 @@ import { toApiError } from '@/shared/api/errors'
 import { BUDGET_ROLE_OPTIONS } from '@/shared/lib/budget-role'
 import { confirm } from '@/shared/lib/confirm'
 import { message } from '@/shared/lib/message'
-import { TheButton, TheCreateButton, TheModal, ThePageHeader, TheSelect, TheSpin, TheTable } from '@/shared/ui'
+import { TheButton, TheCreateButton, TheModal, ThePageHeader, TheSpin, TheTable } from '@/shared/ui'
 
 const route = useRoute()
 const budgetStore = useBudgetStore()
@@ -132,7 +132,7 @@ async function handleMemberRoleChange(member: BudgetMember, role: string) {
 
 async function handleMemberRemove(member: BudgetMember) {
     const name = `${member.User.firstName} ${member.User.lastName}`
-    const confirmed = await confirm(`Удалить участника ${name} из бюджета?`)
+    const confirmed = await confirm({ title: `Удалить участника ${name} из бюджета?` })
     if (!confirmed) return
     try {
         await memberStore.removeMember(member.id)
@@ -180,7 +180,7 @@ async function handleMemberRemove(member: BudgetMember) {
                                 </div>
                             </template>
                             <template v-else-if="column?.key === 'role'">
-                                <TheSelect
+                                <a-select
                                     v-if="isOwner && (record as BudgetMember).role !== 'owner'"
                                     :value="(record as BudgetMember).role"
                                     :options="memberRoleOptions"
