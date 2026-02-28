@@ -1,35 +1,54 @@
 import { request } from '@/shared/api/request'
-import type { BudgetInvitationCreate } from '@/shared/types'
+import type { AcceptInvitationResponse, BudgetInvitationCreate, BudgetInvitationRole } from '@/shared/types'
 
 import type { BudgetInvitation } from '../model/types'
 
 /**
- * Fetch invitations for a budget.
+ * Получить список приглашений бюджета.
  */
 export async function fetchBudgetInvitations(budgetId: string): Promise<BudgetInvitation[]> {
-    const data = await request<BudgetInvitation[]>({
-        method: 'GET',
-        url: '/budget-invitations',
-        params: { budgetId }
-    })
-    return data
+    return request<BudgetInvitation[]>({ method: 'GET', url: '/budget-invitations', params: { budgetId } })
 }
 
 /**
- * Create an invitation (owner only).
+ * Получить приглашение по ID (токену из письма).
+ */
+export async function getInvitationById(id: string): Promise<BudgetInvitation> {
+    return request<BudgetInvitation>({ method: 'GET', url: `/budget-invitations/${id}` })
+}
+
+/**
+ * Создать приглашение (только owner).
  */
 export async function createBudgetInvitation(payload: BudgetInvitationCreate): Promise<BudgetInvitation> {
     return request<BudgetInvitation>({ method: 'POST', url: '/budget-invitations', data: payload })
 }
 
 /**
- * Cancel/revoke an invitation.
+ * Изменить роль в приглашении (только пока status === 'pending', только owner).
+ */
+export async function updateInvitationRole(id: string, role: BudgetInvitationRole): Promise<BudgetInvitation> {
+    return request<BudgetInvitation>({ method: 'PATCH', url: `/budget-invitations/${id}`, data: { role } })
+}
+
+/**
+ * Отозвать приглашение (только owner).
  */
 export async function revokeBudgetInvitation(id: string): Promise<void> {
     await request({ method: 'DELETE', url: `/budget-invitations/${id}` })
 }
 
 /**
- * Приём приглашения по токену в openapi.yaml не описан — эндпоинт accept отсутствует в спецификации.
- * При появлении эндпоинта в спецификации реализовать вызов здесь.
+ * Принять приглашение (вызывает сам приглашённый).
+ * Возвращает budgetId и роль, с которой пользователь вошёл в бюджет.
  */
+export async function acceptInvitation(id: string): Promise<AcceptInvitationResponse> {
+    return request<AcceptInvitationResponse>({ method: 'POST', url: `/budget-invitations/${id}/accept` })
+}
+
+/**
+ * Отклонить приглашение (вызывает сам приглашённый).
+ */
+export async function rejectInvitation(id: string): Promise<{ ok: true }> {
+    return request<{ ok: true }>({ method: 'POST', url: `/budget-invitations/${id}/reject` })
+}

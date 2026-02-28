@@ -52,6 +52,12 @@ export interface BudgetMember {
     userId: string
     createdAt: string
     updatedAt: string
+    User: {
+        id: string
+        email: string
+        firstName: string
+        lastName: string
+    }
 }
 
 export interface BudgetInvitation {
@@ -60,8 +66,15 @@ export interface BudgetInvitation {
     role: BudgetInvitationRole
     status: BudgetInvitationStatus
     budgetId: string
+    invitedById: string | null
+    expiresAt: string
     createdAt: string
     updatedAt: string
+}
+
+export interface AcceptInvitationResponse {
+    budgetId: string
+    role: BudgetMemberRole
 }
 
 export interface Account {

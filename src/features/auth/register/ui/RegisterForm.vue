@@ -2,8 +2,9 @@
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
+import { acceptInvitation } from '@/entities/budget-invitation'
 import { register } from '@/entities/session/api'
 import { useSessionStore } from '@/entities/session/model/store'
 
@@ -17,6 +18,7 @@ import { registerFormInitialValues } from '../model/RegisterForm.types'
 
 import type { RegisterFormValues } from '../model/RegisterForm.types'
 
+const route = useRoute()
 const router = useRouter()
 const sessionStore = useSessionStore()
 
@@ -37,6 +39,16 @@ const onSubmit = handleSubmit(async (values) => {
         })
         sessionStore.setSession(res.accessToken, res.user, res.sessionId)
         message.success('Регистрация успешна')
+
+        const invitationToken = route.query.token as string | undefined
+        if (invitationToken) {
+            try {
+                await acceptInvitation(invitationToken)
+            } catch {
+                // бэкенд мог уже добавить при регистрации (ALREADY_BUDGET_MEMBER) — игнорируем
+            }
+        }
+
         router.push(
             res.user.emailConfirmedAt == null
                 ? { path: ROUTE_PATHS.CONFIRM_EMAIL_REQUIRED }

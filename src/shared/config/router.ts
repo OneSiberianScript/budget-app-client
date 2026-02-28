@@ -33,7 +33,7 @@ export const ROUTE_PATHS = {
     CONFIRM_EMAIL: '/auth/confirm-email',
     CONFIRM_EMAIL_REQUIRED: '/confirm-email-required',
     HOME: '/',
-    INVITATION: '/invitation',
+    INVITATION: '/invitations/accept',
     LOGIN: '/auth/login',
     NOT_FOUND: '/:pathMatch(.*)*',
     PROFILE: '/profile',

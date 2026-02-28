@@ -3,7 +3,7 @@ import { ref } from 'vue'
 
 import * as budgetMemberApi from '../api'
 
-import type { BudgetMember } from './types'
+import type { BudgetMember, BudgetMemberRole } from './types'
 
 export const useBudgetMemberStore = defineStore('budgetMember', () => {
     const members = ref<BudgetMember[]>([])
@@ -21,7 +21,7 @@ export const useBudgetMemberStore = defineStore('budgetMember', () => {
         }
     }
 
-    function removeMember(id: string) {
+    function removeMemberFromList(id: string) {
         members.value = members.value.filter((m) => m.id !== id)
     }
 
@@ -31,11 +31,33 @@ export const useBudgetMemberStore = defineStore('budgetMember', () => {
         return list
     }
 
+    /**
+     * Изменяет роль участника бюджета (только owner). Обновляет запись в локальном списке.
+     * @param id - id участника
+     * @param role - новая роль
+     */
+    async function updateMember(id: string, role: BudgetMemberRole) {
+        const updated = await budgetMemberApi.updateBudgetMember(id, { role })
+        setMember(updated)
+        return updated
+    }
+
+    /**
+     * Удаляет участника из бюджета (только owner). Убирает запись из локального списка.
+     * @param id - id участника
+     */
+    async function removeMember(id: string) {
+        await budgetMemberApi.removeBudgetMember(id)
+        removeMemberFromList(id)
+    }
+
     return {
         members,
         setMembers,
         setMember,
-        removeMember,
-        fetchBudgetMembers
+        removeMemberFromList,
+        fetchBudgetMembers,
+        updateMember,
+        removeMember
     }
 })

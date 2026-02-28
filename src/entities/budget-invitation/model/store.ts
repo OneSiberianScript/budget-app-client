@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
+import type { BudgetInvitationRole } from '@/shared/types'
+
 import * as budgetInvitationApi from '../api'
 
 import type { BudgetInvitation } from './types'
@@ -16,6 +18,11 @@ export const useBudgetInvitationStore = defineStore('budgetInvitation', () => {
 
     function removeInvitation(id: string) {
         invitations.value = invitations.value.filter((i) => i.id !== id)
+    }
+
+    function updateInvitationInList(updated: BudgetInvitation) {
+        const idx = invitations.value.findIndex((i) => i.id === updated.id)
+        if (idx >= 0) invitations.value[idx] = updated
     }
 
     async function fetchBudgetInvitations(budgetId: string) {
@@ -35,6 +42,17 @@ export const useBudgetInvitationStore = defineStore('budgetInvitation', () => {
     }
 
     /**
+     * Изменяет роль в pending-приглашении (owner). Обновляет запись в локальном списке.
+     * @param id - id приглашения
+     * @param role - новая роль
+     */
+    async function updateInvitationRole(id: string, role: BudgetInvitationRole) {
+        const updated = await budgetInvitationApi.updateInvitationRole(id, role)
+        updateInvitationInList(updated)
+        return updated
+    }
+
+    /**
      * Отменяет приглашение по id. Удаляет запись из локального списка.
      * @param id - id приглашения
      */
@@ -43,12 +61,31 @@ export const useBudgetInvitationStore = defineStore('budgetInvitation', () => {
         removeInvitation(id)
     }
 
+    /**
+     * Принимает приглашение (вызывает сам приглашённый по токену из письма).
+     * @param id - id приглашения (токен из URL)
+     */
+    async function acceptInvitation(id: string) {
+        return budgetInvitationApi.acceptInvitation(id)
+    }
+
+    /**
+     * Отклоняет приглашение (вызывает сам приглашённый).
+     * @param id - id приглашения (токен из URL)
+     */
+    async function rejectInvitation(id: string) {
+        return budgetInvitationApi.rejectInvitation(id)
+    }
+
     return {
         invitations,
         setInvitations,
         removeInvitation,
         fetchBudgetInvitations,
         createInvitation,
-        revokeInvitation
+        updateInvitationRole,
+        revokeInvitation,
+        acceptInvitation,
+        rejectInvitation
     }
 })

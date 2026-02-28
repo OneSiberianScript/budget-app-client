@@ -43,7 +43,7 @@ export interface RouteNamedMap {
         never
     >
     home: RouteRecordInfo<'home', '/', Record<never, never>, Record<never, never>, never>
-    invitation: RouteRecordInfo<'invitation', '/invitation', Record<never, never>, Record<never, never>, never>
+    invitation: RouteRecordInfo<'invitation', '/invitations/accept', Record<never, never>, Record<never, never>, never>
     login: RouteRecordInfo<'login', '/auth/login', Record<never, never>, Record<never, never>, never>
     'not-found': RouteRecordInfo<
         'not-found',
