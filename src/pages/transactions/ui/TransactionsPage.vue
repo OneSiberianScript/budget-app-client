@@ -2,6 +2,7 @@
 import { useMediaQuery } from '@vueuse/core'
 import { ref, computed } from 'vue'
 
+import { QuickTransactionFab } from '@/features/transaction/quick-add'
 import { TransactionForm } from '@/features/transaction/transaction-form'
 import type { TransactionFormValues } from '@/features/transaction/transaction-form'
 
@@ -318,6 +319,8 @@ const { loading, error } = usePageData(load, {
                 </template>
             </TheTable>
         </ThePageDataBoundary>
+
+        <QuickTransactionFab />
 
         <TheDrawer
             v-model:open="drawerOpen"

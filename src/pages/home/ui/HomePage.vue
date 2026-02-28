@@ -2,23 +2,22 @@
 import { Tabs } from 'ant-design-vue'
 import { computed, ref } from 'vue'
 import VChart from 'vue-echarts'
-import { useRouter } from 'vue-router'
+
+import { QuickTransactionFab } from '@/features/transaction/quick-add'
 
 import { useBudgetStore } from '@/entities/budget'
 import { useCategoryStore } from '@/entities/category'
 import { useMonthlyPlanStore } from '@/entities/monthly-plan'
 import { useTransactionStore } from '@/entities/transaction'
 
-import { ROUTE_NAMES } from '@/shared/config/router'
 import { useTheme } from '@/shared/config/theme/useTheme'
 import { getCurrentMonth, getMonthRange } from '@/shared/lib/date'
 import { formatMoneyFromCents } from '@/shared/lib/format-money'
 import { usePageData } from '@/shared/lib/usePageData'
-import { TheButton, TheDatePicker, ThePageDataBoundary, ThePageHeader, TheTabs } from '@/shared/ui'
+import { TheDatePicker, ThePageDataBoundary, ThePageHeader, TheTabs } from '@/shared/ui'
 
 type TabKey = 'expense' | 'income'
 
-const router = useRouter()
 const budgetStore = useBudgetStore()
 const categoryStore = useCategoryStore()
 const monthlyPlanStore = useMonthlyPlanStore()
@@ -124,8 +123,8 @@ function useChartData(type: TabKey) {
                 series: [
                     {
                         type: 'pie',
-                        radius: ['40%', '70%'],
-                        data: [{ name: emptyLabel, value: 0 }],
+                        radius: ['60%', '90%'],
+                        data: [{ name: emptyLabel, value: 1, itemStyle: { color: REMAINDER_COLOR.value } }],
                         label: { show: false }
                     }
                 ]
@@ -166,10 +165,6 @@ const chartData = computed(() => {
         pieOption: d.pieOption.value
     }
 })
-
-function goToAddTransaction(type: 'expense' | 'income') {
-    router.push({ name: ROUTE_NAMES.TRANSACTIONS, query: { open: 'create', type } })
-}
 </script>
 
 <template>
@@ -263,22 +258,9 @@ function goToAddTransaction(type: 'expense' | 'income') {
                     </section>
                 </TabPane>
             </TheTabs>
-
-            <section class="home-page__actions">
-                <TheButton
-                    type="primary"
-                    @click="goToAddTransaction('expense')"
-                >
-                    Внести расход
-                </TheButton>
-                <TheButton
-                    type="primary"
-                    @click="goToAddTransaction('income')"
-                >
-                    Внести доход
-                </TheButton>
-            </section>
         </ThePageDataBoundary>
+
+        <QuickTransactionFab />
     </div>
 </template>
 

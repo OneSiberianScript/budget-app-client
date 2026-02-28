@@ -11,11 +11,17 @@ import { planItemFormInitialValues } from '../model/PlanItemForm.types'
 import type { PlanItemFormValues } from '../model/PlanItemForm.types'
 
 interface Props {
+    /** Варианты для селекта «Категория» (игнорируется при hideCategorySelect) */
     categoryOptions: { label: string; value: string }[]
     initialValues?: Partial<PlanItemFormValues>
+    /** Скрыть селект «Категория»; categoryId берётся из initialValues */
+    hideCategorySelect?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), { initialValues: undefined })
+const props = withDefaults(defineProps<Props>(), {
+    initialValues: undefined,
+    hideCategorySelect: false
+})
 
 const { handleSubmit, isSubmitting, resetForm } = useForm<PlanItemFormValues>({
     validationSchema: toTypedSchema(planItemFormSchema),
@@ -47,6 +53,7 @@ defineExpose({ submit: handleSubmit, resetForm })
             @submit="formSubmitHandler"
         >
             <TheSelect
+                v-if="!hideCategorySelect"
                 name="categoryId"
                 label="Категория"
                 placeholder="Выберите категорию"

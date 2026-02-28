@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Person24Regular } from '@vicons/fluent'
 import { computed } from 'vue'
 
 import { AppNav } from '@/widgets/app-nav'
@@ -33,8 +34,10 @@ const logoSrc = computed(() => {
                 v-if="sessionStore.isAuthenticated"
                 :to="{ name: ROUTE_NAMES.PROFILE }"
                 class="main-layout__profile-link"
+                aria-label="Профиль"
             >
-                Профиль
+                <Person24Regular class="main-layout__profile-icon" />
+                <span class="main-layout__profile-label">Профиль</span>
             </router-link>
         </header>
         <main class="main-layout__content">
@@ -84,9 +87,10 @@ const logoSrc = computed(() => {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 8px;
     min-width: 32px;
     height: 32px;
-    padding: 4px 15px;
+    padding: 4px;
     color: var(--color-text);
     text-decoration: none;
     font-size: 14px;
@@ -97,6 +101,26 @@ const logoSrc = computed(() => {
     cursor: pointer;
     transition: all 0.2s;
 }
+
+.main-layout__profile-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    flex-shrink: 0;
+    color: currentColor;
+}
+
+.main-layout__profile-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 .main-layout__profile-link:hover {
     color: var(--color-primary-hover);
     border-color: var(--color-primary-hover);
@@ -126,6 +150,20 @@ const logoSrc = computed(() => {
     }
     .main-layout__header {
         justify-content: none;
+    }
+    .main-layout__profile-link {
+        padding: 4px 15px;
+    }
+    .main-layout__profile-label {
+        position: static;
+        width: auto;
+        height: auto;
+        padding: 0;
+        margin: 0;
+        overflow: visible;
+        clip: auto;
+        white-space: normal;
+        border: 0;
     }
 }
 </style>

@@ -35,6 +35,10 @@ a:focus-visible {
     outline-offset: 2px;
 }
 
+.ant-form-item {
+    margin-bottom: 0;
+}
+
 @media (max-width: 767px) {
     .ant-input,
     .the-input .ant-input {

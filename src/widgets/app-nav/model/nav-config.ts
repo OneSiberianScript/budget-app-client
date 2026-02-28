@@ -17,12 +17,12 @@ export interface NavItem {
     icon: Component
 }
 
-/** Конфиг пунктов главной навигации приложения (порядок: дашборд → счета → категории → бюджеты → планирование → транзакции). */
+/** Конфиг пунктов главной навигации приложения (порядок: дашборд → бюджеты → счета → категории → планы → транзакции). */
 export const APP_NAV_ITEMS: NavItem[] = [
     { name: ROUTE_NAMES.HOME, label: 'Дашборд', icon: DataPie24Regular },
+    { name: ROUTE_NAMES.BUDGETS, label: 'Бюджеты', icon: Wallet24Regular },
     { name: ROUTE_NAMES.ACCOUNTS, label: 'Счета', icon: Payment24Regular },
     { name: ROUTE_NAMES.CATEGORIES, label: 'Категории', icon: Tag24Regular },
-    { name: ROUTE_NAMES.BUDGETS, label: 'Бюджеты', icon: Wallet24Regular },
-    { name: ROUTE_NAMES.BUDGET_PLANS, label: 'Планирование', icon: Target24Regular },
+    { name: ROUTE_NAMES.BUDGET_PLANS, label: 'Планы', icon: Target24Regular },
     { name: ROUTE_NAMES.TRANSACTIONS, label: 'Транзакции', icon: Receipt24Regular }
 ]

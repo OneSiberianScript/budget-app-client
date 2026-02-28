@@ -23,7 +23,6 @@ import { usePageData } from '@/shared/lib/usePageData'
 import type { CategoryPlanLineItem } from '@/shared/ui'
 import {
     TheCategoryPlanLines,
-    TheCreateButton,
     TheDatePicker,
     TheDrawer,
     TheEmpty,
@@ -55,7 +54,7 @@ const expenseCategoryOptions = computed(() => {
     return list.filter((c) => c.type === 'expense').map((c) => ({ label: c.name, value: c.id }))
 })
 
-/** Категории типа «доход» для выбора лимита */
+/** Категории типа «доход» для выбора лимита. */
 const incomeCategoryOptions = computed(() => {
     const list = categoryStore.categories ?? []
     return list.filter((c) => c.type === 'income').map((c) => ({ label: c.name, value: c.id }))
@@ -135,12 +134,6 @@ function getPlanItemById(id: string): MonthlyPlanItem | undefined {
 }
 
 const preselectedCategoryId = ref<string | null>(null)
-
-function openCreate() {
-    editingItem.value = null
-    preselectedCategoryId.value = null
-    drawerOpen.value = true
-}
 
 function openCreateWithCategory(categoryId: string) {
     editingItem.value = null
@@ -227,15 +220,7 @@ watch(drawerOpen, (open) => {
 
 <template>
     <div class="budget-plans-page">
-        <ThePageHeader title="Планы по бюджету">
-            <template #extra>
-                <TheCreateButton
-                    v-if="hasBudget"
-                    label="Добавить лимит"
-                    @click="openCreate"
-                />
-            </template>
-        </ThePageHeader>
+        <ThePageHeader title="Планы по бюджету" />
 
         <ThePageDataBoundary
             :loading="loading"
@@ -303,6 +288,7 @@ watch(drawerOpen, (open) => {
             <PlanItemForm
                 :key="editingItem?.id ?? preselectedCategoryId ?? 'new'"
                 :category-options="currentCategoryOptions"
+                hide-category-select
                 :initial-values="
                     editingItem
                         ? {

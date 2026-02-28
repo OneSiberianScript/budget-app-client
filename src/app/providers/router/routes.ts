@@ -38,6 +38,18 @@ export default [
         meta: { requiresAuth: true, layout: 'main', title: 'Категории' }
     },
     {
+        path: ROUTE_PATHS.CATEGORY_CREATE,
+        name: ROUTE_NAMES.CATEGORY_CREATE,
+        component: () => import('@/pages/categories/create/ui/CategoryCreatePage.vue'),
+        meta: { requiresAuth: true, layout: 'main', title: 'Создать категорию', parent: ROUTE_NAMES.CATEGORIES }
+    },
+    {
+        path: ROUTE_PATHS.CATEGORY_EDIT,
+        name: ROUTE_NAMES.CATEGORY_EDIT,
+        component: () => import('@/pages/categories/edit/ui/CategoryEditPage.vue'),
+        meta: { requiresAuth: true, layout: 'main', title: 'Редактировать категорию', parent: ROUTE_NAMES.CATEGORIES }
+    },
+    {
         path: ROUTE_PATHS.ACCOUNTS,
         name: ROUTE_NAMES.ACCOUNTS,
         component: () => import('@/pages/accounts/ui/AccountsPage.vue'),

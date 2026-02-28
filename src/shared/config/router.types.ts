@@ -13,6 +13,14 @@ export interface RouteNamedMap {
     >
     budgets: RouteRecordInfo<'budgets', '/budgets', Record<never, never>, Record<never, never>, never>
     categories: RouteRecordInfo<'categories', '/categories', Record<never, never>, Record<never, never>, never>
+    'category-create': RouteRecordInfo<
+        'category-create',
+        '/categories/create',
+        Record<never, never>,
+        Record<never, never>,
+        never
+    >
+    'category-edit': RouteRecordInfo<'category-edit', '/categories/:id/edit', { id: string }, { id: string }, never>
     'change-password': RouteRecordInfo<
         'change-password',
         '/profile/change-password',

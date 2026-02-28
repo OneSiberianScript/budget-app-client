@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { useMediaQuery } from '@vueuse/core'
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 
 import { CategoryCard } from '@/features/category/category-card'
 import { CategoryForm } from '@/features/category/category-form'
@@ -12,16 +14,29 @@ import { createCategory, updateCategory, deleteCategory } from '@/entities/categ
 import { useMonthlyPlanStore } from '@/entities/monthly-plan'
 import { useTransactionStore } from '@/entities/transaction'
 
+import { ROUTE_NAMES } from '@/shared/config/router'
 import { confirm } from '@/shared/lib/confirm'
 import { getCurrentMonth, getMonthRange } from '@/shared/lib/date'
 import { message } from '@/shared/lib/message'
 import { usePageData } from '@/shared/lib/usePageData'
-import { TheCreateButton, TheDrawer, TheDivider, ThePageDataBoundary, ThePageHeader, TheTable } from '@/shared/ui'
+import {
+    TheCreateButton,
+    TheButton,
+    TheDrawer,
+    TheDivider,
+    ThePageDataBoundary,
+    ThePageHeader,
+    TheTable
+} from '@/shared/ui'
 
+const router = useRouter()
 const budgetStore = useBudgetStore()
 const categoryStore = useCategoryStore()
 const monthlyPlanStore = useMonthlyPlanStore()
 const transactionStore = useTransactionStore()
+
+/** Десктоп: ≥768px — используем drawer; мобилка — навигация на отдельные страницы. */
+const isDesktop = useMediaQuery('(min-width: 768px)')
 
 const drawerOpen = ref(false)
 const editingCategory = ref<Category | null>(null)
@@ -36,11 +51,19 @@ const columns = [
 ]
 
 function openCreate() {
+    if (!isDesktop.value) {
+        router.push({ name: ROUTE_NAMES.CATEGORY_CREATE })
+        return
+    }
     editingCategory.value = null
     drawerOpen.value = true
 }
 
 function openEdit(record: Category) {
+    if (!isDesktop.value) {
+        router.push({ name: ROUTE_NAMES.CATEGORY_EDIT, params: { id: record.id } })
+        return
+    }
     editingCategory.value = record
     drawerOpen.value = true
 }
