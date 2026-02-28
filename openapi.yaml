@@ -134,6 +134,13 @@ components:
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
 
+    BudgetListItem:
+      allOf:
+        - $ref: '#/components/schemas/Budget'
+        - type: object
+          properties:
+            role: { $ref: '#/components/schemas/BudgetMemberRole' }
+
     BudgetMember:
       type: object
       properties:
@@ -141,6 +148,13 @@ components:
         role: { $ref: '#/components/schemas/BudgetMemberRole' }
         budgetId: { type: string, format: uuid }
         userId: { type: string, format: uuid }
+        User:
+          type: object
+          properties:
+            id: { type: string, format: uuid }
+            email: { type: string, format: email }
+            firstName: { type: string }
+            lastName: { type: string }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
 
@@ -152,6 +166,9 @@ components:
         role: { $ref: '#/components/schemas/BudgetInvitationRole' }
         status: { $ref: '#/components/schemas/BudgetInvitationStatus' }
         budgetId: { type: string, format: uuid }
+        invitedById: { type: string, format: uuid, nullable: true }
+        externalToken: { type: string, format: uuid }
+        expiresAt: { type: string, format: date-time }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
 
@@ -347,6 +364,22 @@ components:
       properties:
         role: { $ref: '#/components/schemas/BudgetInvitationRole' }
         status: { $ref: '#/components/schemas/BudgetInvitationStatus' }
+
+    AcceptInvitationResponse:
+      type: object
+      properties:
+        budgetId: { type: string, format: uuid }
+        role: { $ref: '#/components/schemas/BudgetMemberRole' }
+
+    BudgetInvitationWithBudget:
+      allOf:
+        - $ref: '#/components/schemas/BudgetInvitation'
+        - type: object
+          properties:
+            budget:
+              type: object
+              properties:
+                name: { type: string }
 
     AccountCreate:
       type: object
@@ -664,7 +697,18 @@ paths:
         '401':
           $ref: '#/components/responses/ApiError401'
         '429':
-          description: Слишком частый запрос, повторите позже (retryAfter в теле ответа)
+          description: Слишком частый запрос, повторите позже (retryAfter в error тела ответа)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: object
+                    properties:
+                      code: { type: string }
+                      message: { type: string }
+                      retryAfter: { type: integer }
         '500':
           $ref: '#/components/responses/ApiError500'
 
@@ -792,12 +836,12 @@ paths:
       security: [{ bearerAuth: [] }]
       responses:
         '200':
-          description: Список бюджетов
+          description: Список бюджетов. Каждый объект содержит поле `role` — роль текущего пользователя в этом бюджете.
           content:
             application/json:
               schema:
                 type: array
-                items: { $ref: '#/components/schemas/Budget' }
+                items: { $ref: '#/components/schemas/BudgetListItem' }
         '401':
           $ref: '#/components/responses/ApiError401'
         '500':
@@ -833,10 +877,10 @@ paths:
         - $ref: '#/components/parameters/id'
       responses:
         '200':
-          description: Бюджет
+          description: Бюджет с ролью текущего пользователя
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Budget' }
+              schema: { $ref: '#/components/schemas/BudgetListItem' }
         '401':
           $ref: '#/components/responses/ApiError401'
         '403':
@@ -1338,6 +1382,30 @@ paths:
         '500':
           $ref: '#/components/responses/ApiError500'
 
+  /budget-invitations/by-token/{token}:
+    get:
+      tags: [Budget Invitations]
+      summary: Получить приглашение по externalToken из ссылки в письме
+      description: Не требует авторизации. Возвращает приглашение с вложенным budget.name. 403/404 при невалидном или истёкшем токене.
+      parameters:
+        - name: token
+          in: path
+          required: true
+          description: externalToken из ссылки в письме
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Приглашение с данными бюджета
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BudgetInvitationWithBudget' }
+        '403':
+          $ref: '#/components/responses/ApiError403'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
   /budget-invitations/{id}:
     get:
       tags: [Budget Invitations]
@@ -1398,6 +1466,52 @@ paths:
           $ref: '#/components/responses/ApiError401'
         '403':
           $ref: '#/components/responses/ApiError403'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /budget-invitations/{id}/accept:
+    post:
+      tags: [Budget Invitations]
+      summary: Принять приглашение (id приглашения из by-token)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody: {}
+      responses:
+        '200':
+          description: Приглашение принято
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AcceptInvitationResponse' }
+        '400':
+          $ref: '#/components/responses/ApiError400'
+        '401':
+          $ref: '#/components/responses/ApiError401'
+        '403':
+          $ref: '#/components/responses/ApiError403'
+        '404':
+          $ref: '#/components/responses/ApiError404'
+        '500':
+          $ref: '#/components/responses/ApiError500'
+
+  /budget-invitations/{id}/reject:
+    post:
+      tags: [Budget Invitations]
+      summary: Отклонить приглашение
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/id'
+      requestBody: {}
+      responses:
+        '200':
+          description: Приглашение отклонено
+          content:
+            application/json:
+              schema: { type: object, properties: { ok: { type: boolean } } }
+        '401':
+          $ref: '#/components/responses/ApiError401'
         '404':
           $ref: '#/components/responses/ApiError404'
         '500':

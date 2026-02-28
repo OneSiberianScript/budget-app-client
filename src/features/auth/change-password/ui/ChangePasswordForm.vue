@@ -3,6 +3,7 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import { computed } from 'vue'
 
+import { useSessionStore } from '@/entities/session'
 import { changePassword } from '@/entities/session/api'
 
 import { message } from '@/shared/lib/message'
@@ -13,6 +14,7 @@ import { changePasswordFormInitialValues } from '../model/ChangePasswordForm.typ
 
 import type { ChangePasswordFormValues } from '../model/ChangePasswordForm.types'
 
+const sessionStore = useSessionStore()
 const { handleSubmit, isSubmitting, resetForm } = useForm<ChangePasswordFormValues>({
     validationSchema: toTypedSchema(changePasswordFormSchema),
     initialValues: changePasswordFormInitialValues
@@ -24,7 +26,8 @@ const emit = defineEmits<{ success: [] }>()
 
 async function onSubmit(values: ChangePasswordFormValues) {
     try {
-        await changePassword(values.currentPassword, values.newPassword)
+        const res = await changePassword(values.currentPassword, values.newPassword)
+        sessionStore.setAccessToken(res.accessToken, res.sessionId)
         message.success('Пароль изменён')
         resetForm()
         emit('success')

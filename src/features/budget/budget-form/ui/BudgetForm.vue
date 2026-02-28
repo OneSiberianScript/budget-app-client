@@ -55,6 +55,7 @@ defineExpose({ submit: handleSubmit, resetForm })
                 name="initialBalance"
                 label="Начальный баланс (опционально)"
                 placeholder="0"
+                inputmode="decimal"
             />
             <TheButton
                 type="primary"

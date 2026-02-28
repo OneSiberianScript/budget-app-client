@@ -2,12 +2,12 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-import { getInvitationById, useBudgetInvitationStore } from '@/entities/budget-invitation'
-import type { BudgetInvitation } from '@/entities/budget-invitation'
+import { getInvitationByToken, useBudgetInvitationStore } from '@/entities/budget-invitation'
 import { useSessionStore } from '@/entities/session'
 
 import { toApiError } from '@/shared/api/errors'
 import { ROUTE_NAMES, ROUTE_PATHS } from '@/shared/config/router'
+import type { BudgetInvitationWithBudget } from '@/shared/types'
 import { TheButton, ThePageHeader, TheSpin } from '@/shared/ui'
 
 type PageState = 'init' | 'no-token' | 'unauthenticated' | 'loading' | 'loaded' | 'error' | 'done'
@@ -30,7 +30,7 @@ const sessionStore = useSessionStore()
 const invitationStore = useBudgetInvitationStore()
 
 const state = ref<PageState>('init')
-const invitation = ref<BudgetInvitation | null>(null)
+const invitation = ref<BudgetInvitationWithBudget | null>(null)
 const errorCode = ref<string | null>(null)
 const isAccepting = ref(false)
 const isRejecting = ref(false)
@@ -59,7 +59,7 @@ onMounted(async () => {
 
     state.value = 'loading'
     try {
-        invitation.value = await getInvitationById(token.value)
+        invitation.value = await getInvitationByToken(token.value)
         state.value = 'loaded'
     } catch (err) {
         const apiErr = toApiError(err)
@@ -69,10 +69,10 @@ onMounted(async () => {
 })
 
 async function handleAccept() {
-    if (!token.value) return
+    if (!invitation.value) return
     isAccepting.value = true
     try {
-        await invitationStore.acceptInvitation(token.value)
+        await invitationStore.acceptInvitation(invitation.value.id)
         state.value = 'done'
         router.push({ name: ROUTE_NAMES.HOME })
     } catch (err) {
@@ -90,10 +90,10 @@ async function handleAccept() {
 }
 
 async function handleReject() {
-    if (!token.value) return
+    if (!invitation.value) return
     isRejecting.value = true
     try {
-        await invitationStore.rejectInvitation(token.value)
+        await invitationStore.rejectInvitation(invitation.value.id)
         router.push({ name: ROUTE_NAMES.HOME })
     } catch (err) {
         const apiErr = toApiError(err)
@@ -151,7 +151,9 @@ function goToRegister() {
             class="incoming-invitation-page__card"
         >
             <p class="incoming-invitation-page__desc">
-                Вас приглашают в бюджет с ролью
+                Вас приглашают в бюджет
+                <strong v-if="invitation.budget?.name">{{ invitation.budget.name }}</strong>
+                с ролью
                 <strong>{{ roleLabels[invitation.role] ?? invitation.role }}</strong
                 >.
             </p>

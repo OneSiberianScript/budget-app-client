@@ -1,21 +1,21 @@
 import { request } from '@/shared/api/request'
-import type { BudgetCreate, BudgetUpdate } from '@/shared/types'
+import type { BudgetCreate, BudgetListItem, BudgetUpdate } from '@/shared/types'
 
 import type { Budget } from '../model/types'
 
 /**
  * Fetch all budgets for the current user.
  */
-export async function fetchBudgets(): Promise<Budget[]> {
-    const data = await request<Budget[]>({ method: 'GET', url: '/budgets' })
+export async function fetchBudgets(): Promise<BudgetListItem[]> {
+    const data = await request<BudgetListItem[]>({ method: 'GET', url: '/budgets' })
     return data
 }
 
 /**
- * Fetch a single budget by id.
+ * Fetch a single budget by id (returns item with role).
  */
-export async function fetchBudgetById(id: string): Promise<Budget> {
-    return request<Budget>({ method: 'GET', url: `/budgets/${id}` })
+export async function fetchBudgetById(id: string): Promise<BudgetListItem> {
+    return request<BudgetListItem>({ method: 'GET', url: `/budgets/${id}` })
 }
 
 /**

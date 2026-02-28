@@ -49,6 +49,7 @@ const { value, errorMessage } = useField<number | undefined>(() => props.name)
             :max="max"
             :step="step"
             :precision="precision"
+            inputmode="decimal"
             :aria-label="label || name"
             class="the-input-number"
             style="width: 100%"

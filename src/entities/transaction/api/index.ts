@@ -16,8 +16,15 @@ export async function fetchTransactions(
         list = list.filter((t) => t.debitAccountId === params.accountId || t.creditAccountId === params.accountId)
     }
     if (params?.categoryId) list = list.filter((t) => t.categoryId === params.categoryId)
-    if (params?.from) list = list.filter((t) => t.occurredAt >= params.from!)
-    if (params?.to) list = list.filter((t) => t.occurredAt <= params.to!)
+    if (params?.from || params?.to) {
+        list = list.filter((t) => {
+            const date = t.occurredAt?.slice(0, 10)
+            if (!date) return false
+            if (params?.from && date < params.from) return false
+            if (params?.to && date > params.to) return false
+            return true
+        })
+    }
     return list
 }
 

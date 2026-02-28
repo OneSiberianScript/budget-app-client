@@ -11,6 +11,8 @@ type Props = {
     placeholder?: string
     /** Тип инпута */
     type?: 'text' | 'password' | 'email' | 'number' | 'search' | 'tel' | 'url' | 'date'
+    /** Подсказка для клавиатуры на мобильных (decimal — цифры с запятой/точкой) */
+    inputmode?: 'decimal' | 'numeric' | 'tel' | 'email' | 'url' | 'text' | 'search' | 'none'
     /** Атрибут autocomplete */
     autocomplete?: string
     /** Неактивно */
@@ -21,6 +23,7 @@ const props = withDefaults(defineProps<Props>(), {
     label: '',
     placeholder: undefined,
     type: 'text' as const,
+    inputmode: undefined,
     autocomplete: undefined,
     disabled: false
 })
@@ -40,6 +43,7 @@ const { value, errorMessage } = useField<string>(() => props.name)
             class="the-input"
             :placeholder="placeholder"
             :type="type"
+            :inputmode="inputmode"
             :autocomplete="autocomplete"
             :disabled="disabled"
             :aria-label="label || name"

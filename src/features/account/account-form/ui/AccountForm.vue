@@ -66,6 +66,7 @@ defineExpose({ submit: handleSubmit, resetForm })
                 name="initialBalance"
                 label="Начальный баланс"
                 placeholder="0"
+                inputmode="decimal"
             />
             <TheSelect
                 name="bank"

@@ -1,6 +1,13 @@
 import { ResendConfirmEmailRateLimitError } from '@/shared/api/errors'
 import { request } from '@/shared/api/request'
-import type { AuthLoginResponse, AuthRefreshResponse, AuthRegisterResponse, SessionInfo, User } from '@/shared/types'
+import type {
+    AuthChangePasswordResponse,
+    AuthLoginResponse,
+    AuthRefreshResponse,
+    AuthRegisterResponse,
+    SessionInfo,
+    User
+} from '@/shared/types'
 
 /**
  * Вход. Ответ содержит accessToken, sessionId и user (в т.ч. emailConfirmedAt).
@@ -83,19 +90,26 @@ export async function resendConfirmEmail(): Promise<void> {
             _suppressErrorNotification: true
         })
     } catch (err: unknown) {
-        const res = (err as { response?: { status?: number; data?: { retryAfter?: number } } }).response
+        const res = (
+            err as {
+                response?: { status?: number; data?: { error?: { retryAfter?: number } } }
+            }
+        ).response
         if (res?.status === 429) {
-            throw new ResendConfirmEmailRateLimitError(res.data?.retryAfter)
+            throw new ResendConfirmEmailRateLimitError(res.data?.error?.retryAfter)
         }
         throw err
     }
 }
 
 /**
- * Смена пароля (защищённый эндпоинт).
+ * Смена пароля (защищённый эндпоинт). Возвращает новые токены.
  */
-export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
-    await request({
+export async function changePassword(
+    currentPassword: string,
+    newPassword: string
+): Promise<AuthChangePasswordResponse> {
+    return request<AuthChangePasswordResponse>({
         method: 'POST',
         url: '/auth/change-password',
         data: { currentPassword, newPassword }

@@ -5,18 +5,18 @@ import { BudgetForm } from '@/features/budget/budget-form'
 import type { BudgetFormValues } from '@/features/budget/budget-form'
 
 import { useBudgetStore } from '@/entities/budget'
-import type { Budget } from '@/entities/budget'
 import { createBudget, updateBudget, deleteBudget } from '@/entities/budget/api'
 
 import { ROUTE_NAMES } from '@/shared/config/router'
 import { confirm } from '@/shared/lib/confirm'
 import { message } from '@/shared/lib/message'
+import type { BudgetListItem } from '@/shared/types'
 import { TheCreateButton, TheDrawer, ThePageHeader, TheSpin, TheTable } from '@/shared/ui'
 
 const budgetStore = useBudgetStore()
 
 const drawerOpen = ref(false)
-const editingBudget = ref<Budget | null>(null)
+const editingBudget = ref<BudgetListItem | null>(null)
 const loading = ref(true)
 
 const columns = [
@@ -29,7 +29,7 @@ function openCreate() {
     drawerOpen.value = true
 }
 
-function openEdit(record: Budget) {
+function openEdit(record: BudgetListItem) {
     editingBudget.value = record
     drawerOpen.value = true
 }
@@ -38,11 +38,11 @@ async function handleFormSubmit(values: BudgetFormValues) {
     try {
         if (editingBudget.value) {
             await updateBudget(editingBudget.value.id, values)
-            budgetStore.setBudget({ ...editingBudget.value, ...values } as Budget)
+            budgetStore.setBudget({ ...editingBudget.value, ...values })
             message.success('Бюджет обновлён')
         } else {
             const created = await createBudget(values)
-            budgetStore.setBudget(created as Budget)
+            budgetStore.setBudget({ ...created, role: 'owner' })
             message.success('Бюджет создан')
         }
         drawerOpen.value = false
@@ -51,7 +51,7 @@ async function handleFormSubmit(values: BudgetFormValues) {
     }
 }
 
-async function handleDelete(record: Budget) {
+async function handleDelete(record: BudgetListItem) {
     const ok = await confirm({
         title: 'Удалить бюджет?',
         content: `«${record.name}» и все связанные данные будут удалены.`,
@@ -98,13 +98,13 @@ onMounted(load)
                 :loading="loading"
                 row-key="id"
                 :action-handlers="{
-                    onEdit: (r) => openEdit(r as unknown as Budget),
-                    onDelete: (r) => handleDelete(r as unknown as Budget)
+                    onEdit: (r) => openEdit(r as unknown as BudgetListItem),
+                    onDelete: (r) => handleDelete(r as unknown as BudgetListItem)
                 }"
             >
                 <template #actionPrepend="{ record }">
                     <router-link
-                        :to="{ name: ROUTE_NAMES.BUDGET_SETTINGS, params: { id: (record as Budget).id } }"
+                        :to="{ name: ROUTE_NAMES.BUDGET_SETTINGS, params: { id: (record as BudgetListItem).id } }"
                         class="budgets-page__link"
                     >
                         Настройки

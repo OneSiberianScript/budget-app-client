@@ -2,15 +2,14 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
 import type { BudgetRole } from '@/shared/lib/budget-role'
+import type { BudgetListItem } from '@/shared/types'
 
 import * as budgetApi from '../api'
-
-import type { Budget } from './types'
 
 const STORAGE_KEY = 'budget_currentBudgetId'
 
 export const useBudgetStore = defineStore('budget', () => {
-    const budgets = ref<Budget[]>([])
+    const budgets = ref<BudgetListItem[]>([])
     const currentBudgetId = ref<string | null>(null)
     const currentBudgetRole = ref<BudgetRole | null>(null)
     const budgetsLoadedOnce = ref(false)
@@ -25,7 +24,12 @@ export const useBudgetStore = defineStore('budget', () => {
 
     function setCurrentBudget(budgetId: string | null, role: BudgetRole | null = null) {
         currentBudgetId.value = budgetId
-        currentBudgetRole.value = role
+        if (role !== null) {
+            currentBudgetRole.value = role
+        } else {
+            const found = budgetId ? budgets.value.find((b) => b.id === budgetId) : null
+            currentBudgetRole.value = (found?.role as BudgetRole) ?? null
+        }
         try {
             if (budgetId) {
                 sessionStorage.setItem(STORAGE_KEY, budgetId)
@@ -37,11 +41,11 @@ export const useBudgetStore = defineStore('budget', () => {
         }
     }
 
-    function setBudgets(list: Budget[]) {
+    function setBudgets(list: BudgetListItem[]) {
         budgets.value = list
     }
 
-    function setBudget(budget: Budget) {
+    function setBudget(budget: BudgetListItem) {
         const index = budgets.value.findIndex((b) => b.id === budget.id)
         if (index >= 0) {
             budgets.value[index] = budget
@@ -81,7 +85,7 @@ export const useBudgetStore = defineStore('budget', () => {
                 currentBudgetRole.value = null
             }
             if (!currentBudgetId.value && safeList.length > 0) {
-                setCurrentBudget(safeList[0].id, null)
+                setCurrentBudget(safeList[0].id)
             }
             return safeList
         } catch {

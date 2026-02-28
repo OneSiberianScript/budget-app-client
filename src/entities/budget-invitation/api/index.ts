@@ -1,5 +1,10 @@
 import { request } from '@/shared/api/request'
-import type { AcceptInvitationResponse, BudgetInvitationCreate, BudgetInvitationRole } from '@/shared/types'
+import type {
+    AcceptInvitationResponse,
+    BudgetInvitationCreate,
+    BudgetInvitationRole,
+    BudgetInvitationWithBudget
+} from '@/shared/types'
 
 import type { BudgetInvitation } from '../model/types'
 
@@ -11,10 +16,17 @@ export async function fetchBudgetInvitations(budgetId: string): Promise<BudgetIn
 }
 
 /**
- * Получить приглашение по ID (токену из письма).
+ * Получить приглашение по ID.
  */
 export async function getInvitationById(id: string): Promise<BudgetInvitation> {
     return request<BudgetInvitation>({ method: 'GET', url: `/budget-invitations/${id}` })
+}
+
+/**
+ * Получить приглашение по externalToken из ссылки в письме (без авторизации).
+ */
+export async function getInvitationByToken(token: string): Promise<BudgetInvitationWithBudget> {
+    return request<BudgetInvitationWithBudget>({ method: 'GET', url: `/budget-invitations/by-token/${token}` })
 }
 
 /**

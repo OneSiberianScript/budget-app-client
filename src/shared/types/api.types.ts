@@ -45,6 +45,10 @@ export interface Budget {
     updatedAt: string
 }
 
+export interface BudgetListItem extends Budget {
+    role: BudgetMemberRole
+}
+
 export interface BudgetMember {
     id: string
     role: BudgetMemberRole
@@ -67,9 +71,14 @@ export interface BudgetInvitation {
     status: BudgetInvitationStatus
     budgetId: string
     invitedById: string | null
+    externalToken: string
     expiresAt: string
     createdAt: string
     updatedAt: string
+}
+
+export interface BudgetInvitationWithBudget extends BudgetInvitation {
+    budget: { name: string }
 }
 
 export interface AcceptInvitationResponse {
@@ -240,7 +249,7 @@ export interface ApiError {
     message: string
 }
 
-/** Тело ответа 429 при POST /api/auth/resend-confirm-email (секунды до повтора). */
+/** Тело ответа 429 при POST /api/auth/resend-confirm-email (секунды до повтора в error). */
 export interface ResendConfirmEmail429Body {
-    retryAfter?: number
+    error: { code: string; message: string; retryAfter?: number }
 }

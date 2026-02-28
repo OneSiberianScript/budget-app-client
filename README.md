@@ -40,7 +40,9 @@ npm run dev
 | `npm run format`        | Форматирование Prettier             |
 | `npm run format:check`  | Проверка формата без записи         |
 | `npm run build:analyze` | Сборка с отчётом по размеру бандла  |
-| `npm run test:run`      | Запуск тестов                       |
+| `npm run test:run`      | Запуск тестов (Vitest)              |
+| `npm run test:coverage` | Запуск тестов с отчётом покрытия    |
+| `npm run test:e2e`      | E2E-тесты (Playwright)              |
 
 ## Структура репозитория
 
