@@ -18,7 +18,9 @@ import {
 import { useTransactionStore } from '@/entities/transaction'
 
 import { getCurrentMonth, getMonthRange } from '@/shared/lib/date'
+import { formatMoneyFromCents } from '@/shared/lib/format-money'
 import { message } from '@/shared/lib/message'
+import { useForecast } from '@/shared/lib/useForecast'
 import { usePageData } from '@/shared/lib/usePageData'
 import type { CategoryPlanLineItem } from '@/shared/ui'
 import {
@@ -216,6 +218,25 @@ const { loading, error } = usePageData(load, {
 watch(drawerOpen, (open) => {
     if (!open) preselectedCategoryId.value = null
 })
+
+// ─── Прогноз перерасхода по активному табу ───────────────────────────────
+const totalActualCents = computed(() => {
+    let sum = 0
+    for (const item of planLinesItems.value) sum += item.actualCents
+    return sum
+})
+
+const totalPlannedCents = computed(() => {
+    let sum = 0
+    for (const item of planLinesItems.value) sum += item.plannedCents
+    return sum
+})
+
+const { overrunCents, daysElapsed, daysTotal } = useForecast({
+    actualCents: totalActualCents,
+    plannedCents: totalPlannedCents,
+    month: selectedMonth
+})
 </script>
 
 <template>
@@ -238,6 +259,19 @@ watch(drawerOpen, (open) => {
                     picker="month"
                 />
             </section>
+
+            <!-- Прогноз перерасхода -->
+            <div
+                v-if="overrunCents > 0"
+                class="budget-plans-page__forecast"
+                role="alert"
+            >
+                При текущем темпе превысишь план на
+                <strong>{{ formatMoneyFromCents(overrunCents) }}</strong>
+                <span class="budget-plans-page__forecast-days">
+                    ({{ daysElapsed }} из {{ daysTotal }} дн. прошло)
+                </span>
+            </div>
 
             <TheTabs
                 v-model:active-key="activeTab"
@@ -338,5 +372,20 @@ watch(drawerOpen, (open) => {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+}
+
+.budget-plans-page__forecast {
+    flex-shrink: 0;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: var(--color-error-soft);
+    color: var(--color-semantic-error);
+    font-size: 0.875rem;
+    line-height: 1.4;
+}
+
+.budget-plans-page__forecast-days {
+    opacity: 0.7;
+    font-size: 0.8125rem;
 }
 </style>

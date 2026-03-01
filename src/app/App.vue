@@ -40,7 +40,15 @@ const layoutComponent = computed(() => (layout.value === 'auth' ? AuthLayout : M
                 :is="layoutComponent"
                 v-else
             >
-                <router-view />
+                <router-view v-slot="{ Component }">
+                    <Transition
+                        name="page-fade"
+                        mode="out-in"
+                        appear
+                    >
+                        <component :is="Component" />
+                    </Transition>
+                </router-view>
             </component>
         </MessageProvider>
     </ConfigProvider>

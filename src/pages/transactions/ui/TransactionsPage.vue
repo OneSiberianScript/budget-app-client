@@ -15,10 +15,18 @@ import type { Transaction } from '@/entities/transaction'
 import { createTransaction, updateTransaction, deleteTransaction } from '@/entities/transaction/api'
 
 import { confirm } from '@/shared/lib/confirm'
+import { getCurrentMonth } from '@/shared/lib/date'
 import { formatRubles } from '@/shared/lib/format-money'
 import { message } from '@/shared/lib/message'
 import { usePageData } from '@/shared/lib/usePageData'
-import { TheCreateButton, TheDrawer, ThePageDataBoundary, ThePageHeader, TheTable } from '@/shared/ui'
+import {
+    TheCreateButton,
+    TheDrawer,
+    ThePageDataBoundary,
+    ThePageHeader,
+    TheSpendingPulseChart,
+    TheTable
+} from '@/shared/ui'
 
 const budgetStore = useBudgetStore()
 const accountStore = useAccountStore()
@@ -242,6 +250,8 @@ async function load() {
 const { loading, error } = usePageData(load, {
     watchSources: [() => budgetStore.currentBudgetId]
 })
+
+const currentMonth = getCurrentMonth()
 </script>
 
 <template>
@@ -261,6 +271,11 @@ const { loading, error } = usePageData(load, {
             :has-budget="hasBudget"
             :error="error"
         >
+            <TheSpendingPulseChart
+                v-if="transactionStore.transactions.length > 0"
+                :transactions="transactionStore.transactions"
+                :month="currentMonth"
+            />
             <TheTable
                 :columns="columns"
                 :data-source="transactionStore.transactions"

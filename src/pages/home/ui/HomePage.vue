@@ -1,33 +1,39 @@
 <script setup lang="ts">
-import { Tabs } from 'ant-design-vue'
 import { computed, ref } from 'vue'
 import VChart from 'vue-echarts'
+import { useRouter } from 'vue-router'
 
 import { QuickTransactionFab } from '@/features/transaction/quick-add'
 
 import { useBudgetStore } from '@/entities/budget'
+import { useBudgetMemberStore } from '@/entities/budget-member'
 import { useCategoryStore } from '@/entities/category'
 import { useMonthlyPlanStore } from '@/entities/monthly-plan'
 import { useTransactionStore } from '@/entities/transaction'
 
+import { ROUTE_NAMES } from '@/shared/config/router'
 import { useTheme } from '@/shared/config/theme/useTheme'
 import { getCurrentMonth, getMonthRange } from '@/shared/lib/date'
 import { formatMoneyFromCents } from '@/shared/lib/format-money'
 import { usePageData } from '@/shared/lib/usePageData'
-import { TheDatePicker, ThePageDataBoundary, ThePageHeader, TheTabs } from '@/shared/ui'
+import { TheActivityFeed, TheOnboardingCard, ThePageDataBoundary, ThePageHeader } from '@/shared/ui'
+
+import HomePlanProgressCard from './HomePlanProgressCard.vue'
+import HomeSummaryCard from './HomeSummaryCard.vue'
+import HomeTopCategoriesCard from './HomeTopCategoriesCard.vue'
 
 type TabKey = 'expense' | 'income'
 
 const budgetStore = useBudgetStore()
+const budgetMemberStore = useBudgetMemberStore()
 const categoryStore = useCategoryStore()
 const monthlyPlanStore = useMonthlyPlanStore()
 const transactionStore = useTransactionStore()
+const router = useRouter()
 
 const selectedMonth = ref(getCurrentMonth())
 const activeTab = ref<TabKey>('expense')
-
 const monthRange = computed(() => getMonthRange(selectedMonth.value))
-
 const hasBudget = computed(() => !!budgetStore.currentBudgetId)
 
 async function loadDashboard() {
@@ -38,7 +44,8 @@ async function loadDashboard() {
     await Promise.all([
         categoryStore.fetchCategories(budgetId),
         transactionStore.fetchTransactions(budgetId, { from, to }),
-        monthlyPlanStore.fetchMonthlyPlan(budgetId, year, month)
+        monthlyPlanStore.fetchMonthlyPlan(budgetId, year, month),
+        budgetMemberStore.fetchBudgetMembers(budgetId)
     ])
 }
 
@@ -48,13 +55,41 @@ const { loading, error } = usePageData(loadDashboard, {
 
 const { currentTheme } = useTheme()
 
-const TabPane = Tabs.TabPane
+// ─── Состояния empty / onboarding ───────────────────────────────────────────
+const hasCategories = computed(() => (categoryStore.categories ?? []).length > 0)
+const hasTransactions = computed(() => (transactionStore.transactions ?? []).length > 0)
+const showOnboarding = computed(() => !hasCategories.value || !hasTransactions.value)
 
+// ─── Итоговые суммы ──────────────────────────────────────────────────────────
+const expenseCents = computed(() => {
+    const budgetId = budgetStore.currentBudgetId
+    if (!budgetId) return 0
+    return (transactionStore.transactions ?? [])
+        .filter((t) => t.budgetId === budgetId && t.type === 'expense')
+        .reduce((sum, t) => sum + Math.round((parseFloat(t.amount) || 0) * 100), 0)
+})
+
+const incomeCents = computed(() => {
+    const budgetId = budgetStore.currentBudgetId
+    if (!budgetId) return 0
+    return (transactionStore.transactions ?? [])
+        .filter((t) => t.budgetId === budgetId && t.type === 'income')
+        .reduce((sum, t) => sum + Math.round((parseFloat(t.amount) || 0) * 100), 0)
+})
+
+// ─── Плановые суммы (расходы) ────────────────────────────────────────────────
+const plannedExpenseCents = computed(() => {
+    const categories = categoryStore.categories ?? []
+    const expenseCategoryIds = new Set(categories.filter((c) => c.type === 'expense').map((c) => c.id))
+    return (monthlyPlanStore.planItems ?? [])
+        .filter((i) => expenseCategoryIds.has(i.categoryId))
+        .reduce((sum, i) => sum + Math.round((parseFloat(i.plannedAmount) || 0) * 100), 0)
+})
+
+// ─── Pie chart ───────────────────────────────────────────────────────────────
 const CATEGORY_COLOR_FALLBACK = '#8c8c8c'
-/** Цвет «Остаток» в круговой диаграмме: светлый приглушённый на light, тёмный приглушённый на dark. */
 const REMAINDER_COLOR = computed(() => (currentTheme.value === 'dark' ? '#5a5652' : '#e0ddd8'))
 
-/** Сумма по категориям за месяц (копейки) и план по ним в зависимости от типа таба. */
 function useChartData(type: TabKey) {
     const categoryType = type === 'expense' ? 'expense' : 'income'
     const spentCents = computed(() => {
@@ -165,99 +200,117 @@ const chartData = computed(() => {
         pieOption: d.pieOption.value
     }
 })
+
+function handleGoCategories() {
+    router.push({ name: ROUTE_NAMES.CATEGORY_CREATE })
+}
 </script>
 
 <template>
     <div class="home-page">
         <ThePageHeader title="Главная" />
+
         <ThePageDataBoundary
             :loading="loading"
             :has-budget="hasBudget"
             :error="error"
         >
-            <section
-                class="home-page__period"
-                aria-label="Период"
-            >
-                <TheDatePicker
-                    v-model="selectedMonth"
-                    label="Период"
-                    placeholder="Выберите месяц"
-                    picker="month"
-                />
-            </section>
+            <!-- Онбординг для новых бюджетов -->
+            <TheOnboardingCard
+                v-if="showOnboarding"
+                :has-categories="hasCategories"
+                :has-transactions="hasTransactions"
+                @go-categories="handleGoCategories"
+                @go-add-transaction="() => {}"
+            />
 
-            <TheTabs
-                v-model:active-key="activeTab"
-                class="home-page__tabs"
+            <!-- Bento grid дашборд -->
+            <div
+                v-else
+                class="home-page__bento"
             >
-                <TabPane
-                    key="expense"
-                    tab="Расходы"
-                >
-                    <section
-                        class="home-page__chart"
-                        aria-label="Расходы по категориям"
-                    >
-                        <div
-                            v-if="chartData.pieOption"
-                            class="home-page__chart-wrapper"
-                        >
-                            <div class="home-page__chart-inner">
-                                <VChart
-                                    :key="activeTab"
-                                    :option="chartData.pieOption"
-                                    autoresize
-                                />
-                            </div>
-                            <div
-                                class="home-page__chart-center"
-                                aria-hidden="true"
+                <!-- Карточка: итог месяца с picker и count-up -->
+                <HomeSummaryCard
+                    v-model:selected-month="selectedMonth"
+                    :expense-cents="expenseCents"
+                    :income-cents="incomeCents"
+                    class="home-page__card home-page__card_summary"
+                />
+
+                <!-- Карточка: топ-3 категории расходов -->
+                <HomeTopCategoriesCard
+                    :categories="categoryStore.categories ?? []"
+                    :transactions="transactionStore.transactions ?? []"
+                    class="home-page__card home-page__card_top"
+                />
+
+                <!-- Карточка: прогресс плана + прогноз -->
+                <HomePlanProgressCard
+                    :actual-cents="expenseCents"
+                    :planned-cents="plannedExpenseCents"
+                    :month="selectedMonth"
+                    class="home-page__card home-page__card_plan"
+                />
+
+                <!-- Карточка: pie chart -->
+                <div class="home-page__card home-page__card_chart">
+                    <div class="home-page__chart-header">
+                        <span class="home-page__chart-label">По категориям</span>
+                        <div class="home-page__tabs-wrap">
+                            <button
+                                type="button"
+                                class="home-page__tab-btn"
+                                :class="{ 'home-page__tab-btn_active': activeTab === 'expense' }"
+                                @click="activeTab = 'expense'"
                             >
-                                <span class="home-page__chart-center-line">{{
-                                    formatMoneyFromCents(chartData.plannedCents)
-                                }}</span>
-                                <span class="home-page__chart-center-line home-page__chart-center-line_spent">{{
-                                    formatMoneyFromCents(chartData.spentCents)
-                                }}</span>
-                            </div>
-                        </div>
-                    </section>
-                </TabPane>
-                <TabPane
-                    key="income"
-                    tab="Доходы"
-                >
-                    <section
-                        class="home-page__chart"
-                        aria-label="Доходы по категориям"
-                    >
-                        <div
-                            v-if="chartData.pieOption"
-                            class="home-page__chart-wrapper"
-                        >
-                            <div class="home-page__chart-inner">
-                                <VChart
-                                    :key="activeTab"
-                                    :option="chartData.pieOption"
-                                    autoresize
-                                />
-                            </div>
-                            <div
-                                class="home-page__chart-center"
-                                aria-hidden="true"
+                                Расходы
+                            </button>
+                            <button
+                                type="button"
+                                class="home-page__tab-btn"
+                                :class="{ 'home-page__tab-btn_active': activeTab === 'income' }"
+                                @click="activeTab = 'income'"
                             >
-                                <span class="home-page__chart-center-line">{{
-                                    formatMoneyFromCents(chartData.plannedCents)
-                                }}</span>
-                                <span class="home-page__chart-center-line home-page__chart-center-line_spent">{{
-                                    formatMoneyFromCents(chartData.spentCents)
-                                }}</span>
-                            </div>
+                                Доходы
+                            </button>
                         </div>
-                    </section>
-                </TabPane>
-            </TheTabs>
+                    </div>
+                    <div
+                        v-if="chartData.pieOption"
+                        class="home-page__chart-wrapper"
+                    >
+                        <div class="home-page__chart-inner">
+                            <VChart
+                                :key="activeTab"
+                                :option="chartData.pieOption"
+                                autoresize
+                            />
+                        </div>
+                        <div
+                            class="home-page__chart-center"
+                            aria-hidden="true"
+                        >
+                            <span class="home-page__chart-center-line">{{
+                                formatMoneyFromCents(chartData.plannedCents)
+                            }}</span>
+                            <span class="home-page__chart-center-line home-page__chart-center-line_spent">{{
+                                formatMoneyFromCents(chartData.spentCents)
+                            }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Карточка: activity feed -->
+                <div class="home-page__card home-page__card_activity">
+                    <span class="home-page__activity-label">Активность</span>
+                    <TheActivityFeed
+                        :transactions="transactionStore.transactions ?? []"
+                        :members="budgetMemberStore.members ?? []"
+                        :categories="categoryStore.categories ?? []"
+                        :max-items="8"
+                    />
+                </div>
+            </div>
         </ThePageDataBoundary>
 
         <QuickTransactionFab />
@@ -273,46 +326,73 @@ const chartData = computed(() => {
     min-height: 0;
 }
 
-.home-page__summary {
-    flex-shrink: 0;
+/* ─── Bento grid ─────────────────────────────────────────────────────────── */
+.home-page__bento {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
 }
 
-.home-page__summary-center {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 24px;
-    justify-content: center;
+.home-page__card {
+    min-width: 0;
 }
 
-.home-page__summary-item {
+/* ─── Pie chart card ────────────────────────────────────────────────────── */
+.home-page__card_chart {
+    background: var(--color-bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--color-border-default);
+    padding: 20px;
     display: flex;
     flex-direction: column;
+    gap: 12px;
+}
+
+.home-page__chart-header {
+    display: flex;
     align-items: center;
-    gap: 4px;
+    justify-content: space-between;
 }
 
-.home-page__summary-label {
-    font-size: 0.875rem;
-    color: var(--color-text-secondary);
-}
-
-.home-page__summary-value {
-    font-size: 1.25rem;
+.home-page__chart-label {
+    font-size: 0.8125rem;
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
 }
 
-.home-page__summary-value_spent {
-    color: var(--color-error);
+.home-page__tabs-wrap {
+    display: flex;
+    gap: 4px;
+    background: var(--color-bg-tertiary);
+    border-radius: 6px;
+    padding: 2px;
 }
 
-.home-page__chart {
-    flex: 1;
-    min-height: 200px;
+.home-page__tab-btn {
+    padding: 4px 12px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    transition:
+        background 0.15s,
+        color 0.15s;
+}
+
+.home-page__tab-btn_active {
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .home-page__chart-wrapper {
     position: relative;
-    height: 280px;
+    height: 240px;
     width: 100%;
 }
 
@@ -333,52 +413,77 @@ const chartData = computed(() => {
     justify-content: center;
     gap: 4px;
     pointer-events: none;
-    font-size: 1rem;
+    font-size: 0.9375rem;
     font-weight: 600;
     color: var(--color-text);
+    font-variant-numeric: tabular-nums;
 }
 
 .home-page__chart-center-line_spent {
     color: var(--color-error);
 }
 
-.home-page__period {
-    flex-shrink: 0;
-}
-
-.home-page__period :deep(.the-date-picker-standalone) {
-    max-width: 160px;
-}
-
-.home-page__tabs {
-    flex: 1;
-    min-width: 0;
+/* ─── Activity card ─────────────────────────────────────────────────────── */
+.home-page__card_activity {
+    background: var(--color-bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--color-border-default);
+    padding: 20px;
     display: flex;
     flex-direction: column;
-}
-
-.home-page__tabs :deep(.ant-tabs-content) {
-    flex: 1;
-    min-height: 0;
-}
-
-.home-page__actions {
-    display: flex;
-    flex-wrap: wrap;
     gap: 12px;
-    justify-content: center;
-    flex-shrink: 0;
 }
 
+.home-page__activity-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-text-muted);
+}
+
+/* ─── Tablet: 2 колонки ─────────────────────────────────────────────────── */
 @media (min-width: 768px) {
-    .home-page__summary-center {
-        gap: 48px;
+    .home-page__bento {
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas:
+            'summary  top'
+            'plan     activity'
+            'chart    chart';
     }
+
+    .home-page__card_summary {
+        grid-area: summary;
+    }
+    .home-page__card_top {
+        grid-area: top;
+    }
+    .home-page__card_plan {
+        grid-area: plan;
+    }
+    .home-page__card_activity {
+        grid-area: activity;
+    }
+    .home-page__card_chart {
+        grid-area: chart;
+    }
+
     .home-page__chart-wrapper {
-        height: 320px;
+        height: 280px;
     }
-    .home-page__chart-center {
-        font-size: 1.125rem;
+}
+
+/* ─── Desktop: 3 колонки ────────────────────────────────────────────────── */
+@media (min-width: 1024px) {
+    .home-page__bento {
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-areas:
+            'summary  top     plan'
+            'chart    chart   activity';
+    }
+
+    .home-page__chart-wrapper {
+        height: 300px;
     }
 }
 </style>

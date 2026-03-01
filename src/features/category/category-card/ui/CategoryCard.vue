@@ -4,6 +4,8 @@ import { computed } from 'vue'
 import { getCategoryIconComponent } from '@/entities/category'
 import type { Category } from '@/entities/category'
 
+import { TheProgressRing } from '@/shared/ui'
+
 /**
  * Карточка категории для грида: круг с иконкой, цветом и заливкой по проценту (факт/план), подпись.
  * По нажатию на всю карточку открывается редактирование (эмит edit).
@@ -40,17 +42,18 @@ const clampedPercent = computed(() => Math.min(100, Math.max(0, props.fillPercen
         @keydown.space.prevent="emit('edit', category)"
     >
         <div class="category-card__circle-wrap">
-            <div
-                class="category-card__circle"
-                :style="{ '--category-color': circleColor, '--fill-percent': `${clampedPercent}%` }"
+            <TheProgressRing
+                :percent="clampedPercent"
+                :color="circleColor"
+                :size="44"
+                :stroke-width="4"
             >
-                <div class="category-card__fill" />
                 <component
                     :is="iconComponent"
                     class="category-card__icon"
                     aria-hidden
                 />
-            </div>
+            </TheProgressRing>
         </div>
         <p class="category-card__label">{{ category.name }}</p>
     </div>
@@ -67,34 +70,9 @@ const clampedPercent = computed(() => Math.min(100, Math.max(0, props.fillPercen
 
 .category-card__circle-wrap {
     flex-shrink: 0;
-    width: 2.75rem;
-    height: 2.75rem;
-    border-radius: 50%;
-}
-
-.category-card__circle {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--category-color) 25%, transparent);
-    overflow: hidden;
-}
-
-.category-card__fill {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: var(--fill-percent, 0%);
-    background: var(--category-color);
-    transition: height 0.2s ease;
 }
 
 .category-card__icon {
-    position: absolute;
-    inset: 0;
-    margin: auto;
     width: 1.25rem;
     height: 1.25rem;
     color: var(--color-text-primary, rgba(0, 0, 0, 0.88));
