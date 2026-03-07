@@ -16,9 +16,8 @@ import { useTheme } from '@/shared/config/theme/useTheme'
 import { getCurrentMonth, getMonthRange } from '@/shared/lib/date'
 import { formatMoneyFromCents } from '@/shared/lib/format-money'
 import { usePageData } from '@/shared/lib/usePageData'
-import { TheActivityFeed, TheOnboardingCard, ThePageDataBoundary, ThePageHeader } from '@/shared/ui'
+import { TheActivityFeed, TheMonthPicker, TheOnboardingCard, ThePageDataBoundary, ThePageHeader } from '@/shared/ui'
 
-import HomePlanProgressCard from './HomePlanProgressCard.vue'
 import HomeSummaryCard from './HomeSummaryCard.vue'
 import HomeTopCategoriesCard from './HomeTopCategoriesCard.vue'
 
@@ -75,15 +74,6 @@ const incomeCents = computed(() => {
     return (transactionStore.transactions ?? [])
         .filter((t) => t.budgetId === budgetId && t.type === 'income')
         .reduce((sum, t) => sum + Math.round((parseFloat(t.amount) || 0) * 100), 0)
-})
-
-// ─── Плановые суммы (расходы) ────────────────────────────────────────────────
-const plannedExpenseCents = computed(() => {
-    const categories = categoryStore.categories ?? []
-    const expenseCategoryIds = new Set(categories.filter((c) => c.type === 'expense').map((c) => c.id))
-    return (monthlyPlanStore.planItems ?? [])
-        .filter((i) => expenseCategoryIds.has(i.categoryId))
-        .reduce((sum, i) => sum + Math.round((parseFloat(i.plannedAmount) || 0) * 100), 0)
 })
 
 // ─── Pie chart ───────────────────────────────────────────────────────────────
@@ -143,14 +133,9 @@ function useChartData(type: TabKey) {
             }))
             .filter((d) => d.value > 0)
             .sort((a, b) => b.value - a.value)
-        if (type === 'expense') {
-            const remainderCents = plannedCents.value - spentCents.value
-            if (remainderCents > 0) {
-                data = [
-                    ...data,
-                    { name: 'Остаток', value: remainderCents, itemStyle: { color: REMAINDER_COLOR.value } }
-                ]
-            }
+        const remainderCents = plannedCents.value - spentCents.value
+        if (remainderCents > 0) {
+            data = [...data, { name: 'Остаток', value: remainderCents, itemStyle: { color: REMAINDER_COLOR.value } }]
         }
         if (data.length === 0) {
             return {
@@ -229,9 +214,10 @@ function handleGoCategories() {
                 v-else
                 class="home-page__bento"
             >
-                <!-- Карточка: итог месяца с picker и count-up -->
+                <TheMonthPicker v-model="selectedMonth" />
+
+                <!-- Карточка: итог месяца с count-up -->
                 <HomeSummaryCard
-                    v-model:selected-month="selectedMonth"
                     :expense-cents="expenseCents"
                     :income-cents="incomeCents"
                     class="home-page__card home-page__card_summary"
@@ -242,14 +228,6 @@ function handleGoCategories() {
                     :categories="categoryStore.categories ?? []"
                     :transactions="transactionStore.transactions ?? []"
                     class="home-page__card home-page__card_top"
-                />
-
-                <!-- Карточка: прогресс плана + прогноз -->
-                <HomePlanProgressCard
-                    :actual-cents="expenseCents"
-                    :planned-cents="plannedExpenseCents"
-                    :month="selectedMonth"
-                    class="home-page__card home-page__card_plan"
                 />
 
                 <!-- Карточка: pie chart -->
@@ -448,8 +426,7 @@ function handleGoCategories() {
         grid-template-columns: 1fr 1fr;
         grid-template-areas:
             'summary  top'
-            'plan     activity'
-            'chart    chart';
+            'chart    activity';
     }
 
     .home-page__card_summary {
@@ -457,9 +434,6 @@ function handleGoCategories() {
     }
     .home-page__card_top {
         grid-area: top;
-    }
-    .home-page__card_plan {
-        grid-area: plan;
     }
     .home-page__card_activity {
         grid-area: activity;
@@ -478,8 +452,8 @@ function handleGoCategories() {
     .home-page__bento {
         grid-template-columns: 1fr 1fr 1fr;
         grid-template-areas:
-            'summary  top     plan'
-            'chart    chart   activity';
+            'summary  top      activity'
+            'chart    chart    chart';
     }
 
     .home-page__chart-wrapper {

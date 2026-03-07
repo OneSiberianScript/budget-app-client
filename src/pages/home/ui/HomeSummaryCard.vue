@@ -3,19 +3,15 @@ import { computed } from 'vue'
 
 import { formatMoneyFromCents } from '@/shared/lib/format-money'
 import { useCountUp } from '@/shared/lib/useCountUp'
-import { TheDatePicker } from '@/shared/ui'
 
 interface Props {
     /** Расходы за выбранный месяц (копейки). */
     expenseCents: number
     /** Доходы за выбранный месяц (копейки). */
     incomeCents: number
-    /** Выбранный месяц YYYY-MM (v-model). */
-    selectedMonth: string
 }
 
 const props = defineProps<Props>()
-const emit = defineEmits<{ 'update:selectedMonth': [value: string] }>()
 
 const expenseRef = computed(() => props.expenseCents)
 const incomeRef = computed(() => props.incomeCents)
@@ -32,16 +28,7 @@ const { displayValue: balanceDisplay } = useCountUp(balanceRef, { formatter: for
 
 <template>
     <div class="home-summary-card">
-        <div class="home-summary-card__header">
-            <span class="home-summary-card__label">Итог месяца</span>
-            <TheDatePicker
-                :model-value="selectedMonth"
-                label="Период"
-                placeholder="Месяц"
-                picker="month"
-                @update:model-value="emit('update:selectedMonth', $event as string)"
-            />
-        </div>
+        <span class="home-summary-card__label">Итог месяца</span>
 
         <div class="home-summary-card__balance">
             <span
@@ -88,23 +75,12 @@ const { displayValue: balanceDisplay } = useCountUp(balanceRef, { formatter: for
     gap: 16px;
 }
 
-.home-summary-card__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-}
-
 .home-summary-card__label {
     font-size: 0.8125rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--color-text-muted);
-}
-
-.home-summary-card__header :deep(.the-date-picker-standalone) {
-    max-width: 140px;
 }
 
 .home-summary-card__balance {

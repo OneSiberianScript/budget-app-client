@@ -25,9 +25,9 @@ import { usePageData } from '@/shared/lib/usePageData'
 import type { CategoryPlanLineItem } from '@/shared/ui'
 import {
     TheCategoryPlanLines,
-    TheDatePicker,
     TheDrawer,
     TheEmpty,
+    TheMonthPicker,
     ThePageDataBoundary,
     ThePageHeader,
     TheTabs
@@ -248,21 +248,14 @@ const { overrunCents, daysElapsed, daysTotal } = useForecast({
             :has-budget="hasBudget"
             :error="error"
         >
-            <section
-                class="budget-plans-page__period"
-                aria-label="Период"
-            >
-                <TheDatePicker
-                    v-model="selectedMonth"
-                    label="Период"
-                    placeholder="Выберите месяц"
-                    picker="month"
-                />
-            </section>
+            <TheMonthPicker
+                v-model="selectedMonth"
+                class="budget-plans-page__month-picker"
+            />
 
-            <!-- Прогноз перерасхода -->
+            <!-- Прогноз перерасхода (только для расходов) -->
             <div
-                v-if="overrunCents > 0"
+                v-if="activeTab === 'expense' && overrunCents > 0"
                 class="budget-plans-page__forecast"
                 role="alert"
             >
@@ -348,8 +341,8 @@ const { overrunCents, daysElapsed, daysTotal } = useForecast({
     min-height: 0;
 }
 
-.budget-plans-page__period {
-    flex-shrink: 0;
+.budget-plans-page__month-picker {
+    margin-bottom: 12px;
 }
 
 .budget-plans-page__tabs {

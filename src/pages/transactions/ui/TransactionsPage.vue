@@ -2,7 +2,6 @@
 import { useMediaQuery } from '@vueuse/core'
 import { ref, computed } from 'vue'
 
-import { QuickTransactionFab } from '@/features/transaction/quick-add'
 import { TransactionForm } from '@/features/transaction/transaction-form'
 import type { TransactionFormValues } from '@/features/transaction/transaction-form'
 
@@ -20,8 +19,10 @@ import { formatRubles } from '@/shared/lib/format-money'
 import { message } from '@/shared/lib/message'
 import { usePageData } from '@/shared/lib/usePageData'
 import {
+    TheButton,
     TheCreateButton,
     TheDrawer,
+    TheMonthPicker,
     ThePageDataBoundary,
     ThePageHeader,
     TheSpendingPulseChart,
@@ -64,6 +65,8 @@ const EMPTY_FILTER_VALUE = '__empty__'
 const isDesktop = useMediaQuery('(min-width: 768px)')
 /** Планшет и выше: ≥576px; на мобилках скрываем столбец «Описание». */
 const isTabletOrDesktop = useMediaQuery('(min-width: 576px)')
+/** Большой экран: ≥1024px; только здесь показываем кнопки действий в строке таблицы. */
+const isLargeScreen = useMediaQuery('(min-width: 1024px)')
 
 function formatDate(dateStr: string) {
     if (!dateStr) return ''
@@ -147,7 +150,7 @@ const columns = computed(() => {
                   }
               ]
             : []),
-        { title: '', key: 'action', width: 160, align: 'right' as const }
+        ...(isLargeScreen.value ? [{ title: '', key: 'action', width: 160, align: 'right' as const }] : [])
     ]
     return baseColumns
 })
@@ -220,20 +223,36 @@ async function handleFormSubmit(values: TransactionFormValues) {
     }
 }
 
-async function handleDelete(record: Transaction) {
+async function handleDelete(record: Transaction): Promise<boolean> {
     const ok = await confirm({
         title: 'Удалить транзакцию?',
         content: `Транзакция от ${formatDate(record.occurredAt)} на сумму ${formatRubles(record.amount, { maxFractionDigits: 0 })} будет удалена.`,
         type: 'warning',
         positiveText: 'Удалить'
     })
-    if (!ok) return
+    if (!ok) return false
     try {
         await deleteTransaction(record.id)
         transactionStore.removeTransaction(record.id)
         message.success('Транзакция удалена')
+        return true
     } catch {
         message.error('Не удалось удалить транзакцию')
+        return false
+    }
+}
+
+async function handleDeleteFromDrawer() {
+    if (!editingTransaction.value) return
+    const deleted = await handleDelete(editingTransaction.value)
+    if (deleted) drawerOpen.value = false
+}
+
+function getCustomRow(record: Record<string, unknown>) {
+    if (isLargeScreen.value) return {}
+    return {
+        onClick: () => openEdit(record as unknown as Transaction),
+        style: { cursor: 'pointer' }
     }
 }
 
@@ -251,7 +270,7 @@ const { loading, error } = usePageData(load, {
     watchSources: [() => budgetStore.currentBudgetId]
 })
 
-const currentMonth = getCurrentMonth()
+const selectedMonth = ref(getCurrentMonth())
 </script>
 
 <template>
@@ -271,20 +290,30 @@ const currentMonth = getCurrentMonth()
             :has-budget="hasBudget"
             :error="error"
         >
+            <TheMonthPicker
+                v-model="selectedMonth"
+                class="transactions-page__month-picker"
+            />
             <TheSpendingPulseChart
                 v-if="transactionStore.transactions.length > 0"
                 :transactions="transactionStore.transactions"
-                :month="currentMonth"
+                :month="selectedMonth"
+                class="transactions-page__chart"
             />
             <TheTable
                 :columns="columns"
                 :data-source="transactionStore.transactions"
                 :loading="loading"
                 row-key="id"
-                :action-handlers="{
-                    onEdit: (r) => openEdit(r as unknown as Transaction),
-                    onDelete: (r) => handleDelete(r as unknown as Transaction)
-                }"
+                :action-handlers="
+                    isLargeScreen
+                        ? {
+                              onEdit: (r) => openEdit(r as unknown as Transaction),
+                              onDelete: (r) => handleDelete(r as unknown as Transaction)
+                          }
+                        : undefined
+                "
+                :custom-row="getCustomRow"
             >
                 <template #bodyCell="{ column, record }">
                     <template v-if="column?.key === 'occurredAt'">
@@ -335,8 +364,6 @@ const currentMonth = getCurrentMonth()
             </TheTable>
         </ThePageDataBoundary>
 
-        <QuickTransactionFab />
-
         <TheDrawer
             v-model:open="drawerOpen"
             :title="editingTransaction ? 'Редактировать транзакцию' : 'Создать транзакцию'"
@@ -361,6 +388,15 @@ const currentMonth = getCurrentMonth()
                 "
                 @submit="handleFormSubmit"
             />
+            <TheButton
+                v-if="editingTransaction && !isLargeScreen"
+                danger
+                block
+                class="transactions-page__drawer-delete"
+                @click="handleDeleteFromDrawer"
+            >
+                Удалить транзакцию
+            </TheButton>
         </TheDrawer>
     </div>
 </template>
@@ -374,6 +410,14 @@ const currentMonth = getCurrentMonth()
     min-height: 0;
 }
 
+.transactions-page__month-picker {
+    margin-bottom: 12px;
+}
+
+.transactions-page__chart {
+    margin-bottom: 12px;
+}
+
 .transactions-page__amount_expense {
     color: var(--color-semantic-error);
 }
@@ -384,5 +428,9 @@ const currentMonth = getCurrentMonth()
 
 .transactions-page__cell-description {
     color: var(--color-text-secondary);
+}
+
+.transactions-page__drawer-delete {
+    margin-top: 16px;
 }
 </style>
