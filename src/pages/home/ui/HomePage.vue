@@ -271,9 +271,15 @@ function handleGoCategories() {
                             <span class="home-page__chart-center-line">{{
                                 formatMoneyFromCents(chartData.plannedCents)
                             }}</span>
-                            <span class="home-page__chart-center-line home-page__chart-center-line_spent">{{
-                                formatMoneyFromCents(chartData.spentCents)
-                            }}</span>
+                            <span
+                                :class="[
+                                    'home-page__chart-center-line',
+                                    activeTab === 'expense'
+                                        ? 'home-page__chart-center-line_expense'
+                                        : 'home-page__chart-center-line_income'
+                                ]"
+                                >{{ formatMoneyFromCents(chartData.spentCents) }}</span
+                            >
                         </div>
                     </div>
                 </div>
@@ -397,8 +403,11 @@ function handleGoCategories() {
     font-variant-numeric: tabular-nums;
 }
 
-.home-page__chart-center-line_spent {
+.home-page__chart-center-line_expense {
     color: var(--color-error);
+}
+.home-page__chart-center-line_income {
+    color: var(--color-semantic-success);
 }
 
 /* ─── Activity card ─────────────────────────────────────────────────────── */
