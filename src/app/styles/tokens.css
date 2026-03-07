@@ -4,6 +4,9 @@
 :root {
     --font-size-display: 2.5rem;       /* 40px — крупные суммы, главные цифры */
     --font-size-title: 1.5rem;         /* 24px — заголовки карточек */
+    --font-size-base: 1rem;            /* 16px — поля ввода, основной текст */
+    --font-size-sm: 0.875rem;          /* 14px — вспомогательный текст */
+    --font-size-xs: 0.75rem;           /* 12px — мета-инфо, бейджи */
     --font-weight-display: 700;
     font-variant-numeric: tabular-nums; /* предотвращает прыжки при count-up */
 }

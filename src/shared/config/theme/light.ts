@@ -8,6 +8,7 @@ export const lightThemeOverrides: ThemeConfig = {
         colorBorder: '#d6d3cf',
         colorText: '#312f2c',
         colorTextSecondary: '#5f5c58',
-        borderRadius: 6
+        borderRadius: 6,
+        fontSize: 16
     }
 }

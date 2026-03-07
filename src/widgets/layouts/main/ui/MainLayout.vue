@@ -93,7 +93,7 @@ const logoSrc = computed(() => {
     padding: 4px;
     color: var(--color-text);
     text-decoration: none;
-    font-size: 14px;
+    font-size: var(--font-size-sm);
     line-height: 1.5715;
     background: var(--color-bg-container);
     border: 1px solid var(--color-border);

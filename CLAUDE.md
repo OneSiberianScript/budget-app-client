@@ -70,6 +70,28 @@ Each slice's public API is via `index.ts`. No cross-imports within the same laye
 - Thin wrappers over Ant Design Vue — pass through props/slots/emit, don't duplicate library API
 - Export from `shared/ui/index.ts`
 
+## Navigation Map
+
+Quick reference — where to look for common tasks:
+
+| Задача | Файл(ы) |
+|---|---|
+| Роуты (имена/пути) | `src/shared/config/router.ts` |
+| Типизация роутов | `src/shared/config/router.types.ts` |
+| Регистрация роутов | `src/app/providers/router/routes.ts` |
+| Router guard / инициализация | `src/app/providers/router/` |
+| Новая страница | `src/pages/{name}/ui/{Name}Page.vue` + `index.ts` |
+| Сущность (store + API + types) | `src/entities/{name}/` |
+| Фича / форма | `src/features/{feature}/{form}/model/` + `ui/` |
+| Shared UI компонент (The*) | `src/shared/ui/{TheName}.vue` → `index.ts` |
+| API типы (ручные расширения) | `src/shared/types/api.types.ts` |
+| API типы (сгенерированные) | `src/shared/types/api.generated.ts` |
+| HTTP client + `request` + `useApi` | `src/shared/api/` |
+| Примитивы валидации Zod | `src/shared/lib/validation/` |
+| Глобальные стили + CSS vars | `src/app/styles/` |
+| Инициализация приложения | `src/main.ts` |
+| Архитектурные решения | `docs/decisions.md` |
+
 ## Adding a Route
 
 1. Add to `ROUTE_NAMES` + `ROUTE_PATHS` in `src/shared/config/router.ts`
@@ -107,6 +129,12 @@ Full guide: `docs/create-form.md`
 - `useApi()` — composable returning `{ data, error, isLoading, execute }` with optional `immediate: true`
 
 **Entity API** lives inside the entity slice (`entities/{entity}/api/`), not in `shared/api`.
+
+**API type generation:**
+- Source of truth: `openapi.yaml` (root)
+- Generated types: `src/shared/types/api.generated.ts` — **never edit manually**
+- Manual extensions: `src/shared/types/api.types.ts`
+- Regenerate after backend schema changes: `npm run types:generate`
 
 ## App Initialization
 

@@ -10,7 +10,8 @@ export const darkThemeOverrides: ThemeConfig = {
         colorBorder: '#4e4a47',
         colorText: '#fafafa',
         colorTextSecondary: '#d6d3cf',
-        borderRadius: 6
+        borderRadius: 6,
+        fontSize: 16
     },
     algorithm: theme.darkAlgorithm
 }

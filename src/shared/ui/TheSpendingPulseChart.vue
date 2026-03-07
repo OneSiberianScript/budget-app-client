@@ -1,8 +1,14 @@
 <script setup lang="ts">
+import { LineChart } from 'echarts/charts'
+import { GridComponent, TooltipComponent } from 'echarts/components'
+import { use } from 'echarts/core'
+import { CanvasRenderer } from 'echarts/renderers'
 import { computed } from 'vue'
 import VChart from 'vue-echarts'
 
 import type { Transaction } from '@/entities/transaction'
+
+use([CanvasRenderer, LineChart, GridComponent, TooltipComponent])
 
 import { useTheme } from '@/shared/config/theme/useTheme'
 import { getMonthRange } from '@/shared/lib/date'
@@ -77,13 +83,15 @@ const chartOption = computed(() => {
     const gridColor = isDark.value ? '#4e4a47' : '#e8e8e8'
 
     return {
-        grid: { top: 8, right: 8, bottom: 24, left: 56, containLabel: false },
+        grid: { top: 8, right: 8, bottom: 24, left: 8, containLabel: true },
         tooltip: {
             trigger: 'axis',
             formatter: (params: Array<{ dataIndex: number; value: number }>) => {
                 const p = params[0]
                 const day = monthDays.value[p.dataIndex]
-                return `${day.date}: ${formatMoneyFromCents(p.value)}`
+                const [y, m, d] = day.date.split('-')
+                const dateFormatted = `${d}.${m}.${y}`
+                return `${dateFormatted}: ${formatMoneyFromCents(p.value)}`
             }
         },
         xAxis: {
@@ -162,6 +170,7 @@ const chartOption = computed(() => {
 .the-spending-pulse-chart {
     width: 100%;
     height: 160px;
+    overflow: hidden;
 }
 
 .the-spending-pulse-chart__chart {

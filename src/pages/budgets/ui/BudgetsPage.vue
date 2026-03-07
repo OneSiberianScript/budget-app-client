@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { useMediaQuery } from '@vueuse/core'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
 import { BudgetForm } from '@/features/budget/budget-form'
 import type { BudgetFormValues } from '@/features/budget/budget-form'
@@ -14,15 +16,34 @@ import type { BudgetListItem } from '@/shared/types'
 import { TheCreateButton, TheDrawer, ThePageHeader, TheSpin, TheTable } from '@/shared/ui'
 
 const budgetStore = useBudgetStore()
+const router = useRouter()
 
 const drawerOpen = ref(false)
 const editingBudget = ref<BudgetListItem | null>(null)
 const loading = ref(true)
 
-const columns = [
-    { title: 'Название', dataIndex: 'name', key: 'name' },
-    { title: '', key: 'action', width: 220, align: 'right' as const }
-]
+const isMobile = useMediaQuery('(max-width: 767px)')
+
+const columns = computed(() => {
+    if (isMobile.value) {
+        return [
+            { title: 'Название', dataIndex: 'name', key: 'name' },
+            { title: '', key: 'current', width: 100, align: 'right' as const }
+        ]
+    }
+    return [
+        { title: 'Название', dataIndex: 'name', key: 'name' },
+        { title: '', key: 'action', width: 220, align: 'right' as const }
+    ]
+})
+
+const customRow = computed(() => {
+    if (!isMobile.value) return undefined
+    return (record: Record<string, unknown>) => ({
+        onClick: () => router.push({ name: ROUTE_NAMES.BUDGET_SETTINGS, params: { id: record.id as string } }),
+        style: 'cursor: pointer'
+    })
+})
 
 function openCreate() {
     editingBudget.value = null
@@ -97,18 +118,36 @@ onMounted(load)
                 :data-source="budgetStore.budgets"
                 :loading="loading"
                 row-key="id"
-                :action-handlers="{
-                    onEdit: (r) => openEdit(r as unknown as BudgetListItem),
-                    onDelete: (r) => handleDelete(r as unknown as BudgetListItem)
-                }"
+                :action-handlers="
+                    isMobile
+                        ? undefined
+                        : {
+                              onEdit: (r) => openEdit(r as unknown as BudgetListItem),
+                              onDelete: (r) => handleDelete(r as unknown as BudgetListItem)
+                          }
+                "
+                :custom-row="customRow"
             >
-                <template #actionPrepend="{ record }">
+                <template
+                    v-if="!isMobile"
+                    #actionPrepend="{ record }"
+                >
                     <router-link
                         :to="{ name: ROUTE_NAMES.BUDGET_SETTINGS, params: { id: (record as BudgetListItem).id } }"
                         class="budgets-page__link"
                     >
                         Настройки
                     </router-link>
+                </template>
+                <template #bodyCell="{ column, record }">
+                    <template v-if="column?.key === 'current'">
+                        <a-tag
+                            v-if="(record as BudgetListItem).id === budgetStore.currentBudgetId"
+                            color="blue"
+                        >
+                            Текущий
+                        </a-tag>
+                    </template>
                 </template>
             </TheTable>
         </TheSpin>

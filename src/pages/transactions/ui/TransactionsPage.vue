@@ -14,7 +14,7 @@ import type { Transaction } from '@/entities/transaction'
 import { createTransaction, updateTransaction, deleteTransaction } from '@/entities/transaction/api'
 
 import { confirm } from '@/shared/lib/confirm'
-import { getCurrentMonth } from '@/shared/lib/date'
+import { getCurrentMonth, getMonthRange } from '@/shared/lib/date'
 import { formatRubles } from '@/shared/lib/format-money'
 import { message } from '@/shared/lib/message'
 import { usePageData } from '@/shared/lib/usePageData'
@@ -271,6 +271,14 @@ const { loading, error } = usePageData(load, {
 })
 
 const selectedMonth = ref(getCurrentMonth())
+
+const monthTransactions = computed(() => {
+    const { from, to } = getMonthRange(selectedMonth.value)
+    return transactionStore.transactions.filter((t) => {
+        const d = t.occurredAt.slice(0, 10)
+        return d >= from && d <= to
+    })
+})
 </script>
 
 <template>
@@ -295,9 +303,10 @@ const selectedMonth = ref(getCurrentMonth())
                 class="transactions-page__month-picker"
             />
             <TheSpendingPulseChart
-                v-if="transactionStore.transactions.length > 0"
-                :transactions="transactionStore.transactions"
+                v-if="monthTransactions.length > 0"
+                :transactions="monthTransactions"
                 :month="selectedMonth"
+                type="expense"
                 class="transactions-page__chart"
             />
             <TheTable

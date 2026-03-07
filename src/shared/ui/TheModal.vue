@@ -31,6 +31,8 @@ interface Props {
     loading?: boolean
     /** Показывать иконку типа в заголовке */
     showIcon?: boolean
+    /** Уничтожать содержимое при закрытии (по умолчанию true — гарантирует сброс форм) */
+    destroyOnClose?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -44,7 +46,8 @@ const props = withDefaults(defineProps<Props>(), {
     maskClosable: true,
     closable: true,
     loading: false,
-    showIcon: true
+    showIcon: true,
+    destroyOnClose: true
 })
 
 const emit = defineEmits<{
@@ -105,6 +108,7 @@ function onCancel() {
         :ok-type="isConfirmPreset ? (type === 'error' ? 'danger' : 'primary') : undefined"
         :confirm-loading="loading"
         :footer="footer"
+        :destroy-on-close="destroyOnClose"
         @ok="onOk"
         @cancel="onCancel"
     >

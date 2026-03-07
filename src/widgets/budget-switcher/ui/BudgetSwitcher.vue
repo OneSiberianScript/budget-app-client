@@ -43,6 +43,6 @@ onMounted(() => {
 <style scoped>
 .budget-switcher__empty {
     color: var(--color-text-secondary);
-    font-size: 14px;
+    font-size: var(--font-size-sm);
 }
 </style>

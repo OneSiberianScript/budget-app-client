@@ -82,8 +82,8 @@ async function handleDelete() {
                 @submit="handleSubmit"
             />
             <TheButton
-                type="text"
                 danger
+                block
                 class="category-edit-page__delete"
                 @click="handleDelete"
             >
@@ -102,7 +102,6 @@ async function handleDelete() {
 }
 
 .category-edit-page__delete {
-    align-self: flex-start;
     margin-top: 8px;
 }
 </style>

@@ -42,9 +42,6 @@ const { displayValue: balanceDisplay } = useCountUp(balanceRef, { formatter: for
             >
                 {{ isPositive ? '+' : '−' }}{{ balanceDisplay }}
             </span>
-            <span class="home-summary-card__balance-label">
-                {{ isPositive ? 'профицит' : 'дефицит' }}
-            </span>
         </div>
 
         <div class="home-summary-card__row">

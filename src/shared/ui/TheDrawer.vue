@@ -22,6 +22,8 @@ interface Props {
     height?: number | string
     /** Показывать кнопку закрытия */
     closable?: boolean
+    /** Уничтожать содержимое при закрытии (по умолчанию true — гарантирует сброс форм) */
+    destroyOnClose?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -29,7 +31,8 @@ const props = withDefaults(defineProps<Props>(), {
     placement: 'right',
     width: 400,
     height: '60%',
-    closable: true
+    closable: true,
+    destroyOnClose: true
 })
 
 const emit = defineEmits<{
@@ -58,6 +61,7 @@ const drawerHeight = computed(() =>
         :width="drawerWidth"
         :height="drawerHeight"
         :closable="closable"
+        :destroy-on-close="destroyOnClose"
         v-bind="$attrs"
         @update:open="emit('update:open', $event)"
     >

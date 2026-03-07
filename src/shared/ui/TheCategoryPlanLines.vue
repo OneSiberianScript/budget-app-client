@@ -70,7 +70,7 @@ const linesWithMeta = computed((): CategoryPlanLineWithMeta[] =>
 )
 
 function formatRemainder(cents: number): string {
-    return formatMoneyFromCents(Math.abs(cents))
+    return (cents < 0 ? '− ' : '') + formatMoneyFromCents(Math.abs(cents))
 }
 
 const emit = defineEmits<{
@@ -109,7 +109,10 @@ function onLineClick(line: CategoryPlanLineWithMeta) {
             <span class="the-category-plan-lines__name">
                 {{ line.categoryName }}
             </span>
-            <span class="the-category-plan-lines__remainder">
+            <span
+                class="the-category-plan-lines__remainder"
+                :class="{ 'the-category-plan-lines__remainder--overrun': line.remainderCents < 0 }"
+            >
                 {{ formatRemainder(line.remainderCents) }}
             </span>
         </li>
@@ -163,5 +166,9 @@ function onLineClick(line: CategoryPlanLineWithMeta) {
     z-index: 1;
     color: var(--color-text-secondary);
     font-variant-numeric: tabular-nums;
+}
+
+.the-category-plan-lines__remainder--overrun {
+    color: var(--color-semantic-error);
 }
 </style>

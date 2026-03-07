@@ -71,17 +71,16 @@ a:focus-visible {
     }
 }
 
-@media (max-width: 767px) {
-    .ant-input,
-    .the-input .ant-input {
-        font-size: 16px;
-    }
+/* Touch targets — минимум 44×44px по WCAG 2.1 */
+.ant-btn {
+    min-height: 44px;
+}
 
-    .the-input-number .ant-input-number-input {
-        font-size: 16px;
-    }
-
-    .ant-btn {
-        min-height: 44px;
-    }
+/* Предотвращает авто-зум iOS Safari при фокусе на полях ввода.
+   Триггер: font-size < 16px. max() гарантирует минимум 16px,
+   не переопределяя компонентный шрифт если он крупнее. */
+input,
+textarea,
+select {
+    font-size: max(16px, 1em) !important;
 }
